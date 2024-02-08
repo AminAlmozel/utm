@@ -5,13 +5,25 @@ import matplotlib.animation as animation
 from datetime import datetime
 import matplotlib.collections
 import time
-import drone
+import rdrone
 
 from multiprocessing import Pool
 
 
-class simulator(drone.drone):
+#ROS
+import rospy
+from std_msgs.msg import String
+
+
+class simulator(rdrone.rdrone):
     def __init__(self):
+        pub = self.setup_publisher("Talker", "chatter", String)
+        rate = rospy.Rate(10) # 10hz
+        while not rospy.is_shutdown():
+            hello_str = "hello world %s" % rospy.get_time()
+            rospy.loginfo(hello_str)
+            pub.publish(hello_str)
+            rate.sleep()
         self.N = 20
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
@@ -58,8 +70,18 @@ class simulator(drone.drone):
 
         self.initialize()
 
-    def initialize(self):
+    def setup_publisher(self, name, topic, msg):
+        pub = rospy.Publisher(topic, msg, queue_size=10)
+        rospy.init_node(name, anonymous=True)
+        return pub
 
+    def setup_subscriber(self, name, topic, msg, callback):
+        rospy.init_node('listener', anonymous=True)
+        rospy.Subscriber("chatter", String, callback)
+        # spin() simply keeps python from exiting until this node is stopped
+        rospy.spin()
+
+    def initialize(self):
         self.vehicles_positions = []
         self.vehicles = []
         self.full_traj = []
@@ -75,7 +97,7 @@ class simulator(drone.drone):
         self.max_vel = self.drn[0].smax[3] # Max velocity
 
     def create_drone(self, xi, xf):
-        self.drn.append(drone.drone())
+        self.drn.append(rdrone.rdrone())
         self.initial_conditions.append(xi)
         self.drn[-1].set_final_condition(xf)
         self.drn_list.append(len(self.drn) - 1)

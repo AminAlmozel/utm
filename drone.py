@@ -57,11 +57,15 @@ class drone():
 
         self.obstacles = []
 
-        self.m = gp.Model("vehicle_motion_planning")
+        # self.env = gp.Env()
+        # # self.m = gp.Model(env=env)
 
     def generate_traj(self, xi, xi_1, obstacles):
         # Clear the model from previously setup constraints
-        self.m = gp.Model("vehicle_motion_planning")
+        self.env = gp.Env()
+        self.env.setParam(GRB.Param.OutputFlag, 0)
+        self.env.setParam(GRB.Param.LogToConsole, 0)
+        self.m = gp.Model(env=self.env)
         # import obstacles and position of other drones
         self.set_initial_condition(xi)
         self.set_obstacles(obstacles)
@@ -463,7 +467,6 @@ class drone():
         else:
             print("Model is infeasible")
             self.not_collided = False
-
 
     def get_drone_status(self):
         return self.not_collided

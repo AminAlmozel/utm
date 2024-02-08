@@ -15,7 +15,7 @@ class simulator(drone.drone):
         self.N = 20
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 20
+        self.total_iterations = 100
 
         # Parameters
         self.K = 10  # Number of vehicles
@@ -139,22 +139,27 @@ class simulator(drone.drone):
             pool = Pool()
             with Pool() as pool:
                 # prepare arguments
-                items = [(k, k) for k in range(K)]
-                pool.starmap(self.m_prepare_and_generate, items)
+                items = [(k, ) for k in range(K)]
+                # items = [(drn,) for drn in self.drn]
+                pool.starmap(self.prepare_and_generate, items)
                     # graph[i, :] = result
             pool.close()
             # for k in range(self.K):
             #     self.full_traj[k] = self.drn[k].full_traj
 
-            # # Check for collision
-            # self.check_collisions()
-            # # Update positions
-            # self.update_vehicle_state()
-            # self.update_visualization_positions()  # Update the plot after each iteration
-        # t1 = time.time()
-        # print("Time of execution: %f" % (t1 - t0))
-        # # Optionally, keep the final plot open
-        # self.create_animation()
+            # Check for collision
+            self.check_collisions()
+            # Update positions
+            self.update_vehicle_state()
+            self.update_visualization_positions()  # Update the plot after each iteration
+        t1 = time.time()
+        print("Time of execution: %f" % (t1 - t0))
+        # Optionally, keep the final plot open
+        self.create_animation()
+
+    def m_prepare_and_generate(self, drone):
+        print(drone.N)
+        return 0
 
     def set_initial_state(self):
         # Initial conditions for each vehicle
@@ -442,13 +447,9 @@ class simulator(drone.drone):
     def dist_squared(self, xi, xi_1):
         return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
 
-    def m_prepare_and_generate(self, k, b):
-        print(k)
-        return k
-
 def main():
     optimization = simulator()
-    optimization.start_simulation()
-    # optimization.m_start_simulation()
+    # optimization.start_simulation()
+    optimization.m_start_simulation()
 
 main()

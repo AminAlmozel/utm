@@ -10,8 +10,12 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 warnings.simplefilter(action='ignore')
 
+#ROS
+import rospy
+from std_msgs.msg import String
 
-class drone():
+
+class rdrone():
     def __init__(self):
         self.N = 20
         self.delta_t = 0.1 # Time step
@@ -58,6 +62,18 @@ class drone():
         self.obstacles = []
 
         self.m = gp.Model("vehicle_motion_planning")
+        self.setup_subscriber("Listener", "chatter", String, self.callback)
+
+
+    def setup_subscriber(self, name, topic, msg, callback):
+        rospy.init_node(name, anonymous=True)
+        rospy.Subscriber(topic, msg, callback)
+        # spin() simply keeps python from exiting until this node is stopped
+        print("Spinning")
+        rospy.spin()
+
+    def callback(self, msg):
+        print(msg)
 
     def generate_traj(self, xi, xi_1, obstacles):
         # Clear the model from previously setup constraints
@@ -464,7 +480,6 @@ class drone():
             print("Model is infeasible")
             self.not_collided = False
 
-
     def get_drone_status(self):
         return self.not_collided
 
@@ -493,3 +508,8 @@ class drone():
     #
     #     plt.draw()
     #     plt.pause(0.05)  # Pause to update the plot
+
+def main():
+    drone = rdrone()
+    print("Hello world")
+main()
