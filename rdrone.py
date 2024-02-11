@@ -12,8 +12,7 @@ warnings.simplefilter(action='ignore')
 
 #ROS
 import rospy
-from std_msgs.msg import String
-
+from ros_util import *
 
 class rdrone():
     def __init__(self):
@@ -62,18 +61,16 @@ class rdrone():
         self.obstacles = []
 
         self.m = gp.Model("vehicle_motion_planning")
-        self.setup_subscriber("Listener", "chatter", String, self.callback)
-
-
-    def setup_subscriber(self, name, topic, msg, callback):
-        rospy.init_node(name, anonymous=True)
-        rospy.Subscriber(topic, msg, callback)
-        # spin() simply keeps python from exiting until this node is stopped
+        name = "drn1"
+        traj2msg(0)
+        rospy.init_node("Drone_1", anonymous=True)
+        rospy.Subscriber(name, Odometry, self.callback)
         print("Spinning")
         rospy.spin()
 
     def callback(self, msg):
-        print(msg)
+        state = msg2state(msg)
+        print(state)
 
     def generate_traj(self, xi, xi_1, obstacles):
         # Clear the model from previously setup constraints

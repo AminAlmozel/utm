@@ -135,31 +135,31 @@ class simulator(drone.drone):
             print("============================")
             # Generate new trajectories for each drone
             # for k in range(self.K):
-            K = self.K
+            K = len(self.drn_list)
             pool = Pool()
             with Pool() as pool:
                 # prepare arguments
                 items = [(k, ) for k in range(K)]
-                # items = [(drn,) for drn in self.drn]
-                pool.starmap(self.prepare_and_generate, items)
-                    # graph[i, :] = result
-            pool.close()
-            # for k in range(self.K):
-            #     self.full_traj[k] = self.drn[k].full_traj
+                for i, result in enumerate(pool.starmap(self.prepare_and_generate, items)):
+                    # report the value to show progress
+                    print(result)
+                    k = self.drn_list[i]
+                    # self.drn[k].full_traj = result
 
-            # Check for collision
-            self.check_collisions()
-            # Update positions
-            self.update_vehicle_state()
-            self.update_visualization_positions()  # Update the plot after each iteration
+            pool.close()
+            pool.join()
+            # # for k in range(self.K):
+            # #     self.full_traj[k] = self.drn[k].full_traj
+            # # Check for collision
+            # self.check_collisions()
+            # print(self.drn_list)
+            # # Update positions
+            # self.update_vehicle_state()
+            # self.update_visualization_positions()  # Update the plot after each iteration
         t1 = time.time()
         print("Time of execution: %f" % (t1 - t0))
         # Optionally, keep the final plot open
         self.create_animation()
-
-    def m_prepare_and_generate(self, drone):
-        print(drone.N)
-        return 0
 
     def set_initial_state(self):
         # Initial conditions for each vehicle

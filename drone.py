@@ -13,7 +13,7 @@ warnings.simplefilter(action='ignore')
 
 class drone():
     def __init__(self):
-        self.N = 20
+        self.N = 40
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
         self.not_collided = True
@@ -82,7 +82,8 @@ class drone():
 
         # return the full trajectory
         self.update_vehicle_state()
-        return self.full_traj
+        # print(self.full_traj)
+        return 1
 
     def set_initial_condition(self, xi):
         self.initial_conditions = []

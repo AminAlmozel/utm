@@ -5,25 +5,17 @@ import matplotlib.animation as animation
 from datetime import datetime
 import matplotlib.collections
 import time
-import rdrone
 
 from multiprocessing import Pool
 
-
 #ROS
 import rospy
-from std_msgs.msg import String
+from ros_util import *
 
 
-class simulator(rdrone.rdrone):
+# class simulator(rdrone.rdrone):
+class simulator():
     def __init__(self):
-        pub = self.setup_publisher("Talker", "chatter", String)
-        rate = rospy.Rate(10) # 10hz
-        while not rospy.is_shutdown():
-            hello_str = "hello world %s" % rospy.get_time()
-            rospy.loginfo(hello_str)
-            pub.publish(hello_str)
-            rate.sleep()
         self.N = 20
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
@@ -69,17 +61,20 @@ class simulator(rdrone.rdrone):
         ]
 
         self.initialize()
-
-    def setup_publisher(self, name, topic, msg):
-        pub = rospy.Publisher(topic, msg, queue_size=10)
+        # pub = setup_publisher("Talker", "chatter", String)
+        name = "Simulator"
         rospy.init_node(name, anonymous=True)
-        return pub
-
-    def setup_subscriber(self, name, topic, msg, callback):
-        rospy.init_node('listener', anonymous=True)
-        rospy.Subscriber("chatter", String, callback)
-        # spin() simply keeps python from exiting until this node is stopped
-        rospy.spin()
+        pub_state = setup_publisher("Simulator", "drn1", Odometry)
+        rate = rospy.Rate(10) # 10hz
+        xi_1 = [self.set_full_traj(self.xi[0]),
+                self.set_full_traj(self.xi[1])]
+        print(xi_1)
+        print(traj2msg(xi_1))
+        while not rospy.is_shutdown():
+            msg = state2msg(self.xi[0])
+            # rospy.loginfo(msg)
+            pub_state.publish(msg)
+            rate.sleep()
 
     def initialize(self):
         self.vehicles_positions = []
@@ -91,10 +86,10 @@ class simulator(rdrone.rdrone):
         self.set_initial_state()
         self.set_final_state()
         self.initial_conditions = []
-        for k in range(self.K):
-            self.create_drone(self.xi[k], self.final_conditions[k])
+        # for k in range(self.K):
+        #     self.create_drone(self.xi[k], self.final_conditions[k])
 
-        self.max_vel = self.drn[0].smax[3] # Max velocity
+        # self.max_vel = self.drn[0].smax[3] # Max velocity
 
     def create_drone(self, xi, xf):
         self.drn.append(rdrone.rdrone())
@@ -267,6 +262,7 @@ class simulator(rdrone.rdrone):
         ydot = [xi['ydot'] for n in range(self.N)]
         zdot = [xi['zdot'] for n in range(self.N)]
         self.full_traj.append([x, y, z, xdot, ydot, zdot])
+        return [x, y, z, xdot, ydot, zdot]
 
     def update_vehicle_state(self):
         for k in self.drn_list:
@@ -392,6 +388,41 @@ class simulator(rdrone.rdrone):
         else:
             print("No data available for animation.")
 
+    def draw_box(self, ax, obs, color='gray', alpha=0.3):
+        """Draws a 3D box (cuboid) representing an obstacle."""
+        # Define the corners of the obstacle
+        x_corners = [obs['xmin'], obs['xmax'], obs['xmax'], obs['xmin'], obs['xmin']]
+        y_corners = [obs['ymin'], obs['ymin'], obs['ymax'], obs['ymax'], obs['ymin']]
+        z_bottom = obs['zmin']
+        z_top = obs['zmax']
+
+        # Draw the bottom and top faces
+        x = np.array([[obs['xmin'], obs['xmax']], [obs['xmin'], obs['xmax']]])
+        y = np.array([[obs['ymin'], obs['ymin']], [obs['ymax'], obs['ymax']]])
+        z = np.array([[z_bottom, z_bottom], [z_bottom, z_bottom]])
+        ax.plot_surface(x, y, z, color=color, alpha=alpha)
+
+        z = np.array([[z_top, z_top], [z_top, z_top]])
+        ax.plot_surface(x, y, z, color=color, alpha=alpha)
+
+        # Draw the side faces
+        for i in range(4):
+            x = np.array([x_corners[i:i+2], x_corners[i:i+2]])
+            y = np.array([y_corners[i:i+2], y_corners[i:i+2]])
+            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
+            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
+            ax.plot_surface(x, y, z, color=color, alpha=alpha)
+
+    def dist_squared(self, xi, xi_1):
+        return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
+
+def main():
+    optimization = simulator()
+    # optimization.start_simulation()
+    # optimization.m_start_simulation()
+
+main()
+
     # def update_plot(self):
     #     # Check if there is data to plot
     #     if not self.vehicles_positions:
@@ -435,42 +466,3 @@ class simulator(rdrone.rdrone):
     #         plt.show()
     #     else:
     #         print("No data available for animation.")
-
-    def draw_box(self, ax, obs, color='gray', alpha=0.3):
-        """Draws a 3D box (cuboid) representing an obstacle."""
-        # Define the corners of the obstacle
-        x_corners = [obs['xmin'], obs['xmax'], obs['xmax'], obs['xmin'], obs['xmin']]
-        y_corners = [obs['ymin'], obs['ymin'], obs['ymax'], obs['ymax'], obs['ymin']]
-        z_bottom = obs['zmin']
-        z_top = obs['zmax']
-
-        # Draw the bottom and top faces
-        x = np.array([[obs['xmin'], obs['xmax']], [obs['xmin'], obs['xmax']]])
-        y = np.array([[obs['ymin'], obs['ymin']], [obs['ymax'], obs['ymax']]])
-        z = np.array([[z_bottom, z_bottom], [z_bottom, z_bottom]])
-        ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-        z = np.array([[z_top, z_top], [z_top, z_top]])
-        ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-        # Draw the side faces
-        for i in range(4):
-            x = np.array([x_corners[i:i+2], x_corners[i:i+2]])
-            y = np.array([y_corners[i:i+2], y_corners[i:i+2]])
-            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
-            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
-            ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-    def dist_squared(self, xi, xi_1):
-        return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
-
-    def m_prepare_and_generate(self, k, b):
-        print(k)
-        return k
-
-def main():
-    optimization = simulator()
-    optimization.start_simulation()
-    # optimization.m_start_simulation()
-
-main()
