@@ -64,12 +64,22 @@ class simulator():
         # pub = setup_publisher("Talker", "chatter", String)
         name = "Simulator"
         rospy.init_node(name, anonymous=True)
+        # self.testing()
+
+
+    def testing(self):
         pub_state = setup_publisher("Simulator", "drn1", Odometry)
         rate = rospy.Rate(10) # 10hz
         xi_1 = [self.set_full_traj(self.xi[0]),
                 self.set_full_traj(self.xi[1])]
-        print(xi_1)
-        print(traj2msg(xi_1))
+        # print(xi_1)
+        # msg = traj2msg(xi_1)
+        # traj = msg2traj(msg)
+        msg = obstacles2msg(self.obstacles)
+        obstacles = msg2obstacles(msg)
+        print(msg)
+        print(obstacles)
+
         while not rospy.is_shutdown():
             msg = state2msg(self.xi[0])
             # rospy.loginfo(msg)

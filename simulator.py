@@ -8,19 +8,20 @@ import time
 import drone
 
 from multiprocessing import Pool
+from queue import Queue
+import threading
 
 
 class simulator(drone.drone):
     def __init__(self):
-        self.N = 20
+        self.N = 50
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 100
+        self.total_iterations = 50
 
         # Parameters
-        self.K = 10  # Number of vehicles
+        self.K = 15  # Number of vehicles
         self.L = 4  # Number of stationary obstacles
-        self.min_dist = 1
 
         # Parameters for collision avoidance between vehicles
         self.d_x = 3  # Minimum horizontal distance
@@ -34,7 +35,9 @@ class simulator(drone.drone):
         self.drn = [] # All drones
         self.drn_list = [] # Indices of alive drones
 
-        self.hlines = []
+        self.vehicles_positions = []
+        self.vehicles = []
+        self.full_traj = []
 
         # self.obstacles = [
         #     {'xmin': -1000, 'ymin': 600, 'zmin': -1000, 'xmax': -600, 'ymax': 1000, 'zmax': 1000},
@@ -56,13 +59,6 @@ class simulator(drone.drone):
             {'xmin': 20, 'ymin': -100, 'zmin': -100, 'xmax': 100, 'ymax': -20, 'zmax': 100}
         ]
 
-        self.initialize()
-
-    def initialize(self):
-
-        self.vehicles_positions = []
-        self.vehicles = []
-        self.full_traj = []
         self.initialize_drones()
 
     def initialize_drones(self):
@@ -71,7 +67,6 @@ class simulator(drone.drone):
         self.initial_conditions = []
         for k in range(self.K):
             self.create_drone(self.xi[k], self.final_conditions[k])
-
         self.max_vel = self.drn[0].smax[3] # Max velocity
 
     def create_drone(self, xi, xf):
@@ -80,32 +75,6 @@ class simulator(drone.drone):
         self.drn[-1].set_final_condition(xf)
         self.drn_list.append(len(self.drn) - 1)
         self.set_full_traj(xi)
-
-    def start_simulation(self):
-        print("Starting Simulation")
-        t0 = time.time()
-        # Main loop for optimization
-        for iteration in range(self.total_iterations):
-            print("%d============================" % (iteration))
-            if iteration%10 == 0:
-                self.create_drone(self.xi[14], self.final_conditions[14])
-                print("Created drone")
-            # Generate new trajectories for each drone
-            for k in (self.drn_list):
-                self.prepare_and_generate(k)
-            # Check for collision
-            self.check_collisions()
-            print(self.drn_list)
-
-            # Update positions
-            self.update_vehicle_state()
-            self.update_visualization_positions()  # Update the plot after each iteration
-        t1 = time.time()
-        print("Time of execution: %f" % (t1 - t0))
-        # Optionally, keep the final plot open
-        # Initialize the plot first
-        self.plot()
-        self.create_animation()
 
     def prepare_and_generate(self, k):
         self.proximity = 2 * self.N * self.delta_t * self.max_vel
@@ -126,6 +95,32 @@ class simulator(drone.drone):
 
         # Generating trajectories
         self.drn[k].generate_traj(xi, xi_1, obstacles)
+
+    def start_simulation(self):
+        print("Starting Simulation")
+        t0 = time.time()
+        # Main loop for optimization
+        for iteration in range(self.total_iterations):
+            print("%d============================" % (iteration))
+            # if iteration%10 == 0:
+            #     self.create_drone(self.xi[14], self.final_conditions[14])
+            #     print("Created drone")
+            # Generate new trajectories for each drone
+            for k in (self.drn_list):
+                self.prepare_and_generate(k)
+            # Check for collision
+            self.check_collisions()
+            print(self.drn_list)
+
+            # Update positions
+            self.update_vehicle_state()
+            self.update_visualization_positions()  # Update the plot after each iteration
+        t1 = time.time()
+        print("Time of execution: %f" % (t1 - t0))
+        # Optionally, keep the final plot open
+        # Initialize the plot first
+        self.plot()
+        self.create_animation()
 
     def m_start_simulation(self):
         print("Starting Simulation")
@@ -148,6 +143,38 @@ class simulator(drone.drone):
 
             pool.close()
             pool.join()
+            # # for k in range(self.K):
+            # #     self.full_traj[k] = self.drn[k].full_traj
+            # # Check for collision
+            # self.check_collisions()
+            # print(self.drn_list)
+            # # Update positions
+            # self.update_vehicle_state()
+            # self.update_visualization_positions()  # Update the plot after each iteration
+        t1 = time.time()
+        print("Time of execution: %f" % (t1 - t0))
+        # Optionally, keep the final plot open
+        self.create_animation()
+
+    def m2_start_simulation(self):
+        print("Starting Simulation")
+        t0 = time.time()
+
+        # Main loop for optimization
+        for iteration in range(self.total_iterations):
+            print("============================")
+            # Generate new trajectories for each drone
+            # for k in range(self.K):
+            K = len(self.drn_list)
+            arguments = [k for k in range(K)]
+            workers = [threading.Thread(target = self.prepare_and_generate, args =(arg, )) for arg in arguments]
+            # Start working
+            for worker in workers:
+                worker.start()
+            # Wait for completion
+            for worker in workers:
+                worker.join()
+
             # # for k in range(self.K):
             # #     self.full_traj[k] = self.drn[k].full_traj
             # # Check for collision
@@ -449,7 +476,7 @@ class simulator(drone.drone):
 
 def main():
     optimization = simulator()
-    # optimization.start_simulation()
-    optimization.m_start_simulation()
-
+    # optimization.start_simulation() # 205s
+    # optimization.m_start_simulation() # 37s (invalid)
+    optimization.m2_start_simulation() # 293s (invalid)
 main()

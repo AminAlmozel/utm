@@ -72,7 +72,6 @@ class drone():
         self.set_other_drones_trajectories(xi_1)
 
         # Setup optimization program for the drone
-        # self.setup_variables()
         self.setup_variables()
         self.setup_constraints()
         self.setup_objective()
@@ -344,16 +343,15 @@ class drone():
         # Collision avoidance constraints between vehicles
         for p, vehicle in enumerate(self.k_traj):
             q = 0
-            N = self.N - 1 # The trajectory from the previous time instant
-            # N = len(vehicle[0]) # A section from the old trajectory
-            for n in range(1, N):  # i = 1 to N
-                self.m.addConstr(vehicle[0][n] - self.vehicles[q]['s'][n, 0] >= self.d_x - self.M * self.b_vars[p][n, 0], f"Collision_x_{p}_{q}_{n}")
-                self.m.addConstr(self.vehicles[q]['s'][n, 0] - vehicle[0][n] >= self.d_x - self.M * self.b_vars[p][n, 1], f"Collision_Neg_x_{p}_{q}_{n}")
-                self.m.addConstr(vehicle[1][n] - self.vehicles[q]['s'][n, 1] >= self.d_y - self.M * self.b_vars[p][n, 2], f"Collision_y_{p}_{q}_{n}")
-                self.m.addConstr(self.vehicles[q]['s'][n, 1] - vehicle[1][n] >= self.d_y - self.M * self.b_vars[p][n, 3], f"Collision_Neg_y_{p}_{q}_{n}")
-                self.m.addConstr(vehicle[2][n] - self.vehicles[q]['s'][n, 2] >= self.d_z - self.M * self.b_vars[p][n, 4],
+            N = min(len(vehicle[0]), self.N - 1) # The smaller of the prediction horizon and the given trajectories
+            for n in range(1, N + 1):  # i = 1 to N
+                self.m.addConstr(vehicle[0][n - 1] - self.vehicles[q]['s'][n, 0] >= self.d_x - self.M * self.b_vars[p][n, 0], f"Collision_x_{p}_{q}_{n}")
+                self.m.addConstr(self.vehicles[q]['s'][n, 0] - vehicle[0][n - 1] >= self.d_x - self.M * self.b_vars[p][n, 1], f"Collision_Neg_x_{p}_{q}_{n}")
+                self.m.addConstr(vehicle[1][n - 1] - self.vehicles[q]['s'][n, 1] >= self.d_y - self.M * self.b_vars[p][n, 2], f"Collision_y_{p}_{q}_{n}")
+                self.m.addConstr(self.vehicles[q]['s'][n, 1] - vehicle[1][n - 1] >= self.d_y - self.M * self.b_vars[p][n, 3], f"Collision_Neg_y_{p}_{q}_{n}")
+                self.m.addConstr(vehicle[2][n - 1] - self.vehicles[q]['s'][n, 2] >= self.d_z - self.M * self.b_vars[p][n, 4],
                                 f"Collision_z_{p}_{q}_{n}")
-                self.m.addConstr(self.vehicles[q]['s'][n, 2] - vehicle[2][n] >= self.d_z - self.M * self.b_vars[p][n, 5],
+                self.m.addConstr(self.vehicles[q]['s'][n, 2] - vehicle[2][n - 1] >= self.d_z - self.M * self.b_vars[p][n, 5],
                                 f"Collision_Neg_z_{p}_{q}_{n}")
                 self.m.addConstr(self.b_vars[p][n, 0] + self.b_vars[p][n, 1] + self.b_vars[p][n, 2] + self.b_vars[p][n, 3] + self.b_vars[p][n, 4]+ self.b_vars[p][n, 5] <= 5, f"Collision_Sum_{p}_{q}_{n}")
 
