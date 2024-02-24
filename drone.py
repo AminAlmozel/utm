@@ -82,7 +82,7 @@ class drone():
         # return the full trajectory
         self.update_vehicle_state()
         # print(self.full_traj)
-        return 1
+        return self.full_traj
 
     def set_initial_condition(self, xi):
         self.initial_conditions = []

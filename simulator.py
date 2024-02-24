@@ -6,6 +6,8 @@ from datetime import datetime
 import matplotlib.collections
 import time
 import drone
+import random
+import pandas as pd
 
 from multiprocessing import Pool
 from queue import Queue
@@ -17,7 +19,7 @@ class simulator(drone.drone):
         self.N = 50
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 50
+        self.total_iterations = 15
 
         # Parameters
         self.K = 15  # Number of vehicles
@@ -58,7 +60,6 @@ class simulator(drone.drone):
             {'xmin': -100, 'ymin': -100, 'zmin': -100, 'xmax': -20, 'ymax': -20, 'zmax': 100},
             {'xmin': 20, 'ymin': -100, 'zmin': -100, 'xmax': 100, 'ymax': -20, 'zmax': 100}
         ]
-
         self.initialize_drones()
 
     def initialize_drones(self):
@@ -94,7 +95,7 @@ class simulator(drone.drone):
         xi_1 = [self.full_traj[i] for i in drone_prox_list]
 
         # Generating trajectories
-        self.drn[k].generate_traj(xi, xi_1, obstacles)
+        return self.drn[k].generate_traj(xi, xi_1, obstacles)
 
     def start_simulation(self):
         print("Starting Simulation")
@@ -127,7 +128,11 @@ class simulator(drone.drone):
         t0 = time.time()
         # Main loop for optimization
         for iteration in range(self.total_iterations):
-            print("============================")
+            print("%d============================" % (iteration))
+            if iteration%10 == 0:
+                xi, xf = self.random_drone()
+                self.create_drone(xi, xf)
+                print("Created drone")
             # Generate new trajectories for each drone
             # for k in range(self.K):
             K = len(self.drn_list)
@@ -137,23 +142,30 @@ class simulator(drone.drone):
                 items = [(k, ) for k in range(K)]
                 for i, result in enumerate(pool.starmap(self.prepare_and_generate, items)):
                     # report the value to show progress
-                    print(result)
                     k = self.drn_list[i]
-                    # self.drn[k].full_traj = result
+                    self.drn[k].full_traj = result
 
             pool.close()
             pool.join()
-            # # for k in range(self.K):
-            # #     self.full_traj[k] = self.drn[k].full_traj
-            # # Check for collision
-            # self.check_collisions()
-            # print(self.drn_list)
-            # # Update positions
-            # self.update_vehicle_state()
-            # self.update_visualization_positions()  # Update the plot after each iteration
+            for k in range(self.K):
+                self.full_traj[k] = self.drn[k].full_traj
+            # Check for collision
+            self.check_collisions()
+            print(self.drn_list)
+            # Update positions
+            self.update_vehicle_state()
+            self.update_visualization_positions()  # Update the plot after each iteration
         t1 = time.time()
         print("Time of execution: %f" % (t1 - t0))
+        self.log()
+        print((self.vehicles_positions[0]))
+        self.vehicles_positions = []
+        self.vehicles_positions = self.read_log()
+        print((self.vehicles_positions[0]))
+
         # Optionally, keep the final plot open
+        # Initialize the plot first
+        self.plot()
         self.create_animation()
 
     def m2_start_simulation(self):
@@ -162,7 +174,7 @@ class simulator(drone.drone):
 
         # Main loop for optimization
         for iteration in range(self.total_iterations):
-            print("============================")
+            print("%d============================" % (iteration))
             # Generate new trajectories for each drone
             # for k in range(self.K):
             K = len(self.drn_list)
@@ -402,6 +414,46 @@ class simulator(drone.drone):
         else:
             print("No data available for animation.")
 
+    def random_drone(self):
+        # Choosing a random entrace
+        entrance_prob = [0.25, 0.25, 0.25, 0.25]
+        i_index = random.choices(range(4), weights=entrance_prob)[0]
+        # Choosing a random exit (except for the chosen entrace)
+        exit_prob = [0.25, 0.25, 0.25, 0.25]
+        exit_prob[i_index] = 0
+        e_index = random.choices(range(4), weights=exit_prob)[0]
+        pi = self.random_gate(i_index, 0)
+        pf = self.random_gate(e_index, 0)
+        vi, vf = self.random_state(pi, pf)
+        xi = self.list2state(pi + vi)
+        xf = self.list2state(pf + vf)
+        return xi, xf
+
+    def random_gate(self, index, z):
+        x = 95
+        y = 95
+        z = 0
+        gates = [[0, y, z],
+                 [0, -y, z],
+                 [x, 0, z],
+                 [-x, 0, z]]
+        return gates[index]
+
+    def random_state(self, xi, xf):
+        v = 2
+        x = np.array(xi)
+        y = np.zeros(3)
+        vec = y - x
+        vi = (v * vec / np.linalg.norm(vec)).tolist()
+        x = np.array(xf)
+        vec = x - y
+        vf = (v * vec / np.linalg.norm(vec)).tolist()
+        return vi, vf
+
+    def list2state(self, values):
+        keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
+        return dict(zip(keys, values))
+
     # def update_plot(self):
     #     # Check if there is data to plot
     #     if not self.vehicles_positions:
@@ -474,9 +526,19 @@ class simulator(drone.drone):
     def dist_squared(self, xi, xi_1):
         return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
 
+    def log(self):
+        print("Saving trajectories to file")
+        df = pd.DataFrame(self.vehicles_positions)
+        df.to_csv("traj.csv", index=False, header=False)
+
+    def read_log(self):
+        print("Reading trajectories from file")
+        vehicles_positions = pd.read_csv("traj.csv", delimiter=",", header=None).to_numpy().tolist()
+        return vehicles_positions
+
 def main():
     optimization = simulator()
     # optimization.start_simulation() # 205s
-    # optimization.m_start_simulation() # 37s (invalid)
-    optimization.m2_start_simulation() # 293s (invalid)
+    optimization.m_start_simulation() # 44s (invalid)
+    # optimization.m2_start_simulation() # 293s (invalid)
 main()
