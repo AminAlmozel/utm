@@ -19,7 +19,7 @@ class simulator(drone.drone):
         self.N = 50
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 15
+        self.total_iterations = 11
 
         # Parameters
         self.K = 15  # Number of vehicles
@@ -129,7 +129,7 @@ class simulator(drone.drone):
         # Main loop for optimization
         for iteration in range(self.total_iterations):
             print("%d============================" % (iteration))
-            if iteration%10 == 0:
+            if iteration%5 == 0:
                 xi, xf = self.random_drone()
                 self.create_drone(xi, xf)
                 print("Created drone")
@@ -143,12 +143,15 @@ class simulator(drone.drone):
                 for i, result in enumerate(pool.starmap(self.prepare_and_generate, items)):
                     # report the value to show progress
                     k = self.drn_list[i]
-                    self.drn[k].full_traj = result
+                    if result == -1:
+                        self.drn[k].not_collided = False
+                    else:
+                        self.drn[k].full_traj = result
 
             pool.close()
             pool.join()
-            for k in range(self.K):
-                self.full_traj[k] = self.drn[k].full_traj
+            # for k in range(self.K):
+            #     self.full_traj[k] = self.drn[k].full_traj
             # Check for collision
             self.check_collisions()
             print(self.drn_list)
@@ -158,10 +161,9 @@ class simulator(drone.drone):
         t1 = time.time()
         print("Time of execution: %f" % (t1 - t0))
         self.log()
-        print((self.vehicles_positions[0]))
+        # print((self.vehicles_positions[0]))
         self.vehicles_positions = []
         self.vehicles_positions = self.read_log()
-        print((self.vehicles_positions[0]))
 
         # Optionally, keep the final plot open
         # Initialize the plot first
@@ -533,12 +535,22 @@ class simulator(drone.drone):
 
     def read_log(self):
         print("Reading trajectories from file")
-        vehicles_positions = pd.read_csv("traj.csv", delimiter=",", header=None).to_numpy().tolist()
+        df = pd.read_csv("traj.csv", delimiter=",", header=None, skip_blank_lines=True)
+        vehicles_positions = []
+        for n in range(self.total_iterations):
+            frame = df.loc[n, :].dropna().to_numpy().tolist()
+            if n == 0:
+                print(frame)
+            vehicles_positions.append(frame)
+        # print(df[1])
+        # print(df[2])
+
+        # vehicles_positions = df.to_numpy().tolist()
         return vehicles_positions
 
 def main():
     optimization = simulator()
     # optimization.start_simulation() # 205s
-    optimization.m_start_simulation() # 44s (invalid)
+    optimization.m_start_simulation() # 44s
     # optimization.m2_start_simulation() # 293s (invalid)
 main()

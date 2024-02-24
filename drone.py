@@ -466,6 +466,7 @@ class drone():
         else:
             print("Model is infeasible")
             self.not_collided = False
+            self.full_traj = -1
 
     def get_drone_status(self):
         return self.not_collided
