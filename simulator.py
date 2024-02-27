@@ -8,6 +8,7 @@ import time
 import drone
 import random
 import pandas as pd
+import pickle as pkl
 
 from multiprocessing import Pool
 from queue import Queue
@@ -150,8 +151,6 @@ class simulator(drone.drone):
 
             pool.close()
             pool.join()
-            # for k in range(self.K):
-            #     self.full_traj[k] = self.drn[k].full_traj
             # Check for collision
             self.check_collisions()
             print(self.drn_list)
@@ -530,8 +529,14 @@ class simulator(drone.drone):
 
     def log(self):
         print("Saving trajectories to file")
-        df = pd.DataFrame(self.vehicles_positions)
-        df.to_csv("traj.csv", index=False, header=False)
+        # Its important to use binary mode
+        trajfile = open('traj.pickle', 'ab')
+
+        # source, destination
+        pkl.dump(self.vehicles_positions, trajfile)
+        trajfile.close()
+        # df = pd.DataFrame(self.vehicles_positions)
+        # df.to_csv("traj.csv", index=False, header=False)
 
     def read_log(self):
         print("Reading trajectories from file")
@@ -542,10 +547,12 @@ class simulator(drone.drone):
             if n == 0:
                 print(frame)
             vehicles_positions.append(frame)
-        # print(df[1])
-        # print(df[2])
 
         # vehicles_positions = df.to_numpy().tolist()
+        # for reading also binary mode is important
+        trajfile = open('traj.pickle', 'rb')
+        vehicles_positions = pkl.load(trajfile)
+        trajfile.close()
         return vehicles_positions
 
 def main():
