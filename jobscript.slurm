@@ -1,10 +1,17 @@
 #!/bin/bash -l
-#SBATCH --job-name=myfirstjob
-#SBATCH --time=04:00:00
+#SBATCH --job-name=utm
+#SBATCH --time=00:10:00
 #SBATCH --partition=batch
-#SBATCH --ntasks=2
-#SBATCH --cpus-per-task=4
-#SBATCH --constraint=v100
-module load cuda
-./my_application [blah]
-srun –n 2 –c 4 ./my_multithreaded_app
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=30
+#SBATCH --mem=1G
+module load gurobi/11.0.0/binary
+
+# define some environment variables
+PROJECT_DIR="$PWD"
+ENV_PREFIX="$PROJECT_DIR"/env
+
+# activate the conda environment
+module purge
+conda activate "$ENV_PREFIX"
+srun python3 simulator.py

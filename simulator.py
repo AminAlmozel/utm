@@ -1,18 +1,20 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-# from mayavi import mlab
-from datetime import datetime
-import matplotlib.collections
+# Importing standard libraries
 import time
-import drone
+from datetime import datetime
 import random
-import pandas as pd
-import pickle as pkl
-
 from multiprocessing import Pool
 from queue import Queue
 import threading
+# Importing other libraries
+import pickle as pkl
+import numpy as np
+
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import matplotlib.collections
+
+import drone
+
 
 
 class simulator(drone.drone):
@@ -160,7 +162,6 @@ class simulator(drone.drone):
         t1 = time.time()
         print("Time of execution: %f" % (t1 - t0))
         self.log()
-        # print((self.vehicles_positions[0]))
         self.vehicles_positions = []
         self.vehicles_positions = self.read_log()
 
@@ -529,27 +530,12 @@ class simulator(drone.drone):
 
     def log(self):
         print("Saving trajectories to file")
-        # Its important to use binary mode
         trajfile = open('traj.pickle', 'ab')
-
-        # source, destination
         pkl.dump(self.vehicles_positions, trajfile)
         trajfile.close()
-        # df = pd.DataFrame(self.vehicles_positions)
-        # df.to_csv("traj.csv", index=False, header=False)
 
     def read_log(self):
         print("Reading trajectories from file")
-        df = pd.read_csv("traj.csv", delimiter=",", header=None, skip_blank_lines=True)
-        vehicles_positions = []
-        for n in range(self.total_iterations):
-            frame = df.loc[n, :].dropna().to_numpy().tolist()
-            if n == 0:
-                print(frame)
-            vehicles_positions.append(frame)
-
-        # vehicles_positions = df.to_numpy().tolist()
-        # for reading also binary mode is important
         trajfile = open('traj.pickle', 'rb')
         vehicles_positions = pkl.load(trajfile)
         trajfile.close()
