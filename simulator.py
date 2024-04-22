@@ -19,10 +19,10 @@ import drone
 
 class simulator(drone.drone):
     def __init__(self):
-        self.N = 50
+        self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 11
+        self.total_iterations = 100
 
         # Parameters
         self.K = 15  # Number of vehicles
@@ -132,12 +132,11 @@ class simulator(drone.drone):
         # Main loop for optimization
         for iteration in range(self.total_iterations):
             print("%d============================" % (iteration))
-            if iteration%5 == 0:
+            if iteration%10 == 0:
                 xi, xf = self.random_drone()
                 self.create_drone(xi, xf)
                 print("Created drone")
-            # Generate new trajectories for each drone
-            # for k in range(self.K):
+
             K = len(self.drn_list)
             pool = Pool()
             with Pool() as pool:
@@ -161,9 +160,9 @@ class simulator(drone.drone):
             self.update_visualization_positions()  # Update the plot after each iteration
         t1 = time.time()
         print("Time of execution: %f" % (t1 - t0))
-        self.log()
-        self.vehicles_positions = []
-        self.vehicles_positions = self.read_log()
+        # self.log()
+        # self.vehicles_positions = []
+        # self.vehicles_positions = self.read_log()
 
         # Optionally, keep the final plot open
         # Initialize the plot first
@@ -320,19 +319,27 @@ class simulator(drone.drone):
                 i -= 1
             i += 1
         # Finding the drones in proximity
-        for i in range(len(self.drn)):
-            for j in range(i + 1, len(self.drn)):
-                d = self.dist_squared(self.initial_conditions[i], self.initial_conditions[j])
+        collided_drones = set() # Set of collided drones
+        for i in range(len(self.drn_list)):
+            for j in range(i + 1, len(self.drn_list)):
+                d1 = self.drn_list[i]
+                d2 = self.drn_list[j]
+                d = self.dist_squared(self.initial_conditions[d1], self.initial_conditions[d2])
                 if d < self.collision_warning * self.collision_warning:
                     if d < self.collision * self.collision:
-                        self.collide(i, j, d)
+                        self.collide(d1, d2, d)
+                        collided_drones.add(d1)
+                        collided_drones.add(d2)
+
+        for drone in collided_drones:
+            # self.drn_list.remove(drone)
+            pass
 
     def collide(self, d1, d2, d):
         # What to do when drones collide
         print("Collision between drone %d and %d, distance: %f" % (d1, d2, np.sqrt(d)))
         # self.drn_list.remove(d1)
         # self.drn_list.remove(d2)
-        # if (self.drn[d1])
 
     def update_visualization_positions(self):
         iteration_positions = []  # Temporary list for the current iteration

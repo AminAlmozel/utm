@@ -217,7 +217,7 @@ class drone():
         self.initial_final_condition_constraints()
         self.obstacle_avoidance_constraints()
         # self.vehicle_collision_avoidance_constraints()
-        self.fixed_vehicle_collision_avoidance_constraints()
+        # self.fixed_vehicle_collision_avoidance_constraints()
         # print("done setup constraints")
 
     def state_constraints(self):
