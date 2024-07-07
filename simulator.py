@@ -14,6 +14,7 @@ import matplotlib.animation as animation
 import matplotlib.collections
 
 import drone
+import environment
 
 
 
@@ -43,6 +44,8 @@ class simulator(drone.drone):
         self.vehicles_positions = []
         self.vehicles = []
         self.full_traj = []
+
+        self.obs = environment.env()
 
         # self.obstacles = [
         #     {'xmin': -1000, 'ymin': 600, 'zmin': -1000, 'xmax': -600, 'ymax': 1000, 'zmax': 1000},
@@ -91,6 +94,8 @@ class simulator(drone.drone):
 
         # Finding the obstacles in proximity
         # Temp solution
+        pos = self.initial_conditions[k]
+        obstacles = self.obs.nearby_obstacles(pos, self.proximity)
         obstacles = self.obstacles
 
         # Constructing the lists to be used as input to the function
@@ -551,6 +556,6 @@ class simulator(drone.drone):
 def main():
     optimization = simulator()
     # optimization.start_simulation() # 205s
-    optimization.m_start_simulation() # 44s
+    # optimization.m_start_simulation() # 44s
     # optimization.m2_start_simulation() # 293s (invalid)
 main()
