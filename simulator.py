@@ -8,6 +8,8 @@ import threading
 # Importing other libraries
 import pickle as pkl
 import numpy as np
+import geopandas as gp
+from shapely.geometry import box, Point
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -23,7 +25,7 @@ class simulator(drone.drone):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 100
+        self.total_iterations = 20
 
         # Parameters
         self.K = 15  # Number of vehicles
@@ -44,10 +46,13 @@ class simulator(drone.drone):
         self.vehicles_positions = []
         self.vehicles = []
         self.full_traj = []
-
         self.obs = environment.env()
 
-        # self.obstacles = [
+        self.dummy_obstacles()
+        self.initialize_drones()
+
+    def dummy_obstacles(self):
+        # obstacles = [
         #     {'xmin': -1000, 'ymin': 600, 'zmin': -1000, 'xmax': -600, 'ymax': 1000, 'zmax': 1000},
         #     {'xmin': 7, 'ymin': 7, 'zmin': 2, 'xmax': 9, 'ymax': 8, 'zmax': 3},
         #     {'xmin': 6, 'ymin': 1, 'zmin': 0, 'xmax': 8, 'ymax': 2, 'zmax': 1},
@@ -58,15 +63,22 @@ class simulator(drone.drone):
         #     # {'xmin': 25, 'ymin': 17, 'zmin': 0, 'xmax': 26, 'ymax': 18, 'zmax': np.random.uniform(5, 10)}
         #
         # ]
-
         # Obstacle parameters
-        self.obstacles = [
+
+        obstacles = [
             {'xmin': -100, 'ymin': 20, 'zmin': -100, 'xmax': -20, 'ymax': 100, 'zmax': 100},
             {'xmin': 20, 'ymin': 20, 'zmin': -100, 'xmax': 100, 'ymax': 100, 'zmax': 100},
             {'xmin': -100, 'ymin': -100, 'zmin': -100, 'xmax': -20, 'ymax': -20, 'zmax': 100},
             {'xmin': 20, 'ymin': -100, 'zmin': -100, 'xmax': 100, 'ymax': -20, 'zmax': 100}
         ]
-        self.initialize_drones()
+        temp_dict = []
+        for obs in obstacles:
+            boundary = [obs["xmin"], obs["ymin"], obs["xmax"], obs["ymax"]]
+            p = box(boundary[0], boundary[1], boundary[2], boundary[3])
+            height = obs["zmax"] - obs["zmin"]
+            edges = len(p.exterior.coords) - 1
+            temp_dict.append({'geom': p, 'height': [obs["zmin"], obs["zmax"]], 'freq': 1, 'edges': edges})
+        self.obstacles = temp_dict
 
     def initialize_drones(self):
         self.set_initial_state()
@@ -94,8 +106,10 @@ class simulator(drone.drone):
 
         # Finding the obstacles in proximity
         # Temp solution
-        pos = self.initial_conditions[k]
+        state = self.initial_conditions[k]
+        pos = [state['x'], state['y'], state['z']]
         obstacles = self.obs.nearby_obstacles(pos, self.proximity)
+        # print(obstacles)
         obstacles = self.obstacles
 
         # Constructing the lists to be used as input to the function
@@ -556,6 +570,6 @@ class simulator(drone.drone):
 def main():
     optimization = simulator()
     # optimization.start_simulation() # 205s
-    # optimization.m_start_simulation() # 44s
+    optimization.m_start_simulation() # 44s
     # optimization.m2_start_simulation() # 293s (invalid)
 main()

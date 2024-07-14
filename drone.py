@@ -6,6 +6,7 @@ import matplotlib.animation as animation
 # from mayavi import mlab
 import time
 import warnings
+from math import copysign
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 warnings.simplefilter(action='ignore')
@@ -21,7 +22,7 @@ class drone():
         # Parameters
         self.K = 1  # Number of vehicles
         self.K_other = 21 # number of other drones in proximity
-        self.L = 4  # Number of stationary obstacles
+        # self.L = 4  # Number of stationary obstacles
         self.min_dist = 1
 
         # Parameters for polygon approximation
@@ -94,6 +95,13 @@ class drone():
 
     def set_obstacles(self, obstacles):
         self.obstacles = obstacles
+        # Set the maximum number of edges in a polygon
+        max_edges = 0
+        for obs in obstacles:
+            if obs["edges"] > max_edges:
+                max_edges = obs["edges"]
+        self.max_edges = max_edges
+
         # for obs in obstacles:
         #      for j, key in enumerate(['xmin', 'ymin', 'zmin', 'xmax', 'ymax', 'zmax']):
         #         obstacle[key] = obs[key]
@@ -196,7 +204,7 @@ class drone():
             'u': self.m.addVars(self.N, 3, lb=[self.umin] * self.N, ub=[self.umax] * self.N, name=f"u_{p}"),
             'w': self.m.addVars(self.N, 6, name=f"w_{p}"),
             'v': self.m.addVars(self.N, 3, name=f"v_{p}"),
-            't': [self.m.addVars(self.N, 6, vtype=GRB.BINARY, name=f"t_{p}_obstacle_{c}") for c in range(self.L)],
+            't': [self.m.addVars(self.N, self.max_edges + 2, vtype=GRB.BINARY, name=f"t_{p}_obstacle_{c}") for c in range(len(self.obstacles))],
             'tc': self.m.addVars(self.N, self.N_polygon, vtype=GRB.BINARY, name=f"tc_{p}_accel")
         }
         self.vehicles.append(vehicle)
@@ -215,7 +223,8 @@ class drone():
         self.control_constraints()
         self.state_transition_constraints()
         self.initial_final_condition_constraints()
-        self.obstacle_avoidance_constraints()
+        # self.obstacle_avoidance_constraints()
+        self.general_obstacle_avoidance_constraints()
         # self.vehicle_collision_avoidance_constraints()
         # self.fixed_vehicle_collision_avoidance_constraints()
         # print("done setup constraints")
@@ -323,6 +332,34 @@ class drone():
                     self.m.addConstr(s[i, 2] <= obs['zmin'] - self.min_dist + self.M * t[i, 4], f"Obstacle_z_{c}_{p}_{i}")
                     self.m.addConstr(-s[i, 2] <= -obs['zmax'] - self.min_dist + self.M * t[i, 5], f"Obstacle_Neg_z_{c}_{p}_{i}")
                     self.m.addConstr(t[i, 0] + t[i, 1] + t[i, 2] + t[i, 3] + t[i, 4] + t[i, 5] <= 5, f"Obstacle_Sum_{c}_{p}_{i}")
+
+    def general_obstacle_avoidance_constraints(self):
+         # Add constraints and objective components for each vehicle
+        for p, vehicle in enumerate(self.vehicles):
+            s, u, w, v_vars, t_vars, tc_vars = vehicle['s'], vehicle['u'], vehicle['w'], vehicle['v'], vehicle['t'], vehicle['tc']
+            # Obstacle avoidance constraints for each vehicle 'p'
+            for c, obs in enumerate(self.obstacles):
+                t = t_vars[c]
+                p = obs["geom"]
+                # height = [0, obs["height"]]
+                height = obs["height"]
+                vertices = list(zip(*p.exterior.coords.xy))
+                for n in range (1, self.N):
+                    binary_sum = 0
+                    for i in range(len(vertices) - 1):
+                        p1 = [vertices[i][0], vertices[i][1]]
+                        p2 = [vertices[i + 1][0], vertices[i + 1][1]]
+                        a, b, c, sign = self.get_line_coeff(p1, p2)
+                        self.m.addConstr(sign * (a * s[n, 1] + b * s[n, 0] + c) <= self.M * t[n, i])
+                        binary_sum += t[n, i]
+
+                    i = self.max_edges + 2
+                    self.m.addConstr(-s[n, 2] <= -height[0] - self.min_dist + self.M * t[n, i - 2], f"Obstacle_Neg_z_{c}_{p}_{i}")
+                    self.m.addConstr(s[n, 2] <= height[1] - self.min_dist + self.M * t[n, i - 1], f"Obstacle_z_{c}_{p}_{i}")
+                    binary_sum += t[n, i - 2] + t[n, i - 1]
+                    total_sum = len(vertices)
+                    self.m.addConstr(binary_sum  <= total_sum + 2)
+
 
     def vehicle_collision_avoidance_constraints(self):
         # Collision avoidance constraints between vehicles
@@ -470,6 +507,20 @@ class drone():
 
     def get_drone_status(self):
         return self.not_collided
+
+    def get_line_coeff(self, p1, p2):
+        normal = [-(p1[1] - p2[1]), p1[0] - p2[0]]
+        if (p2[0] - p1[0] != 0):
+            a = 1
+            b = - (p2[1] - p1[1]) / (p2[0] - p1[0])
+            c = - (p1[1] + b * p1[0])
+        else:
+            a = 0
+            b = 1
+            c = -p1[0]
+        # Positive sign => larger
+        sign = copysign(1.0, a * (p1[1] + normal[1]) + b * (p1[0] + normal[0]) + c)
+        return a, b, c, sign
 
     # def update_plot(self):
     #     # Check if there is data to plot

@@ -27,7 +27,7 @@ class env():
         self.transform_coords()
         # self.plot()
         nearby = self.nearby_obstacles([4, 5, 8], 10)
-        print(nearby)
+        # print(nearby)
 
     def read_houses(self):
         # Reading the file
@@ -45,11 +45,12 @@ class env():
         for index, row in houses_df.iterrows():
             if row.geometry.geom_type == "Polygon":
                 p = row.geometry.convex_hull
+                edges = len(p.exterior.coords) - 1
                 if row["addr:housenumber"] != None:
-                    houses_dict.append({'name': row["addr:housenumber"], 'geom': p, 'freq': 1})
+                    houses_dict.append({'name': row["addr:housenumber"], 'geom': p, 'freq': 1, 'n_edges': edges})
 
                 if row["name"] != None:
-                    houses_dict.append({'name': row["name"], 'geom': p, 'freq': 1})
+                    houses_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'n_edges': edges})
 
         df = pd.DataFrame(houses_dict)
         gdf = gp.GeoDataFrame(df, crs=4326, geometry=df['geom'])
@@ -95,12 +96,15 @@ class env():
 
     def add_height(self):
         placeholder_height = 20
-
-        self.apt.insert(2, "Height", placeholder_height)
+        # placeholder_height = np.array([0, placeholder_height])
+        self.apt.insert(2, "zmin", 0)
+        self.apt.insert(2, "zmax", placeholder_height)
         name = "apts_h"
         self.apt.to_file('plot/' + name + '.geojson', driver='GeoJSON')
 
-        self.houses.insert(2, "Height", placeholder_height)
+        self.houses.insert(2, "zmin", 0)
+        self.houses.insert(2, "zmax", placeholder_height)
+        # self.houses.insert(2, "Height", placeholder_height)
         name = "houses_h"
         self.houses.to_file('plot/' + name + '.geojson', driver='GeoJSON')
         # for index, row in self.apt.iterrows():
@@ -114,7 +118,6 @@ class env():
 
         # Centering the area around that point (centroid)
         gdf.geometry = gdf.translate(-offset.x, -offset.y)
-        print(gdf.unary_union.bounds)
         self.write_geom(gdf, "translated", "blue")
         self.houses = gdf
         return gdf
