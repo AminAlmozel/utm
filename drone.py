@@ -21,8 +21,6 @@ class drone():
 
         # Parameters
         self.K = 1  # Number of vehicles
-        self.K_other = 21 # number of other drones in proximity
-        # self.L = 4  # Number of stationary obstacles
         self.min_dist = 1
 
         # Parameters for polygon approximation
@@ -32,8 +30,9 @@ class drone():
         self.theta = [2 * np.pi * k / self.N_polygon for k in range(1, self.N_polygon+1)]  # Polygon vertex angles
 
         # Bounds for states and controls
-        self.smin = [- 100, - 100, -100, - self.V_max, - self.V_max, - self.V_max]  # Position in m, Velocity in m/s
-        self.smax = [100, 100, 100, self.V_max,  self.V_max, self.V_max] # Position in m, Velocity in m/s
+        c = 50000000
+        self.smin = [- c, - c, -c, - self.V_max, - self.V_max, - self.V_max]  # Position in m, Velocity in m/s
+        self.smax = [c, c, c, self.V_max,  self.V_max, self.V_max] # Position in m, Velocity in m/s
         self.umin = [-self.A_max, -self.A_max, -self.A_max]  # Acceleration in m/s^2
         self.umax = [self.A_max, self.A_max, self.A_max]  # Acceleration in m/s^2
 
@@ -82,7 +81,6 @@ class drone():
 
         # return the full trajectory
         self.update_vehicle_state()
-        # print(self.full_traj)
         return self.full_traj
 
     def set_initial_condition(self, xi):
@@ -111,90 +109,6 @@ class drone():
         self.k_traj = xi_1
         self.K = len(self.k_traj)
 
-    def initialize(self, update='False'):
-        # Obstacle parameters
-        self.obstacles = [
-            {'xmin': -100, 'ymin': 20, 'zmin': -100, 'xmax': -20, 'ymax': 100, 'zmax': 100},
-            {'xmin': 20, 'ymin': 20, 'zmin': -100, 'xmax': 100, 'ymax': 100, 'zmax': 100},
-            {'xmin': -100, 'ymin': -100, 'zmin': -100, 'xmax': -20, 'ymax': -20, 'zmax': 100},
-            {'xmin': 20, 'ymin': -100, 'zmin': -100, 'xmax': 100, 'ymax': -20, 'zmax': 100}
-        ]
-
-        # Initial and final conditions for each vehicle
-        if update == 'False':
-            self.initial_conditions = [
-                {'x': -95, 'y': 0, 'z': 10, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 0, 'y': 95, 'z': 10, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 90, 'y': 0, 'z': 15, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 10, 'y': -95, 'z': 10, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-                {'x': 0, 'y': 0, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 0, 'y': 0, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 15, 'y': 95, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': -15, 'y': -95, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-                {'x': 95, 'y': 15, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': -95, 'y': 15, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': -15, 'y': -95, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 15, 'y': 95, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-                {'x': 95, 'y': -15, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': -95, 'y': 15, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-                {'x': -95, 'y': -15, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': -95, 'y': -15, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-                {'x': 95, 'y': -15, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 95, 'y': 15, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-                {'x': -15, 'y': 95, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': 15, 'y': -95, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-                {'x': 15, 'y': -95, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-                {'x': -15, 'y': 95, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2}
-
-                # {'x': 2, 'y': 1, 'xdot': 0, 'ydot': 0}
-                ]
-            # print("================== at first", self.initial_conditions)
-        # else:
-        #     print("================== iteration", self.initial_conditions)
-
-        self.final_conditions = [
-            {'x': 95, 'y': 10, 'z': 10, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 10, 'y': -95, 'z': 10, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': -95, 'y': 0, 'z': 10, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 0, 'y': 95, 'z': 10, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-
-            {'x': 0, 'y': 0, 'z': 95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 0, 'y': 0, 'z': -95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': -15, 'y': -95, 'z': -95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 15, 'y': 95, 'z': -95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-
-            {'x': -95, 'y': -15, 'z': -95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 95, 'y': -15, 'z': -95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 15, 'y': 95, 'z': 95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': -15, 'y': -95, 'z': 95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-
-
-            {'x': -95, 'y': 15, 'z': -95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 95, 'y': -15, 'z': 95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-
-            {'x': 95, 'y': 15, 'z': -95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': 95, 'y': 15, 'z': 95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-
-            {'x': -95, 'y': 15, 'z': 95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-            {'x': -95, 'y': -15, 'z': 95, 'xdot': 2, 'ydot': 2, 'zdot': 2},
-
-            {'x': 15, 'y': -95, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-            {'x': -15, 'y': 95, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-
-            {'x': -15, 'y': 95, 'z': 95, 'xdot': 3, 'ydot': 3, 'zdot': 2},
-            {'x': 15, 'y': -95, 'z': -95, 'xdot': 3, 'ydot': 3, 'zdot': 2}
-            # {'x': 9, 'y': 10, 'xdot': 0, 'ydot': 0}
-            # {'x': 8, 'y': 2, 'xdot': 0, 'ydot': 0},
-            # {'x': 13, 'y': 9, 'xdot': 0, 'ydot': 0}
-        ]
-
     def setup_variables(self):
         self.vehicles = []
         # Create variables for the vehicle
@@ -211,11 +125,8 @@ class drone():
 
         # Create binary variables for collision avoidance between each pair of vehicles
         self.b_vars = {}
-        # print(self.K)
         for p in range(self.K): # 0, 1
             self.b_vars[p] = self.m.addVars(self.N, 6, vtype=GRB.BINARY, name=f"b_{p}")
-
-        # print("Done setup_variable")
         return 0
 
     def setup_constraints(self):
@@ -224,7 +135,7 @@ class drone():
         self.state_transition_constraints()
         self.initial_final_condition_constraints()
         # self.obstacle_avoidance_constraints()
-        self.general_obstacle_avoidance_constraints()
+        # self.general_obstacle_avoidance_constraints()
         # self.vehicle_collision_avoidance_constraints()
         # self.fixed_vehicle_collision_avoidance_constraints()
         # print("done setup constraints")
@@ -312,7 +223,6 @@ class drone():
         # Add constraints and objective components for each vehicle
         for p, vehicle in enumerate(self.vehicles):
             s, u, w, v_vars, t_vars, tc_vars = vehicle['s'], vehicle['u'], vehicle['w'], vehicle['v'], vehicle['t'], vehicle['tc']
-
             # Initial and final conditions
             self.m.addConstrs((s[0, j] == self.initial_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Initial_{p}")
             # self.m.addConstrs((s[N - 1, j] == self.final_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Final_{p}")
@@ -359,7 +269,6 @@ class drone():
                     binary_sum += t[n, i - 2] + t[n, i - 1]
                     total_sum = len(vertices)
                     self.m.addConstr(binary_sum  <= total_sum + 2)
-
 
     def vehicle_collision_avoidance_constraints(self):
         # Collision avoidance constraints between vehicles

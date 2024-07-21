@@ -23,6 +23,7 @@ class env():
     def __init__(self):
         self.read_houses()
         self.read_apartments()
+        self.read_restaurants()
         self.add_height()
         self.transform_coords()
         # self.plot()
@@ -86,9 +87,52 @@ class env():
         df = pd.DataFrame(apt_dict)
         gdf = gp.GeoDataFrame(df, crs=4326, geometry=df['geom'])
         del gdf['geom']
-        self.apt = gdf
+        self.apts = gdf
         color = "orange"
         name = "apts"
+        gdf["stroke"] = color
+        gdf["marker-color"] = color
+        gdf["fill"] = color
+        gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
+
+    def read_restaurants(self):
+        # Reading the file
+        filename = "env/restaurants.geojson"
+        # filename = "env/cafe.geojson"
+        file = open(filename)
+        orig_df = gp.read_file(file)
+
+        # Name, point, freq
+        # Putting the restaurants into a dictionary
+        restaurant_dict = []
+        for index, row in orig_df.iterrows():
+            if row.geometry.geom_type == "Polygon":
+                p = row.geometry.centroid
+            else:
+                p = row.geometry
+            if row["amenity"] == "restaurant":
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "restaurant"})
+
+            if row["amenity"] == "fast_food":
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "fast_food"})
+
+        filename = "env/cafe.geojson"
+        file = open(filename)
+        orig_df = gp.read_file(file)
+        for index, row in orig_df.iterrows():
+            if row.geometry.geom_type == "Polygon":
+                p = row.geometry.centroid
+            else:
+                p = row.geometry
+            if row["amenity"] == "cafe":
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "cafe"})
+
+        df = pd.DataFrame(restaurant_dict)
+        gdf = gp.GeoDataFrame(df, crs=4326, geometry=df['geom'])
+        del gdf['geom']
+        self.restaurants = gdf
+        color = "orange"
+        name = "restaurants"
         gdf["stroke"] = color
         gdf["marker-color"] = color
         gdf["fill"] = color
@@ -97,30 +141,32 @@ class env():
     def add_height(self):
         placeholder_height = 20
         # placeholder_height = np.array([0, placeholder_height])
-        self.apt.insert(2, "zmin", 0)
-        self.apt.insert(2, "zmax", placeholder_height)
+        self.apts.insert(2, "zmin", 0)
+        self.apts.insert(2, "zmax", placeholder_height)
         name = "apts_h"
-        self.apt.to_file('plot/' + name + '.geojson', driver='GeoJSON')
+        self.apts.to_file('plot/' + name + '.geojson', driver='GeoJSON')
 
         self.houses.insert(2, "zmin", 0)
         self.houses.insert(2, "zmax", placeholder_height)
         # self.houses.insert(2, "Height", placeholder_height)
         name = "houses_h"
         self.houses.to_file('plot/' + name + '.geojson', driver='GeoJSON')
-        # for index, row in self.apt.iterrows():
+        # for index, row in self.apts.iterrows():
 
     def transform_coords(self):
-        gdf = self.houses
-        # Converting to meters projection
-        gdf.to_crs(epsg=20437, inplace=True)
-        # Finding the geometric center of the geometries
-        offset = gdf.unary_union.centroid
+        # gdf = self.houses
+        # # Converting to meters projection
+        # gdf.to_crs(epsg=20437, inplace=True)
+        # # Finding the geometric center of the geometries
+        # offset = gdf.unary_union.centroid
 
-        # Centering the area around that point (centroid)
-        gdf.geometry = gdf.translate(-offset.x, -offset.y)
-        self.write_geom(gdf, "translated", "blue")
-        self.houses = gdf
-        return gdf
+        # # Centering the area around that point (centroid)
+        # # gdf.geometry = gdf.translate(-offset.x, -offset.y)
+        # self.houses = gdf
+        # Converting to meters projection
+        self.houses.to_crs(epsg=20437, inplace=True)
+        self.apts.to_crs(epsg=20437, inplace=True)
+        self.restaurants.to_crs(epsg=20437, inplace=True)
 
     def write_geom(self, gdf, name, color):
         s = gdf
@@ -239,6 +285,54 @@ class env():
         position = Point(pos[0], pos[1], pos[2])
         dist = self.houses.distance(position)
         return self.houses[dist<=range]
+
+    def random_mission(self, tod):
+        restaurant, pi = self.random_restaurant(tod)
+        vi = self.random_state(tod, restaurant)
+
+        # apt, pf = self.random_apt(tod, restaurant)
+        house, pf = self.random_house(tod, restaurant)
+        vf = self.random_state(tod, house)
+        print("Going from %s to %s" % (restaurant["name"], house["name"]))
+        xi = pi + vi
+        xf = pf + vf
+        return xi, xf
+
+    def random_restaurant(self, tod):
+        zi = 30
+        n = self.restaurants.shape[0] - 1
+        # Using uniform distribution
+        i = random.randint(0, n)
+        temp = self.restaurants.iloc[i].geometry
+        p = [temp.x, temp.y, zi]
+        return self.restaurants.iloc[i], p
+
+    def random_house(self, tod, restaurant):
+        zi = 30
+        n = self.houses.shape[0] - 1
+        # Using uniform distribution
+        i = random.randint(0, n)
+        temp = self.houses.iloc[i].geometry.centroid
+        p = [temp.x, temp.y, zi]
+        return self.houses.iloc[i], p
+
+    def random_apt(self, tod, restaurant):
+        zi = 30
+        n = self.apts.shape[0] - 1
+        # Using uniform distribution
+        i = random.randint(0, n)
+        temp = self.apts.iloc[i].geometry.centroid
+        p = [temp.x, temp.y, 30]
+        return self.apts.iloc[i], p
+
+    def random_state(self, tod, loc):
+        min_v = 0
+        max_v = 1
+        v = []
+        for i in range(3):
+            v.append(random.uniform(min_v, max_v))
+        v = [10, 10, 0]
+        return v
 
 
 # def main():

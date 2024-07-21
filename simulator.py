@@ -17,6 +17,7 @@ import matplotlib.collections
 
 import drone
 import environment
+import myio
 
 
 
@@ -25,11 +26,11 @@ class simulator(drone.drone):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 20
+        self.total_iterations = 3
 
         # Parameters
-        self.K = 15  # Number of vehicles
-        self.L = 4  # Number of stationary obstacles
+        self.K = 2  # Number of vehicles
+        # self.L = 4  # Number of stationary obstacles
 
         # Parameters for collision avoidance between vehicles
         self.d_x = 3  # Minimum horizontal distance
@@ -41,6 +42,7 @@ class simulator(drone.drone):
 
         self.vehicles_positions = []
         self.drn = [] # All drones
+        self.drones = []
         self.drn_list = [] # Indices of alive drones
 
         self.vehicles_positions = []
@@ -85,10 +87,20 @@ class simulator(drone.drone):
         self.set_final_state()
         self.initial_conditions = []
         for k in range(self.K):
-            self.create_drone(self.xi[k], self.final_conditions[k])
+            xi, xf = self.obs.random_mission(0)
+            xi = self.list2state(xi)
+            xf = self.list2state(xf)
+            # self.create_drone(self.xi[k], self.final_conditions[k], 0)
+            self.create_drone(xi, xf, 0)
         self.max_vel = self.drn[0].smax[3] # Max velocity
 
-    def create_drone(self, xi, xf):
+    def create_drone(self, xi, xf, n):
+        # Add which part of the mission it's in
+        # Add the state of the drone
+        d = {"id": len(self.drn),
+                 "born": n,
+                 "trajs": []}
+        self.drones.append(d)
         self.drn.append(drone.drone())
         self.initial_conditions.append(xi)
         self.drn[-1].set_final_condition(xf)
@@ -151,10 +163,13 @@ class simulator(drone.drone):
         # Main loop for optimization
         for iteration in range(self.total_iterations):
             print("%d============================" % (iteration))
-            if iteration%10 == 0:
-                xi, xf = self.random_drone()
-                self.create_drone(xi, xf)
-                print("Created drone")
+            # if iteration%10 == 0:
+            #     # xi, xf = self.random_drone()
+            #     xi, xf = self.obs.random_mission(0)
+            #     xi = self.list2state(xi)
+            #     xf = self.list2state(xf)
+            #     self.create_drone(xi, xf, iteration)
+            #     print("Created drone")
 
             K = len(self.drn_list)
             pool = Pool()
@@ -179,14 +194,24 @@ class simulator(drone.drone):
             self.update_visualization_positions()  # Update the plot after each iteration
         t1 = time.time()
         print("Time of execution: %f" % (t1 - t0))
+        # for i in range(len(self.drones)):
+        #     print(self.drones[i])
         # self.log()
         # self.vehicles_positions = []
         # self.vehicles_positions = self.read_log()
 
+        self.log_dict()
+        self.vehicles_positions = []
+        temp = self.read_log_dict()
+        # print(len(temp[-1]["trajs"]))
+        # print(len(temp[-2]["trajs"]))
+        self.log_to_json()
+
+
         # Optionally, keep the final plot open
         # Initialize the plot first
-        self.plot()
-        self.create_animation()
+        # self.plot()
+        # self.create_animation()
 
     def m2_start_simulation(self):
         print("Starting Simulation")
@@ -313,6 +338,7 @@ class simulator(drone.drone):
     def update_vehicle_state(self):
         for k in self.drn_list:
             self.full_traj[k] = self.drn[k].full_traj
+            self.drones[k]["trajs"].append(self.drn[k].full_traj)
         for i, vehicle in enumerate(self.full_traj):
             # Extract positions and velocities from the model's solution
             x_position = vehicle[0][0]
@@ -323,9 +349,8 @@ class simulator(drone.drone):
             z_velocity = vehicle[5][0]
 
             # Update the initial conditions for the next iteration
-            self.initial_conditions[i] = {
-                'x': x_position, 'y': y_position, 'z': z_position, 'xdot': x_velocity, 'ydot': y_velocity, 'zdot': z_velocity
-            }
+            state = [x_position, y_position, z_position, x_velocity, y_velocity, z_velocity]
+            self.initial_conditions[i] = self.list2state(state)
 
     def check_collisions(self):
         # for k in (self.drn_list):
@@ -482,50 +507,6 @@ class simulator(drone.drone):
         keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
         return dict(zip(keys, values))
 
-    # def update_plot(self):
-    #     # Check if there is data to plot
-    #     if not self.vehicles_positions:
-    #         return  # No data to plot
-    #
-    #     # Ensure the number of position sets matches the number of lines
-    #     latest_positions = self.vehicles_positions[-1]  # Get the latest positions
-    #     if len(latest_positions) != len(self.lines):
-    #         raise ValueError("Mismatch between the number of vehicles and plot lines.")
-    #
-    #
-    #     for idx, vehicle_position in enumerate(latest_positions):
-    #         x, y, z = vehicle_position
-    #         self.lines[idx].set_data([x], [y])
-    #         self.lines[idx].set_3d_properties([z])
-    #
-    #     for idx, vehicle in enumerate(self.vehicles_horizon):
-    #         # print(len(vehicle))
-    #         x, y, z = vehicle
-    #         self.lines[idx].set_data(x, y)
-    #         self.lines[idx].set_3d_properties(z)
-    #
-    #
-    #     plt.draw()
-    #     plt.pause(0.05)  # Pause to update the plot
-
-    # def create_animation(self):
-    #     def update(frame):
-    #         # Clear previous lines
-    #         # Remove existing lines from the plot
-    #         for line in self.ax.lines[:]:
-    #             line.remove()
-    #
-    #
-    #         for vehicle in self.vehicles_positions[frame]:
-    #             x, y, z = vehicle
-    #             self.ax.plot(x, y, z, 'o-',linewidth=1, markersize=1)
-    #
-    #     if self.vehicles_positions:
-    #         ani = animation.FuncAnimation(self.fig, update, frames=len(self.vehicles_positions), repeat=False)
-    #         plt.show()
-    #     else:
-    #         print("No data available for animation.")
-
     def draw_box(self, ax, obs, color='gray', alpha=0.3):
         """Draws a 3D box (cuboid) representing an obstacle."""
         # Define the corners of the obstacle
@@ -556,8 +537,8 @@ class simulator(drone.drone):
 
     def log(self):
         print("Saving trajectories to file")
-        trajfile = open('traj.pickle', 'ab')
-        pkl.dump(self.vehicles_positions, trajfile)
+        trajfile = open('traj.pickle', 'ab') # Change to wb if it doesn't work
+        pkl.dump(self.vehicles_positions, trajfile, protocol=pkl.HIGHEST_PROTOCOL)
         trajfile.close()
 
     def read_log(self):
@@ -566,6 +547,35 @@ class simulator(drone.drone):
         vehicles_positions = pkl.load(trajfile)
         trajfile.close()
         return vehicles_positions
+
+    def log_dict(self):
+        print("Saving trajectories to file")
+        trajfile = open('traj2.pickle', 'ab') # Change to wb if it doesn't work
+        pkl.dump(self.drones, trajfile, protocol=pkl.HIGHEST_PROTOCOL)
+        trajfile.close()
+
+    def read_log_dict(self):
+        print("Reading trajectories from file")
+        trajfile = open('traj2.pickle', 'rb')
+        vehicles_positions = pkl.load(trajfile)
+        trajfile.close()
+        return vehicles_positions
+
+    def log_to_json(self):
+        trajs = []
+        io = myio.myio()
+        for drone in self.drones:
+            t = []
+            for traj in drone["trajs"]:
+                t.append(traj[0])
+            ls = io.traj_to_linestring(t)
+            trajs.append(ls)
+        df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
+        print(df.geometry[0])
+        df.to_crs(crs=4326, inplace=True)
+        trajs = df.geometry
+        io.write_geom(trajs, "trajs", "blue")
+
 
 def main():
     optimization = simulator()

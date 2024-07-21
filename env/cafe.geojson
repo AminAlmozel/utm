@@ -1,0 +1,165 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2024-07-21T12:29:16Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/510013066",
+        "address": "Main Campus Spine, Building 2",
+        "amenity": "cafe",
+        "cuisine": "american",
+        "name": "House of Donuts"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1056561,
+          22.3072035
+        ]
+      },
+      "id": "node/510013066"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/512004373",
+        "address": "Atrium, Level 2, Admin Building",
+        "amenity": "cafe",
+        "name": "The Coffee Bean & Tea Leaf",
+        "url": "http://coffeebean.com/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1047889,
+          22.3100805
+        ]
+      },
+      "id": "node/512004373"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/538152672",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Discovery Square",
+        "address": "Discoery Square",
+        "amenity": "cafe",
+        "brand": "The Coffee Bean & Tea Leaf",
+        "brand:wikidata": "Q1141384",
+        "cuisine": "coffee_shop",
+        "internet_access": "wlan",
+        "name": "The Coffee Bean & Tea Leaf",
+        "opening_hours": "Mo-Su 08:00-22:00",
+        "phone": "+966128024065",
+        "takeaway": "yes",
+        "url": "http://coffeebean.com/",
+        "wlan:eduroam": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1018834,
+          22.3113609
+        ]
+      },
+      "id": "node/538152672"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/633286374",
+        "address": "Main Campus Spine, Building 2",
+        "amenity": "cafe",
+        "internet_access": "wlan",
+        "name": "The Sandwich Gallery",
+        "opening_hours": "Sa-Th 08:00-17:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1054009,
+          22.3075972
+        ]
+      },
+      "id": "node/633286374"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/801885642",
+        "amenity": "cafe",
+        "name": "Coffee Republic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1025522,
+          22.3107886
+        ]
+      },
+      "id": "node/801885642"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1347651729",
+        "amenity": "cafe",
+        "cuisine": "Pastry",
+        "name": "Saadeddin",
+        "phone": "+966128024085"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1003982,
+          22.3097375
+        ]
+      },
+      "id": "node/1347651729"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1949187268",
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "internet_access": "wlan",
+        "name": "Joffrey's Coffee & Tea Company",
+        "opening_hours": "08:00-17:00; Fr off; Sa 10:00-16:00",
+        "phone": "+966128024069",
+        "wlan:eduroam": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.104958,
+          22.3082139
+        ]
+      },
+      "id": "node/1949187268"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4417211056",
+        "amenity": "cafe",
+        "internet_access": "wlan",
+        "name": "IRC Deli",
+        "opening_hours": "09:00-21:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.0917602,
+          22.3167503
+        ]
+      },
+      "id": "node/4417211056"
+    }
+  ]
+}

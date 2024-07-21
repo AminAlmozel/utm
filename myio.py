@@ -326,6 +326,16 @@ class myio:
         print(routes)
         return routes
 
+    def traj_to_linestring(self, traj):
+        points = []
+        print(traj)
+        for i in range(len(traj)):
+            # point = Point(traj[i][0], traj[i][1], traj[i][2])
+            point = Point(traj[i][1], traj[i][0])
+            points.append(point)
+        s_line = LineString(points)
+        return s_line
+
     def write_highways(self, routes, name, color):
         geom = []
         for i in range(len(routes)):
