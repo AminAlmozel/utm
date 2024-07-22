@@ -26,10 +26,10 @@ class simulator(drone.drone):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 3
+        self.total_iterations = 300
 
         # Parameters
-        self.K = 2  # Number of vehicles
+        self.K = 20  # Number of vehicles
         # self.L = 4  # Number of stationary obstacles
 
         # Parameters for collision avoidance between vehicles
@@ -567,11 +567,12 @@ class simulator(drone.drone):
         for drone in self.drones:
             t = []
             for traj in drone["trajs"]:
-                t.append(traj[0])
+                # point = Point(traj[0][0], traj[1][0], traj[2][0])
+                point = [traj[0][0], traj[1][0], traj[2][0]]
+                t.append(point)
             ls = io.traj_to_linestring(t)
             trajs.append(ls)
         df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
-        print(df.geometry[0])
         df.to_crs(crs=4326, inplace=True)
         trajs = df.geometry
         io.write_geom(trajs, "trajs", "blue")

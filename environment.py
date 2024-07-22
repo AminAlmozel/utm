@@ -299,7 +299,9 @@ class env():
         return xi, xf
 
     def random_restaurant(self, tod):
-        zi = 30
+        zmin = 20
+        zmax = 30
+        zi = random.randint(zmin, zmax)
         n = self.restaurants.shape[0] - 1
         # Using uniform distribution
         i = random.randint(0, n)
@@ -308,7 +310,9 @@ class env():
         return self.restaurants.iloc[i], p
 
     def random_house(self, tod, restaurant):
-        zi = 30
+        zmin = 20
+        zmax = 30
+        zi = random.randint(zmin, zmax)
         n = self.houses.shape[0] - 1
         # Using uniform distribution
         i = random.randint(0, n)
@@ -317,7 +321,9 @@ class env():
         return self.houses.iloc[i], p
 
     def random_apt(self, tod, restaurant):
-        zi = 30
+        zmin = 20
+        zmax = 30
+        zi = random.randint(zmin, zmax)
         n = self.apts.shape[0] - 1
         # Using uniform distribution
         i = random.randint(0, n)
