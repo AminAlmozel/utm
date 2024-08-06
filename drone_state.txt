@@ -1,0 +1,11 @@
+d = {"id": len(self.drn),
+            "born": n,
+            "trajs": [],
+            "alive": 1, # Alive, 0 is dead
+            "state": xi,
+            "mission": {
+                "type": "delivery",
+                "progress": 0,
+                "waypoints": [xf, xi] # Deliver to the final destination, then come back to the original place
+            },
+            "outcome": "in progress"}

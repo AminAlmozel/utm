@@ -154,15 +154,6 @@ class env():
         # for index, row in self.apts.iterrows():
 
     def transform_coords(self):
-        # gdf = self.houses
-        # # Converting to meters projection
-        # gdf.to_crs(epsg=20437, inplace=True)
-        # # Finding the geometric center of the geometries
-        # offset = gdf.unary_union.centroid
-
-        # # Centering the area around that point (centroid)
-        # # gdf.geometry = gdf.translate(-offset.x, -offset.y)
-        # self.houses = gdf
         # Converting to meters projection
         self.houses.to_crs(epsg=20437, inplace=True)
         self.apts.to_crs(epsg=20437, inplace=True)
@@ -337,7 +328,7 @@ class env():
         v = []
         for i in range(3):
             v.append(random.uniform(min_v, max_v))
-        v = [10, 10, 0]
+        v = [0, 0, 0]
         return v
 
 

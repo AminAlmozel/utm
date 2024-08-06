@@ -1,6 +1,7 @@
 import geopandas as gp
 import pandas as pd
 import numpy as np
+import pickle as pkl
 
 from shapely.geometry import LineString, Point, Polygon, box
 # from shapely.ops import nearest_points
@@ -326,7 +327,7 @@ class myio:
         print(routes)
         return routes
 
-    def traj_to_linestring(self, traj):
+    def traj_to_linestring(traj):
         points = []
         for i in range(len(traj)):
             point = Point(traj[i][0], traj[i][1], traj[i][2]) # 3D trajectory
@@ -356,7 +357,7 @@ class myio:
         traj_gdf["stroke-width"] = 3
         traj_gdf.to_file("plot/" + name + ".geojson", driver='GeoJSON')
 
-    def write_geom(self, geom, name, color):
+    def write_geom(geom, name, color):
         s = gp.GeoDataFrame(crs=4326, geometry=geom)
         s["stroke"] = color
         s["marker-color"] = color
@@ -411,6 +412,34 @@ class myio:
         s["marker-color"] = color
         s["fill"] = color
         s.to_file('plot/circles_' + color + '.geojson', driver='GeoJSON')
+
+    def log_dict(drones):
+        print("Saving trajectories to file")
+        trajfile = open('traj.pickle', 'ab') # Change to wb if it doesn't work
+        pkl.dump(drones, trajfile, protocol=pkl.HIGHEST_PROTOCOL)
+        trajfile.close()
+
+    def read_log_dict():
+        print("Reading trajectories from file")
+        trajfile = open('traj.pickle', 'rb')
+        vehicles_positions = pkl.load(trajfile)
+        trajfile.close()
+        return vehicles_positions
+
+    def log_to_json(drones):
+        trajs = []
+        for drone in drones:
+            t = []
+            for traj in drone["trajs"]:
+                # point = Point(traj[0][0], traj[1][0], traj[2][0])
+                point = [traj[0][0], traj[1][0], traj[2][0]]
+                t.append(point)
+            ls = myio.traj_to_linestring(t)
+            trajs.append(ls)
+        df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
+        df.to_crs(crs=4326, inplace=True)
+        trajs = df.geometry
+        myio.write_geom(trajs, "trajs", "blue")
 
     def combine_json_files(self, list, output):
         concat_gdf = []

@@ -25,8 +25,8 @@ class drone():
 
         # Parameters for polygon approximation
         self.V_min = 0  # Minimum velocity
-        self.V_max = 20 # Maximum velocity (for bounding purposes)
-        self.A_max = 3  # Maximum acceleration (already defined)
+        self.V_max = 40 # Maximum velocity (for bounding purposes) / was 20 m/s
+        self.A_max = 10  # Maximum acceleration (already defined) / was 3 m/s^2
         self.theta = [2 * np.pi * k / self.N_polygon for k in range(1, self.N_polygon+1)]  # Polygon vertex angles
 
         # Bounds for states and controls
@@ -47,7 +47,7 @@ class drone():
         self.d_y = d_min  # Minimum vertical distance
         self.d_z = d_min  # Minimum vertical distance
 
-        self.M = 100000  # Large positive number for 'big-M' method
+        self.M = 10000000  # Large positive number for 'big-M' method
 
         self.vehicles_positions = []
         self.vehicles = []
@@ -135,7 +135,7 @@ class drone():
         self.state_transition_constraints()
         self.initial_final_condition_constraints()
         # self.obstacle_avoidance_constraints()
-        # self.general_obstacle_avoidance_constraints()
+        self.general_obstacle_avoidance_constraints()
         # self.vehicle_collision_avoidance_constraints()
         # self.fixed_vehicle_collision_avoidance_constraints()
         # print("done setup constraints")
@@ -256,6 +256,7 @@ class drone():
                 vertices = list(zip(*p.exterior.coords.xy))
                 for n in range (1, self.N):
                     binary_sum = 0
+                    # print(vertices)
                     for i in range(len(vertices) - 1):
                         p1 = [vertices[i][0], vertices[i][1]]
                         p2 = [vertices[i + 1][0], vertices[i + 1][1]]
@@ -267,8 +268,10 @@ class drone():
                     self.m.addConstr(-s[n, 2] <= -height[0] - self.min_dist + self.M * t[n, i - 2], f"Obstacle_Neg_z_{c}_{p}_{i}")
                     self.m.addConstr(s[n, 2] <= height[1] - self.min_dist + self.M * t[n, i - 1], f"Obstacle_z_{c}_{p}_{i}")
                     binary_sum += t[n, i - 2] + t[n, i - 1]
-                    total_sum = len(vertices)
-                    self.m.addConstr(binary_sum  <= total_sum + 2)
+                    total_sum = len(vertices) - 1 # -1 Because shapley rings double count a vertex
+                    total_sum += 2 # for the top and bottom constraints (height)
+                    # Total sum has to be less than the number of half-plane constraints by one
+                    self.m.addConstr(binary_sum  <= total_sum - 1)
 
     def vehicle_collision_avoidance_constraints(self):
         # Collision avoidance constraints between vehicles

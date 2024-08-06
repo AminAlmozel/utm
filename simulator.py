@@ -4,12 +4,12 @@ from datetime import datetime
 import random
 from multiprocessing import Pool
 from queue import Queue
-import threading
+# import threading
 # Importing other libraries
-import pickle as pkl
 import numpy as np
 import geopandas as gp
 from shapely.geometry import box, Point
+import shapely
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -17,7 +17,7 @@ import matplotlib.collections
 
 import drone
 import environment
-import myio
+from myio import myio as io
 
 
 
@@ -26,11 +26,10 @@ class simulator(drone.drone):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 300
+        self.total_iterations = 1000
 
         # Parameters
-        self.K = 20  # Number of vehicles
-        # self.L = 4  # Number of stationary obstacles
+        self.K = 4  # Number of vehicles
 
         # Parameters for collision avoidance between vehicles
         self.d_x = 3  # Minimum horizontal distance
@@ -40,12 +39,10 @@ class simulator(drone.drone):
         self.collision = 3
         self.collision_warning = 5
 
-        self.vehicles_positions = []
-        self.drn = [] # All drones
-        self.drones = []
+        self.drn = [] # All drones objects
+        self.drones = [] # Drone dictionaries
         self.drn_list = [] # Indices of alive drones
 
-        self.vehicles_positions = []
         self.vehicles = []
         self.full_traj = []
         self.obs = environment.env()
@@ -76,7 +73,10 @@ class simulator(drone.drone):
         temp_dict = []
         for obs in obstacles:
             boundary = [obs["xmin"], obs["ymin"], obs["xmax"], obs["ymax"]]
-            p = box(boundary[0], boundary[1], boundary[2], boundary[3])
+            p = box(boundary[0], boundary[1], boundary[2], boundary[3], ccw=True)
+            # print(is_ccw(p))
+            # print(shapely.is_ccw(p))
+            # shapely.geometry.polygon.orient(p, sign=1)
             height = obs["zmax"] - obs["zmin"]
             edges = len(p.exterior.coords) - 1
             temp_dict.append({'geom': p, 'height': [obs["zmin"], obs["zmax"]], 'freq': 1, 'edges': edges})
@@ -99,7 +99,15 @@ class simulator(drone.drone):
         # Add the state of the drone
         d = {"id": len(self.drn),
                  "born": n,
-                 "trajs": []}
+                 "trajs": [],
+                 "alive": 1, # Alive, 0 is dead
+                 "state": xi,
+                 "mission": {
+                     "type": "delivery",
+                     "progress": 0,
+                     "waypoints": [xf, xi], # Deliver to the final destination, then come back to the original place
+                     "status":"in progress"
+                 }}
         self.drones.append(d)
         self.drn.append(drone.drone())
         self.initial_conditions.append(xi)
@@ -112,20 +120,23 @@ class simulator(drone.drone):
         drone_prox_list = []
         # Finding the drones in proximity
         for i in self.drn_list:
-            d = self.dist_squared(self.initial_conditions[i], self.initial_conditions[k])
+            # d = self.dist_squared(self.initial_conditions[i], self.initial_conditions[k])
+            d = self.dist_squared(self.drones[i]["state"], self.drones[k]["state"])
             if d < self.proximity * self.proximity and i != k:
                 drone_prox_list.append(i)
 
         # Finding the obstacles in proximity
         # Temp solution
-        state = self.initial_conditions[k]
+        state = self.drones[k]["state"]
         pos = [state['x'], state['y'], state['z']]
         obstacles = self.obs.nearby_obstacles(pos, self.proximity)
         # print(obstacles)
         obstacles = self.obstacles
 
         # Constructing the lists to be used as input to the function
-        xi = self.initial_conditions[k]
+        # xi = self.initial_conditions[k]
+        xi = self.drones[k]["state"]
+        # xi_1 = [self.full_traj[i] for i in drone_prox_list]
         xi_1 = [self.full_traj[i] for i in drone_prox_list]
 
         # Generating trajectories
@@ -149,7 +160,6 @@ class simulator(drone.drone):
 
             # Update positions
             self.update_vehicle_state()
-            self.update_visualization_positions()  # Update the plot after each iteration
         t1 = time.time()
         print("Time of execution: %f" % (t1 - t0))
         # Optionally, keep the final plot open
@@ -171,6 +181,11 @@ class simulator(drone.drone):
             #     self.create_drone(xi, xf, iteration)
             #     print("Created drone")
 
+            # K = len(self.drn_list)
+            self.drn_list = []
+            for k, drone in enumerate(self.drones):
+                if drone["alive"] == 1:
+                    self.drn_list.append(k)
             K = len(self.drn_list)
             pool = Pool()
             with Pool() as pool:
@@ -186,64 +201,24 @@ class simulator(drone.drone):
 
             pool.close()
             pool.join()
-            # Check for collision
-            self.check_collisions()
-            print(self.drn_list)
-            # Update positions
-            self.update_vehicle_state()
-            self.update_visualization_positions()  # Update the plot after each iteration
+            self.update()
+
         t1 = time.time()
-        print("Time of execution: %f" % (t1 - t0))
-        # for i in range(len(self.drones)):
-        #     print(self.drones[i])
-        # self.log()
-        # self.vehicles_positions = []
-        # self.vehicles_positions = self.read_log()
+        print("Time of execution: %.2f" % (t1 - t0))
 
-        self.log_dict()
-        self.vehicles_positions = []
-        temp = self.read_log_dict()
-        # print(len(temp[-1]["trajs"]))
-        # print(len(temp[-2]["trajs"]))
-        self.log_to_json()
+        io.log_dict(self.drones)
+        temp = io.read_log_dict()
+        io.log_to_json(self.drones)
 
-
-        # Optionally, keep the final plot open
-        # Initialize the plot first
-        # self.plot()
-        # self.create_animation()
-
-    def m2_start_simulation(self):
-        print("Starting Simulation")
-        t0 = time.time()
-
-        # Main loop for optimization
-        for iteration in range(self.total_iterations):
-            print("%d============================" % (iteration))
-            # Generate new trajectories for each drone
-            # for k in range(self.K):
-            K = len(self.drn_list)
-            arguments = [k for k in range(K)]
-            workers = [threading.Thread(target = self.prepare_and_generate, args =(arg, )) for arg in arguments]
-            # Start working
-            for worker in workers:
-                worker.start()
-            # Wait for completion
-            for worker in workers:
-                worker.join()
-
-            # # for k in range(self.K):
-            # #     self.full_traj[k] = self.drn[k].full_traj
-            # # Check for collision
-            # self.check_collisions()
-            # print(self.drn_list)
-            # # Update positions
-            # self.update_vehicle_state()
-            # self.update_visualization_positions()  # Update the plot after each iteration
-        t1 = time.time()
-        print("Time of execution: %f" % (t1 - t0))
-        # Optionally, keep the final plot open
-        self.create_animation()
+    def update(self):
+        # Check for collision
+        self.check_collisions()
+        print(self.drn_list)
+        # Update trajectories and the current state
+        self.update_vehicle_state()
+        # Check the mission progress
+        self.update_mission()
+        # Update the trajectories
 
     def set_initial_state(self):
         # Initial conditions for each vehicle
@@ -351,9 +326,9 @@ class simulator(drone.drone):
             # Update the initial conditions for the next iteration
             state = [x_position, y_position, z_position, x_velocity, y_velocity, z_velocity]
             self.initial_conditions[i] = self.list2state(state)
+            self.drones[i]["state"] = self.list2state(state)
 
     def check_collisions(self):
-        # for k in (self.drn_list):
         i = 0
         while i < len(self.drn_list):
             k = self.drn_list[i]
@@ -385,87 +360,25 @@ class simulator(drone.drone):
         # self.drn_list.remove(d1)
         # self.drn_list.remove(d2)
 
-    def update_visualization_positions(self):
-        iteration_positions = []  # Temporary list for the current iteration
-        for vehicle in self.full_traj:
-            x_positions = vehicle[:][0]
-            y_positions = vehicle[:][1]
-            z_positions = vehicle[:][2]
-            iteration_positions.append((x_positions, y_positions, z_positions))
-
-        # Append the positions of this iteration to the main list
-        self.vehicles_positions.append(iteration_positions)
-
-    def plot(self):
-        # Initial plot setup
-        self.fig = plt.figure(figsize=(10, 8))
-        self.ax = self.fig.add_subplot(111, projection='3d')  # 'self.ax' to make it accessible in other methods
-        self.ax.set_xlim([-100, 100])
-        self.ax.set_ylim([-100, 100])
-        self.ax.set_zlim([-100, 100])
-        self.ax.set_xlabel('X Axis')
-        self.ax.set_ylabel('Y Axis')
-        self.ax.set_zlabel('Z Axis')
-        for obs in self.obstacles:
-            self.draw_box(self.ax, obs)  # Pass 'self.ax' here
-
-        # Initialize lines for each vehicle
-        self.lines = [self.ax.plot([], [], [], 'o-', linewidth=1, markersize=1)[0] for _ in range(len(self.drn))]
-
-        plt.show(block=False)
-
-    def update(self, frame):
-        total_frames = len(self.vehicles_positions)
-
-        # Start and end elevations
-        start_elev = 0
-        end_elev = 70
-
-        # Calculate the current elevation for this frame
-        current_elev = start_elev + (end_elev - start_elev) * (frame / total_frames)
-
-        # Rotate the plot by changing the azimuth angle
-        angle = frame % 360  # This will continuously rotate the plot
-        # self.ax.view_init(elev=current_elev, azim=1.25*angle)
-
-        # Initialize lines for each vehicle
-        # self.lines = [self.ax.plot([], [], [], 'o-', linewidth=1, markersize=1)[0] for _ in range(self.K)]
-        # Clear existing lines and points
-        for line in self.ax.lines[:]:
-            line.remove()
-        # Remove scatter objects
-        for scatter in list(self.ax.collections):
-            if isinstance(scatter, matplotlib.collections.PathCollection):
-                scatter.remove()
-
-        # Update the data for each line based on the current frame
-        for line, vehicle in zip(self.lines, self.vehicles_positions[frame]):
-            # Separate x, y, z data
-            x_data, y_data, z_data = vehicle
-
-            # Check if there is more than one point to draw a line
-            if len(x_data) > 1 and len(y_data) > 1 and len(z_data) > 1:
-                # Line from the second point to the last for each axis
-                line.set_data(x_data[1:], y_data[1:])
-                line.set_3d_properties(z_data[1:])
-                self.ax.add_line(line)
-
-            # Sphere for the first point
-            self.ax.scatter(x_data[0], y_data[0], z_data[0], s=12, c='red', depthshade=True)
-
-    def create_animation(self):
-        # Check if there is data to animate
-        if self.vehicles_positions:
-            # Format current time
-            current_time = datetime.now().strftime("%H-%M-%S")
-
-            # Create filename with time
-            filename = f"plot/animation_{current_time}.gif"
-            ani = animation.FuncAnimation(self.fig, self.update, frames=len(self.vehicles_positions), repeat=True)
-            ani.save(filename, writer='imagemagick', fps=10)
-            plt.show()
-        else:
-            print("No data available for animation.")
+    def update_mission(self):
+        for k, drone in enumerate(self.drones):
+            if drone["alive"]:
+                drn = drone["state"]
+                waypoint = drone["mission"]["progress"]
+                dest = drone["mission"]["waypoints"][waypoint]
+                dist = np.sqrt(self.dist_squared(drn, dest))
+                print("%.2f"%(dist))
+                if dist < 30:
+                    print("Reached destination!")
+                    drone["mission"]["progress"] += 1
+                    if drone["mission"]["progress"] == len(drone["mission"]["waypoints"]): # If it completed the mission
+                        drone["mission"]["status"] = "completed" # Mark it as completed
+                        drone["alive"] = 0 # Mark it as dead/offline
+                        print("MISSION COMPLETED WOOOHOOOOOO!!!1111!!!!!!11!1")
+                    else:
+                        waypoint = drone["mission"]["progress"]
+                        xf = drone["mission"]["waypoints"][waypoint]
+                        self.drn[k].set_final_condition(xf)
 
     def random_drone(self):
         # Choosing a random entrace
@@ -507,6 +420,9 @@ class simulator(drone.drone):
         keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
         return dict(zip(keys, values))
 
+    def state2list(self, values):
+        return [values["x"], values["y"], values["z"]]
+
     def draw_box(self, ax, obs, color='gray', alpha=0.3):
         """Draws a 3D box (cuboid) representing an obstacle."""
         # Define the corners of the obstacle
@@ -535,52 +451,9 @@ class simulator(drone.drone):
     def dist_squared(self, xi, xi_1):
         return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
 
-    def log(self):
-        print("Saving trajectories to file")
-        trajfile = open('traj.pickle', 'ab') # Change to wb if it doesn't work
-        pkl.dump(self.vehicles_positions, trajfile, protocol=pkl.HIGHEST_PROTOCOL)
-        trajfile.close()
-
-    def read_log(self):
-        print("Reading trajectories from file")
-        trajfile = open('traj.pickle', 'rb')
-        vehicles_positions = pkl.load(trajfile)
-        trajfile.close()
-        return vehicles_positions
-
-    def log_dict(self):
-        print("Saving trajectories to file")
-        trajfile = open('traj2.pickle', 'ab') # Change to wb if it doesn't work
-        pkl.dump(self.drones, trajfile, protocol=pkl.HIGHEST_PROTOCOL)
-        trajfile.close()
-
-    def read_log_dict(self):
-        print("Reading trajectories from file")
-        trajfile = open('traj2.pickle', 'rb')
-        vehicles_positions = pkl.load(trajfile)
-        trajfile.close()
-        return vehicles_positions
-
-    def log_to_json(self):
-        trajs = []
-        io = myio.myio()
-        for drone in self.drones:
-            t = []
-            for traj in drone["trajs"]:
-                # point = Point(traj[0][0], traj[1][0], traj[2][0])
-                point = [traj[0][0], traj[1][0], traj[2][0]]
-                t.append(point)
-            ls = io.traj_to_linestring(t)
-            trajs.append(ls)
-        df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
-        df.to_crs(crs=4326, inplace=True)
-        trajs = df.geometry
-        io.write_geom(trajs, "trajs", "blue")
-
-
 def main():
     optimization = simulator()
     # optimization.start_simulation() # 205s
     optimization.m_start_simulation() # 44s
-    # optimization.m2_start_simulation() # 293s (invalid)
+
 main()
