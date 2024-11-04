@@ -17,9 +17,15 @@ import matplotlib.collections
 
 import drone
 import environment
-from myio import myio as io
+from sim_io import myio as io
+
+import os, sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "uam"))
+
+import polygon_pathplanning
 
 
+# from uam.polygon_pathplanning import *
 
 class simulator(drone.drone):
     def __init__(self):
@@ -29,7 +35,7 @@ class simulator(drone.drone):
         self.total_iterations = 1000
 
         # Parameters
-        self.K = 4  # Number of vehicles
+        self.K = 50  # Number of vehicles
 
         # Parameters for collision avoidance between vehicles
         self.d_x = 3  # Minimum horizontal distance
@@ -47,6 +53,7 @@ class simulator(drone.drone):
         self.full_traj = []
         self.obs = environment.env()
 
+        self.ppp = polygon_pathplanning.polygon_pp()
         self.dummy_obstacles()
         self.initialize_drones()
 
@@ -85,94 +92,78 @@ class simulator(drone.drone):
     def initialize_drones(self):
         self.set_initial_state()
         self.set_final_state()
-        self.initial_conditions = []
         for k in range(self.K):
             xi, xf = self.obs.random_mission(0)
             xi = self.list2state(xi)
             xf = self.list2state(xf)
             # self.create_drone(self.xi[k], self.final_conditions[k], 0)
-            self.create_drone(xi, xf, 0)
+            pi = [xi['x'], xi['y']]
+            pf = [xf['x'], xf['y']]
+            # print([pi, pf])
+            waypoints = self.ppp.create_trajectory([pi, pf])
+            for i in range(len(waypoints)):
+                waypoints[i] = self.list2state(waypoints[i])
+            # waypoints = [xi, xf]
+            self.create_drone(xi, waypoints, 0)
         self.max_vel = self.drn[0].smax[3] # Max velocity
 
-    def create_drone(self, xi, xf, n):
-        # Add which part of the mission it's in
-        # Add the state of the drone
+    def create_drone(self, xi, waypoints, n):
+        # Dictionary that contains all the data for the drone, except for the drone object
         d = {"id": len(self.drn),
                  "born": n,
                  "trajs": [],
                  "alive": 1, # Alive, 0 is dead
                  "state": xi,
+                 "factor": 0,
                  "mission": {
                      "type": "delivery",
                      "progress": 0,
-                     "waypoints": [xf, xi], # Deliver to the final destination, then come back to the original place
+                     "waypoints": waypoints, # Deliver to the final destination, then come back to the original place
                      "status":"in progress"
                  }}
         self.drones.append(d)
+        traj_0 = self.make_full_traj(xi)
+        self.drones[-1]["trajs"].append(traj_0)
+        # Drone object
         self.drn.append(drone.drone())
-        self.initial_conditions.append(xi)
-        self.drn[-1].set_final_condition(xf)
         self.drn_list.append(len(self.drn) - 1)
-        self.set_full_traj(xi)
 
     def prepare_and_generate(self, k):
         self.proximity = 2 * self.N * self.delta_t * self.max_vel
         drone_prox_list = []
         # Finding the drones in proximity
         for i in self.drn_list:
-            # d = self.dist_squared(self.initial_conditions[i], self.initial_conditions[k])
             d = self.dist_squared(self.drones[i]["state"], self.drones[k]["state"])
             if d < self.proximity * self.proximity and i != k:
                 drone_prox_list.append(i)
 
         # Finding the obstacles in proximity
-        # Temp solution
         state = self.drones[k]["state"]
         pos = [state['x'], state['y'], state['z']]
+        # Temp solution
         obstacles = self.obs.nearby_obstacles(pos, self.proximity)
         # print(obstacles)
         obstacles = self.obstacles
 
         # Constructing the lists to be used as input to the function
-        # xi = self.initial_conditions[k]
+        # Initial state
         xi = self.drones[k]["state"]
-        # xi_1 = [self.full_traj[i] for i in drone_prox_list]
-        xi_1 = [self.full_traj[i] for i in drone_prox_list]
+        # Final state
+        waypoint = self.drones[k]["mission"]["progress"]
+        # print("Drone %d, waypoint: %d, alive: %d" %(k, waypoint, self.drones[k]["alive"]))
+        xf = self.drones[k]["mission"]["waypoints"][waypoint]
+        # Other drones trajectories
+        xi_1 = [self.drones[i]["trajs"][-1] for i in drone_prox_list]
 
         # Generating trajectories
-        return self.drn[k].generate_traj(xi, xi_1, obstacles)
-
-    def start_simulation(self):
-        print("Starting Simulation")
-        t0 = time.time()
-        # Main loop for optimization
-        for iteration in range(self.total_iterations):
-            print("%d============================" % (iteration))
-            # if iteration%10 == 0:
-            #     self.create_drone(self.xi[14], self.final_conditions[14])
-            #     print("Created drone")
-            # Generate new trajectories for each drone
-            for k in (self.drn_list):
-                self.prepare_and_generate(k)
-            # Check for collision
-            self.check_collisions()
-            print(self.drn_list)
-
-            # Update positions
-            self.update_vehicle_state()
-        t1 = time.time()
-        print("Time of execution: %f" % (t1 - t0))
-        # Optionally, keep the final plot open
-        # Initialize the plot first
-        self.plot()
-        self.create_animation()
+        return self.drn[k].generate_traj(xi, xf, xi_1, obstacles)
 
     def m_start_simulation(self):
         print("Starting Simulation")
         t0 = time.time()
         # Main loop for optimization
-        for iteration in range(self.total_iterations):
-            print("%d============================" % (iteration))
+        for self.iteration in range(self.total_iterations):
+            print("%d============================" % (self.iteration))
             # if iteration%10 == 0:
             #     # xi, xf = self.random_drone()
             #     xi, xf = self.obs.random_mission(0)
@@ -187,21 +178,29 @@ class simulator(drone.drone):
                 if drone["alive"] == 1:
                     self.drn_list.append(k)
             K = len(self.drn_list)
+            if K == 0:
+                print("No drones in simulation. Finishing up the run.")
+                break
+            print(self.drn_list)
             pool = Pool()
             with Pool() as pool:
                 # prepare arguments
-                items = [(k, ) for k in range(K)]
+                # items = [(k, ) for k in range(K)]
+                items = [(k, ) for k in self.drn_list]
                 for i, result in enumerate(pool.starmap(self.prepare_and_generate, items)):
                     # report the value to show progress
                     k = self.drn_list[i]
                     if result == -1:
-                        self.drn[k].not_collided = False
+                        self.drones[k]["alive"] = 0
+                        self.drones[k]["mission"]["status"] = "Collided or infeasible"
+                        print("Error in trajectory for drone %d" %(k))
                     else:
                         self.drn[k].full_traj = result
 
             pool.close()
             pool.join()
             self.update()
+            io.log_to_json(self.drones)
 
         t1 = time.time()
         print("Time of execution: %.2f" % (t1 - t0))
@@ -216,9 +215,181 @@ class simulator(drone.drone):
         print(self.drn_list)
         # Update trajectories and the current state
         self.update_vehicle_state()
+        # Apply random events
+        self.random_events()
         # Check the mission progress
         self.update_mission()
         # Update the trajectories
+
+    def random_events(self):
+        N = len(self.drn_list)
+        if self.iteration == 200:
+            print("ABORT MISSION!!!!11!!!!!! MBS IS HERE!!!!")
+            rnd_drn = random.choices(self.drn_list, k=3)
+            print(rnd_drn)
+            for drn in self.drn_list:
+                self.drones[drn]["factor"] += 0.25
+                if self.drones[drn]["mission"]["type"] != "emergency landing":
+                    if self.drones[drn]["factor"] >= 0.125:
+                        self.drones[drn]["mission"]["type"] = "emergency landing"
+                        pos = self.state2list(self.drones[drn]["state"])
+                        emergency_landing = self.ppp.closest_landing(pos)
+                        el0 = self.point_to_waypoint(emergency_landing[0], 10)
+                        el1 = self.point_to_waypoint(emergency_landing[1], 0)
+                        el = [el0, el1]
+                        self.drones[drn]["mission"]["waypoints"] += el
+                        waypoints = self.drones[drn]["mission"]["waypoints"]
+                        print(waypoints)
+                        len(waypoints) - 2
+                        progress = self.drones[drn]["mission"]["progress"]
+                        self.drones[drn]["mission"]["progress"] = len(waypoints) - 2
+
+    def make_full_traj(self, xi):
+        # Making a full trajectories out of the initial state for initialization
+        x = [xi['x'] for n in range(self.N)]
+        y = [xi['y'] for n in range(self.N)]
+        z = [xi['z'] for n in range(self.N)]
+        xdot = [xi['xdot'] for n in range(self.N)]
+        ydot = [xi['ydot'] for n in range(self.N)]
+        zdot = [xi['zdot'] for n in range(self.N)]
+        return [x, y, z, xdot, ydot, zdot]
+
+    def update_vehicle_state(self):
+        for k in self.drn_list:
+            self.drones[k]["trajs"].append(self.drn[k].full_traj)
+            # Extract positions and velocities from the model's solution
+            x_position = self.drones[k]["trajs"][-1][0][0]
+            y_position = self.drones[k]["trajs"][-1][1][0]
+            z_position = self.drones[k]["trajs"][-1][2][0]
+            x_velocity = self.drones[k]["trajs"][-1][3][0]
+            y_velocity = self.drones[k]["trajs"][-1][4][0]
+            z_velocity = self.drones[k]["trajs"][-1][5][0]
+            # Update the initial conditions for the next iteration
+            state = [x_position, y_position, z_position, x_velocity, y_velocity, z_velocity]
+            self.drones[k]["state"] = self.list2state(state)
+
+    def check_collisions(self):
+        # i = 0
+        # while i < len(self.drn_list):
+        #     k = self.drn_list[i]
+        #     if self.drn[k].get_drone_status() == False: # Drone collided
+        #     if self.drn[k].get_drone_status() == False: # Drone collided
+        #         self.drn_list.remove(k)
+        #         print("Removed drone %d" % (k))
+        #         i -= 1
+        #     i += 1
+        # Finding the drones in proximity
+        collided_drones = set() # Set of collided drones
+        for i in range(len(self.drn_list)):
+            for j in range(i + 1, len(self.drn_list)):
+                d1 = self.drn_list[i]
+                d2 = self.drn_list[j]
+                d = self.dist_squared(self.drones[d1]["state"], self.drones[d2]["state"])
+                if d < self.collision_warning * self.collision_warning:
+                    if d < self.collision * self.collision:
+                        self.collide(d1, d2, d)
+                        collided_drones.add(d1)
+                        collided_drones.add(d2)
+
+        for drone in collided_drones:
+            # self.drn_list.remove(drone)
+            pass
+
+    def collide(self, d1, d2, d):
+        # What to do when drones collide
+        print("Collision between drone %d and %d, distance: %f" % (d1, d2, np.sqrt(d)))
+        # self.drn_list.remove(d1)
+        # self.drn_list.remove(d2)
+
+    def update_mission(self):
+        for k, drone in enumerate(self.drones):
+            if drone["alive"]:
+                drn = drone["state"]
+                progress = drone["mission"]["progress"]
+                dest = drone["mission"]["waypoints"][progress]
+                dist = np.sqrt(self.dist_squared(drn, dest))
+                if dist < 5:
+                    print("Reached destination!")
+                    drone["mission"]["progress"] += 1
+                    if drone["mission"]["progress"] == len(drone["mission"]["waypoints"]): # If it completed the mission
+                        drone["mission"]["status"] = "completed" # Mark it as completed
+                        drone["alive"] = 0 # Mark it as dead/offline
+                        print("MISSION COMPLETED WOOOHOOOOOO!!!1111!!!!!!11!1")
+
+    def random_drone(self):
+        # Choosing a random entrace
+        entrance_prob = [0.25, 0.25, 0.25, 0.25]
+        i_index = random.choices(range(4), weights=entrance_prob)[0]
+        # Choosing a random exit (except for the chosen entrace)
+        exit_prob = [0.25, 0.25, 0.25, 0.25]
+        exit_prob[i_index] = 0
+        e_index = random.choices(range(4), weights=exit_prob)[0]
+        pi = self.random_gate(i_index, 0)
+        pf = self.random_gate(e_index, 0)
+        vi, vf = self.random_state(pi, pf)
+        xi = self.list2state(pi + vi)
+        xf = self.list2state(pf + vf)
+        return xi, xf
+
+    def random_gate(self, index, z):
+        x = 95
+        y = 95
+        z = 0
+        gates = [[0, y, z],
+                 [0, -y, z],
+                 [x, 0, z],
+                 [-x, 0, z]]
+        return gates[index]
+
+    def random_state(self, xi, xf):
+        v = 2
+        x = np.array(xi)
+        y = np.zeros(3)
+        vec = y - x
+        vi = (v * vec / np.linalg.norm(vec)).tolist()
+        x = np.array(xf)
+        vec = x - y
+        vf = (v * vec / np.linalg.norm(vec)).tolist()
+        return vi, vf
+
+    def list2state(self, values):
+        keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
+        return dict(zip(keys, values))
+
+    def state2list(self, values):
+        return [values["x"], values["y"], values["z"]]
+
+    def point_to_waypoint(self, p, z):
+        waypoint = [p.x, p.y, z, 0, 0, 0]
+        return self.list2state(waypoint)
+
+    def draw_box(self, ax, obs, color='gray', alpha=0.3):
+        """Draws a 3D box (cuboid) representing an obstacle."""
+        # Define the corners of the obstacle
+        x_corners = [obs['xmin'], obs['xmax'], obs['xmax'], obs['xmin'], obs['xmin']]
+        y_corners = [obs['ymin'], obs['ymin'], obs['ymax'], obs['ymax'], obs['ymin']]
+        z_bottom = obs['zmin']
+        z_top = obs['zmax']
+
+        # Draw the bottom and top faces
+        x = np.array([[obs['xmin'], obs['xmax']], [obs['xmin'], obs['xmax']]])
+        y = np.array([[obs['ymin'], obs['ymin']], [obs['ymax'], obs['ymax']]])
+        z = np.array([[z_bottom, z_bottom], [z_bottom, z_bottom]])
+        ax.plot_surface(x, y, z, color=color, alpha=alpha)
+
+        z = np.array([[z_top, z_top], [z_top, z_top]])
+        ax.plot_surface(x, y, z, color=color, alpha=alpha)
+
+        # Draw the side faces
+        for i in range(4):
+            x = np.array([x_corners[i:i+2], x_corners[i:i+2]])
+            y = np.array([y_corners[i:i+2], y_corners[i:i+2]])
+            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
+            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
+            ax.plot_surface(x, y, z, color=color, alpha=alpha)
+
+    def dist_squared(self, xi, xi_1):
+        return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
 
     def set_initial_state(self):
         # Initial conditions for each vehicle
@@ -301,159 +472,8 @@ class simulator(drone.drone):
         # for each drone
         # drone[i].set_final_state(xf)
 
-    def set_full_traj(self, xi):
-        x = [xi['x'] for n in range(self.N)]
-        y = [xi['y'] for n in range(self.N)]
-        z = [xi['z'] for n in range(self.N)]
-        xdot = [xi['xdot'] for n in range(self.N)]
-        ydot = [xi['ydot'] for n in range(self.N)]
-        zdot = [xi['zdot'] for n in range(self.N)]
-        self.full_traj.append([x, y, z, xdot, ydot, zdot])
-
-    def update_vehicle_state(self):
-        for k in self.drn_list:
-            self.full_traj[k] = self.drn[k].full_traj
-            self.drones[k]["trajs"].append(self.drn[k].full_traj)
-        for i, vehicle in enumerate(self.full_traj):
-            # Extract positions and velocities from the model's solution
-            x_position = vehicle[0][0]
-            y_position = vehicle[1][0]
-            z_position = vehicle[2][0]
-            x_velocity = vehicle[3][0]
-            y_velocity = vehicle[4][0]
-            z_velocity = vehicle[5][0]
-
-            # Update the initial conditions for the next iteration
-            state = [x_position, y_position, z_position, x_velocity, y_velocity, z_velocity]
-            self.initial_conditions[i] = self.list2state(state)
-            self.drones[i]["state"] = self.list2state(state)
-
-    def check_collisions(self):
-        i = 0
-        while i < len(self.drn_list):
-            k = self.drn_list[i]
-            if self.drn[k].get_drone_status() == False: # Drone collided
-                self.drn_list.remove(k)
-                print("Removed drone %d" % (k))
-                i -= 1
-            i += 1
-        # Finding the drones in proximity
-        collided_drones = set() # Set of collided drones
-        for i in range(len(self.drn_list)):
-            for j in range(i + 1, len(self.drn_list)):
-                d1 = self.drn_list[i]
-                d2 = self.drn_list[j]
-                d = self.dist_squared(self.initial_conditions[d1], self.initial_conditions[d2])
-                if d < self.collision_warning * self.collision_warning:
-                    if d < self.collision * self.collision:
-                        self.collide(d1, d2, d)
-                        collided_drones.add(d1)
-                        collided_drones.add(d2)
-
-        for drone in collided_drones:
-            # self.drn_list.remove(drone)
-            pass
-
-    def collide(self, d1, d2, d):
-        # What to do when drones collide
-        print("Collision between drone %d and %d, distance: %f" % (d1, d2, np.sqrt(d)))
-        # self.drn_list.remove(d1)
-        # self.drn_list.remove(d2)
-
-    def update_mission(self):
-        for k, drone in enumerate(self.drones):
-            if drone["alive"]:
-                drn = drone["state"]
-                waypoint = drone["mission"]["progress"]
-                dest = drone["mission"]["waypoints"][waypoint]
-                dist = np.sqrt(self.dist_squared(drn, dest))
-                print("%.2f"%(dist))
-                if dist < 30:
-                    print("Reached destination!")
-                    drone["mission"]["progress"] += 1
-                    if drone["mission"]["progress"] == len(drone["mission"]["waypoints"]): # If it completed the mission
-                        drone["mission"]["status"] = "completed" # Mark it as completed
-                        drone["alive"] = 0 # Mark it as dead/offline
-                        print("MISSION COMPLETED WOOOHOOOOOO!!!1111!!!!!!11!1")
-                    else:
-                        waypoint = drone["mission"]["progress"]
-                        xf = drone["mission"]["waypoints"][waypoint]
-                        self.drn[k].set_final_condition(xf)
-
-    def random_drone(self):
-        # Choosing a random entrace
-        entrance_prob = [0.25, 0.25, 0.25, 0.25]
-        i_index = random.choices(range(4), weights=entrance_prob)[0]
-        # Choosing a random exit (except for the chosen entrace)
-        exit_prob = [0.25, 0.25, 0.25, 0.25]
-        exit_prob[i_index] = 0
-        e_index = random.choices(range(4), weights=exit_prob)[0]
-        pi = self.random_gate(i_index, 0)
-        pf = self.random_gate(e_index, 0)
-        vi, vf = self.random_state(pi, pf)
-        xi = self.list2state(pi + vi)
-        xf = self.list2state(pf + vf)
-        return xi, xf
-
-    def random_gate(self, index, z):
-        x = 95
-        y = 95
-        z = 0
-        gates = [[0, y, z],
-                 [0, -y, z],
-                 [x, 0, z],
-                 [-x, 0, z]]
-        return gates[index]
-
-    def random_state(self, xi, xf):
-        v = 2
-        x = np.array(xi)
-        y = np.zeros(3)
-        vec = y - x
-        vi = (v * vec / np.linalg.norm(vec)).tolist()
-        x = np.array(xf)
-        vec = x - y
-        vf = (v * vec / np.linalg.norm(vec)).tolist()
-        return vi, vf
-
-    def list2state(self, values):
-        keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
-        return dict(zip(keys, values))
-
-    def state2list(self, values):
-        return [values["x"], values["y"], values["z"]]
-
-    def draw_box(self, ax, obs, color='gray', alpha=0.3):
-        """Draws a 3D box (cuboid) representing an obstacle."""
-        # Define the corners of the obstacle
-        x_corners = [obs['xmin'], obs['xmax'], obs['xmax'], obs['xmin'], obs['xmin']]
-        y_corners = [obs['ymin'], obs['ymin'], obs['ymax'], obs['ymax'], obs['ymin']]
-        z_bottom = obs['zmin']
-        z_top = obs['zmax']
-
-        # Draw the bottom and top faces
-        x = np.array([[obs['xmin'], obs['xmax']], [obs['xmin'], obs['xmax']]])
-        y = np.array([[obs['ymin'], obs['ymin']], [obs['ymax'], obs['ymax']]])
-        z = np.array([[z_bottom, z_bottom], [z_bottom, z_bottom]])
-        ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-        z = np.array([[z_top, z_top], [z_top, z_top]])
-        ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-        # Draw the side faces
-        for i in range(4):
-            x = np.array([x_corners[i:i+2], x_corners[i:i+2]])
-            y = np.array([y_corners[i:i+2], y_corners[i:i+2]])
-            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
-            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
-            ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-    def dist_squared(self, xi, xi_1):
-        return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
-
 def main():
     optimization = simulator()
-    # optimization.start_simulation() # 205s
     optimization.m_start_simulation() # 44s
 
 main()

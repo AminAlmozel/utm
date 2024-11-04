@@ -60,7 +60,7 @@ class drone():
         # self.env = gp.Env()
         # # self.m = gp.Model(env=env)
 
-    def generate_traj(self, xi, xi_1, obstacles):
+    def generate_traj(self, xi, xf, xi_1, obstacles):
         # Clear the model from previously setup constraints
         self.env = gp.Env()
         self.env.setParam(GRB.Param.OutputFlag, 0)
@@ -68,6 +68,7 @@ class drone():
         self.m = gp.Model(env=self.env)
         # import obstacles and position of other drones
         self.set_initial_condition(xi)
+        self.set_final_condition(xf)
         self.set_obstacles(obstacles)
         self.set_other_drones_trajectories(xi_1)
 

@@ -1,0 +1,2344 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2022-04-12T09:40:54Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/65122399",
+        "building": "service",
+        "name": "Toulouse",
+        "operator": "Enedis",
+        "power": "substation",
+        "source": "Enedis - 06/2018",
+        "substation": "minor_distribution",
+        "utility": "power",
+        "voltage": "20000;400"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.2319026,
+              47.973593
+            ],
+            [
+              0.2318719,
+              47.9735699
+            ],
+            [
+              0.231917,
+              47.9735428
+            ],
+            [
+              0.2319478,
+              47.9735659
+            ],
+            [
+              0.2319026,
+              47.973593
+            ]
+          ]
+        ]
+      },
+      "id": "way/65122399"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/304155455",
+        "amenity": "restaurant",
+        "building": "yes",
+        "cuisine": "fish",
+        "name": "Toulouse",
+        "website": "https://www.toulouserestaurant.co.uk/"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.6856736,
+              51.5358841
+            ],
+            [
+              0.6856655,
+              51.5358308
+            ],
+            [
+              0.6863361,
+              51.5357974
+            ],
+            [
+              0.6863374,
+              51.5358491
+            ],
+            [
+              0.6856736,
+              51.5358841
+            ]
+          ]
+        ]
+      },
+      "id": "way/304155455"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/592209278",
+        "addr:street": "Rue 11",
+        "amenity": "school",
+        "building": "yes",
+        "building:levels": "4",
+        "name": "Toulouse"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.5902807,
+              33.5350157
+            ],
+            [
+              -7.5903262,
+              33.5349882
+            ],
+            [
+              -7.5903207,
+              33.5349819
+            ],
+            [
+              -7.5903635,
+              33.534956
+            ],
+            [
+              -7.590369,
+              33.5349623
+            ],
+            [
+              -7.590419,
+              33.5349321
+            ],
+            [
+              -7.5903633,
+              33.5348411
+            ],
+            [
+              -7.5902096,
+              33.5349341
+            ],
+            [
+              -7.5902807,
+              33.5350157
+            ]
+          ]
+        ]
+      },
+      "id": "way/592209278"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/17958641",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Lotissement Sainte-Victoire",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6863381,
+          43.5259992
+        ]
+      },
+      "id": "node/17958641"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/305120776",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Gouirand",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6053864,
+          43.5551613
+        ]
+      },
+      "id": "node/305120776"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/977936271",
+        "bench": "no",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Le Bouquet",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5681113,
+          43.5229189
+        ]
+      },
+      "id": "node/977936271"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/987818582",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Vérans",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5243705,
+          43.5483745
+        ]
+      },
+      "id": "node/987818582"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/987818588",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Jonquière",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.549212,
+          43.5569984
+        ]
+      },
+      "id": "node/987818588"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/987819270",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Le Chenil",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5885646,
+          43.5548837
+        ]
+      },
+      "id": "node/987819270"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1044068350",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Marine",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5325581,
+          43.520818
+        ]
+      },
+      "id": "node/1044068350"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1386861036",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Arsène Sari",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5621263,
+          43.4879584
+        ]
+      },
+      "id": "node/1386861036"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1406561461",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Cézanne",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6649247,
+          43.5241792
+        ]
+      },
+      "id": "node/1406561461"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1437579636",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Écoles",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.624192,
+          43.4818338
+        ]
+      },
+      "id": "node/1437579636"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1704045072",
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "platform",
+        "name": "Les Plaines",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.570171,
+          43.55581
+        ]
+      },
+      "id": "node/1704045072"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2241170567",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 1 / Mairie",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5214799,
+          43.546602
+        ]
+      },
+      "id": "node/2241170567"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2276188898",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 16",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5430992,
+          43.5517418
+        ]
+      },
+      "id": "node/2276188898"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2276188951",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 5",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5314052,
+          43.5538268
+        ]
+      },
+      "id": "node/2276188951"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2422511171",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Ferrageon",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "waste_basket": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5107782,
+          43.5222323
+        ]
+      },
+      "id": "node/2422511171"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2605232989",
+        "bus": "yes",
+        "description": "Ligne 160 Trets Pôle d'Échanges",
+        "highway": "platform",
+        "name": "Meyreuil - Barlatier",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5270088,
+          43.4924488
+        ]
+      },
+      "id": "node/2605232989"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2605233015",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Meyreuil - Barlatier",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5270971,
+          43.4926255
+        ]
+      },
+      "id": "node/2605233015"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2605318891",
+        "bin": "yes",
+        "bus": "yes",
+        "description": "Ligne 160 Trets Halte Routière",
+        "highway": "platform",
+        "name": "La Gavotte",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5930308,
+          43.4886299
+        ]
+      },
+      "id": "node/2605318891"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2605332759",
+        "bus": "yes",
+        "description": "Ligne 160 Trets Halte Routière",
+        "highway": "platform",
+        "name": "Rousset - Les Banettes",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6093253,
+          43.4869086
+        ]
+      },
+      "id": "node/2605332759"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4183118489",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Meyreuil - Le Canet",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5240874,
+          43.4932264
+        ]
+      },
+      "id": "node/4183118489"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4183118490",
+        "bench": "no",
+        "bus": "yes",
+        "covered": "no",
+        "highway": "platform",
+        "name": "Meyreuil - Le Canet",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5241389,
+          43.4936352
+        ]
+      },
+      "id": "node/4183118490"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4183175808",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Cardeline / D 7N",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5527911,
+          43.4889947
+        ]
+      },
+      "id": "node/4183175808"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4183189382",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Cardeline / D 7N",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5541126,
+          43.4889505
+        ]
+      },
+      "id": "node/4183189382"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4183225432",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Châteauneuf-le-Rouge - Le Village D7N",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5675988,
+          43.4902332
+        ]
+      },
+      "id": "node/4183225432"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4183225433",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Châteauneuf-le-Rouge - Le Village D7N",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5675979,
+          43.490343
+        ]
+      },
+      "id": "node/4183225433"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703594762",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Saint-Pierre",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6116537,
+          43.555109
+        ]
+      },
+      "id": "node/4703594762"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703594763",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Village Haut",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no",
+        "waste_basket": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6035899,
+          43.556018
+        ]
+      },
+      "id": "node/4703594763"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703607879",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Vauvenargues - Ouest",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no",
+        "waste_basket": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5981127,
+          43.5553659
+        ]
+      },
+      "id": "node/4703607879"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703607881",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Vauvenargues - Ouest",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5975308,
+          43.5551229
+        ]
+      },
+      "id": "node/4703607881"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703619447",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Centre Technique",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5948789,
+          43.5552159
+        ]
+      },
+      "id": "node/4703619447"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703628652",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Le Chenil",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5897499,
+          43.5554972
+        ]
+      },
+      "id": "node/4703628652"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703628653",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Cabassols",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5804116,
+          43.5537994
+        ]
+      },
+      "id": "node/4703628653"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703628654",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Cabassols",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5819954,
+          43.5533429
+        ]
+      },
+      "id": "node/4703628654"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703628655",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Saint-François",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5766637,
+          43.5547672
+        ]
+      },
+      "id": "node/4703628655"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703628656",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Saint-François",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5774589,
+          43.5543303
+        ]
+      },
+      "id": "node/4703628656"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703641139",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Bourgarels",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5555909,
+          43.5563924
+        ]
+      },
+      "id": "node/4703641139"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703641140",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Bourgarels",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5558611,
+          43.5562643
+        ]
+      },
+      "id": "node/4703641140"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703644451",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Jonquière",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5493481,
+          43.5568824
+        ]
+      },
+      "id": "node/4703644451"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4703660392",
+        "bench": "no",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Bonfillons",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5400444,
+          43.5505065
+        ]
+      },
+      "id": "node/4703660392"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4704835170",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J04 / Barrage de Bimont",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.532049,
+          43.5500983
+        ]
+      },
+      "id": "node/4704835170"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4704835173",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Vérans",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5239915,
+          43.5483984
+        ]
+      },
+      "id": "node/4704835173"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4704860700",
+        "bench": "no",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "platform",
+        "name": "J 9 / Chemin des Savoyards",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5143316,
+          43.5454443
+        ]
+      },
+      "id": "node/4704860700"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4704860701",
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "platform",
+        "name": "J 9 / Chemin des Savoyards",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5142252,
+          43.5455434
+        ]
+      },
+      "id": "node/4704860701"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705046514",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J02 / Barrage de Bimont",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5301001,
+          43.54947
+        ]
+      },
+      "id": "node/4705046514"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705109784",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 17",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.538702,
+          43.5523566
+        ]
+      },
+      "id": "node/4705109784"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705109788",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 18",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5362889,
+          43.5525392
+        ]
+      },
+      "id": "node/4705109788"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705115123",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 6",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5294805,
+          43.5531582
+        ]
+      },
+      "id": "node/4705115123"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705117365",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 6 Bis",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.523762,
+          43.5499444
+        ]
+      },
+      "id": "node/4705117365"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705123683",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 8",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5120454,
+          43.5467296
+        ]
+      },
+      "id": "node/4705123683"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705123688",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 7",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.511922,
+          43.5483148
+        ]
+      },
+      "id": "node/4705123688"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705139099",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 8 Bis",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5080202,
+          43.5459745
+        ]
+      },
+      "id": "node/4705139099"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4705141330",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 13",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5040574,
+          43.5462534
+        ]
+      },
+      "id": "node/4705141330"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711515253",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Légion",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6985389,
+          43.5237741
+        ]
+      },
+      "id": "node/4711515253"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711519434",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Lotissement Sainte-Victoire",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6862553,
+          43.5261198
+        ]
+      },
+      "id": "node/4711519434"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711521797",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Camping",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6829572,
+          43.5263904
+        ]
+      },
+      "id": "node/4711521797"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711521798",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Camping",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6826729,
+          43.5263073
+        ]
+      },
+      "id": "node/4711521798"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711525013",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Pallières",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6775787,
+          43.5253341
+        ]
+      },
+      "id": "node/4711525013"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711531187",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Le Lavoir",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6717112,
+          43.5251335
+        ]
+      },
+      "id": "node/4711531187"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711531289",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Le Lavoir",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6732762,
+          43.5248822
+        ]
+      },
+      "id": "node/4711531289"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4711543226",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Cézanne",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6647029,
+          43.5241071
+        ]
+      },
+      "id": "node/4711543226"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4712981527",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Maison Sainte-Victoire",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5839941,
+          43.5195249
+        ]
+      },
+      "id": "node/4712981527"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4712981528",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Maison Sainte-Victoire",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5836325,
+          43.5195992
+        ]
+      },
+      "id": "node/4712981528"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4712991123",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Camping",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5411678,
+          43.5174794
+        ]
+      },
+      "id": "node/4712991123"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4712993008",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Gautier",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5458692,
+          43.5113221
+        ]
+      },
+      "id": "node/4712993008"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4712996208",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Marine",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5339366,
+          43.5202666
+        ]
+      },
+      "id": "node/4712996208"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4712997549",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Ferrageon",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.510577,
+          43.5222401
+        ]
+      },
+      "id": "node/4712997549"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4788334527",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Victoire",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6093853,
+          43.4733095
+        ]
+      },
+      "id": "node/4788334527"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4788334530",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Victoire",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6092508,
+          43.4730479
+        ]
+      },
+      "id": "node/4788334530"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4788353223",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Villevieille",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.614928,
+          43.4716814
+        ]
+      },
+      "id": "node/4788353223"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4788370541",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Écoles",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6240808,
+          43.4808298
+        ]
+      },
+      "id": "node/4788370541"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4788383298",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Peisson",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.619858,
+          43.4822726
+        ]
+      },
+      "id": "node/4788383298"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789726385",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Ribas",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6145073,
+          43.485343
+        ]
+      },
+      "id": "node/4789726385"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789730144",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Ribas",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6151622,
+          43.4845576
+        ]
+      },
+      "id": "node/4789730144"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789739626",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Rousset - Les Banettes",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6089294,
+          43.4869703
+        ]
+      },
+      "id": "node/4789739626"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789752682",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Geinette",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5975536,
+          43.4883683
+        ]
+      },
+      "id": "node/4789752682"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789752683",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Geinette",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5975971,
+          43.4885868
+        ]
+      },
+      "id": "node/4789752683"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789775058",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Tuilerie",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5852441,
+          43.4901395
+        ]
+      },
+      "id": "node/4789775058"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789775059",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Tuilerie",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5843018,
+          43.4904206
+        ]
+      },
+      "id": "node/4789775059"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789787833",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Le Village",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.566259,
+          43.4895291
+        ]
+      },
+      "id": "node/4789787833"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789802363",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "École",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5659336,
+          43.4890609
+        ]
+      },
+      "id": "node/4789802363"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789802379",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Arsène Sari",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5622997,
+          43.4879138
+        ]
+      },
+      "id": "node/4789802379"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789818478",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Cardeline",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5548442,
+          43.488442
+        ]
+      },
+      "id": "node/4789818478"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4789818479",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Cardeline",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5547068,
+          43.4883877
+        ]
+      },
+      "id": "node/4789818479"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4791412070",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Barque - École",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5389021,
+          43.4784
+        ]
+      },
+      "id": "node/4791412070"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4791418482",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "La Barque",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5385127,
+          43.4768472
+        ]
+      },
+      "id": "node/4791418482"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6025543502",
+        "bus": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "La Barque",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5392687,
+          43.4772774
+        ]
+      },
+      "id": "node/6025543502"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6025543538",
+        "bus": "yes",
+        "highway": "platform",
+        "lit": "yes",
+        "name": "La Barque",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5390235,
+          43.4771537
+        ]
+      },
+      "id": "node/6025543538"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6025566968",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Rosiers",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5345542,
+          43.481003
+        ]
+      },
+      "id": "node/6025566968"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6025566969",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Rosiers",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5346441,
+          43.4810561
+        ]
+      },
+      "id": "node/6025566969"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6025570748",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Bachasson",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5295864,
+          43.4873902
+        ]
+      },
+      "id": "node/6025570748"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6025570749",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Bachasson",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5298208,
+          43.4871618
+        ]
+      },
+      "id": "node/6025570749"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6049165635",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Pourrières - Halte Routière",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.7349857,
+          43.5008577
+        ]
+      },
+      "id": "node/6049165635"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6049165636",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Pourrières - Halte Routière",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.7345726,
+          43.5008876
+        ]
+      },
+      "id": "node/6049165636"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6049165637",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Pourrières - Halte Routière",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.7347847,
+          43.5008696
+        ]
+      },
+      "id": "node/6049165637"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6049165638",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Pourrières - Halte Routière",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.734351,
+          43.5009044
+        ]
+      },
+      "id": "node/6049165638"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6179531467",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Parc des Sports",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5031103,
+          43.5176307
+        ]
+      },
+      "id": "node/6179531467"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6179531468",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Parc des Sports",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.503718,
+          43.5179212
+        ]
+      },
+      "id": "node/6179531468"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6179531471",
+        "bench": "yes",
+        "bus": "yes",
+        "departures_board": "timetable",
+        "highway": "platform",
+        "name": "Le Tholonet",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5116806,
+          43.5195045
+        ]
+      },
+      "id": "node/6179531471"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6397054451",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Peisson",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6198799,
+          43.4823372
+        ]
+      },
+      "id": "node/6397054451"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6398526653",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Collège",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6246056,
+          43.4789714
+        ]
+      },
+      "id": "node/6398526653"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6414445415",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Pallières",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6774946,
+          43.525386
+        ]
+      },
+      "id": "node/6414445415"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6416199535",
+        "bench": "no",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Le Bouquet",
+        "network": "La Métropole Mobilité",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.568036,
+          43.5230566
+        ]
+      },
+      "id": "node/6416199535"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6417966053",
+        "bench": "no",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Plaines",
+        "public_transport": "platform",
+        "shelter": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5702974,
+          43.5558539
+        ]
+      },
+      "id": "node/6417966053"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6417971009",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Saint-Pierre",
+        "public_transport": "platform",
+        "shelter": "yes",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6114592,
+          43.5552021
+        ]
+      },
+      "id": "node/6417971009"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6417971010",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Village Haut",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6036162,
+          43.5559414
+        ]
+      },
+      "id": "node/6417971010"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6417971012",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Centre Technique",
+        "public_transport": "platform",
+        "shelter": "no",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5947925,
+          43.5551341
+        ]
+      },
+      "id": "node/6417971012"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418010507",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Les Bonfillons",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5400516,
+          43.550604
+        ]
+      },
+      "id": "node/6418010507"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418061610",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 17",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5387656,
+          43.5523695
+        ]
+      },
+      "id": "node/6418061610"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418061611",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 18",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5362322,
+          43.5525771
+        ]
+      },
+      "id": "node/6418061611"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418066767",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 6",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5294493,
+          43.5532268
+        ]
+      },
+      "id": "node/6418066767"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418066769",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 6 Bis",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5236142,
+          43.5499295
+        ]
+      },
+      "id": "node/6418066769"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418067715",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 5",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.531366,
+          43.5539075
+        ]
+      },
+      "id": "node/6418067715"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418074851",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 8 Bis",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5080679,
+          43.5459922
+        ]
+      },
+      "id": "node/6418074851"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6418077179",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "J 13",
+        "public_transport": "platform"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5041221,
+          43.5463123
+        ]
+      },
+      "id": "node/6418077179"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8758852073",
+        "bench": "yes",
+        "bus": "yes",
+        "highway": "platform",
+        "name": "Pourrières - Halte Routière",
+        "public_transport": "platform",
+        "shelter": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.7342128,
+          43.5010326
+        ]
+      },
+      "id": "node/8758852073"
+    }
+  ]
+}

@@ -1,0 +1,3545 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2022-04-20T11:56:27Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/65122399",
+        "building": "service",
+        "name": "Toulouse",
+        "operator": "Enedis",
+        "power": "substation",
+        "source": "Enedis - 06/2018",
+        "substation": "minor_distribution",
+        "utility": "power",
+        "voltage": "20000;400"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.2319026,
+              47.973593
+            ],
+            [
+              0.2318719,
+              47.9735699
+            ],
+            [
+              0.231917,
+              47.9735428
+            ],
+            [
+              0.2319478,
+              47.9735659
+            ],
+            [
+              0.2319026,
+              47.973593
+            ]
+          ]
+        ]
+      },
+      "id": "way/65122399"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/304155455",
+        "amenity": "restaurant",
+        "building": "yes",
+        "cuisine": "fish",
+        "name": "Toulouse",
+        "website": "https://www.toulouserestaurant.co.uk/"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.6856736,
+              51.5358841
+            ],
+            [
+              0.6856655,
+              51.5358308
+            ],
+            [
+              0.6863361,
+              51.5357974
+            ],
+            [
+              0.6863374,
+              51.5358491
+            ],
+            [
+              0.6856736,
+              51.5358841
+            ]
+          ]
+        ]
+      },
+      "id": "way/304155455"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/592209278",
+        "addr:street": "Rue 11",
+        "amenity": "school",
+        "building": "yes",
+        "building:levels": "4",
+        "name": "Toulouse"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.5902807,
+              33.5350157
+            ],
+            [
+              -7.5903262,
+              33.5349882
+            ],
+            [
+              -7.5903207,
+              33.5349819
+            ],
+            [
+              -7.5903635,
+              33.534956
+            ],
+            [
+              -7.590369,
+              33.5349623
+            ],
+            [
+              -7.590419,
+              33.5349321
+            ],
+            [
+              -7.5903633,
+              33.5348411
+            ],
+            [
+              -7.5902096,
+              33.5349341
+            ],
+            [
+              -7.5902807,
+              33.5350157
+            ]
+          ]
+        ]
+      },
+      "id": "way/592209278"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/5043865",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "50",
+        "name": "Rond-Point Daniel Labit",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4425677,
+            43.5113851
+          ],
+          [
+            5.4425925,
+            43.5114461
+          ],
+          [
+            5.4425854,
+            43.5114999
+          ],
+          [
+            5.4425622,
+            43.5115391
+          ],
+          [
+            5.4425131,
+            43.5115797
+          ],
+          [
+            5.4424515,
+            43.5116048
+          ]
+        ]
+      },
+      "id": "way/5043865"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/7989764",
+        "highway": "primary",
+        "lane_markings": "yes",
+        "lanes": "2",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4424515,
+            43.5116048
+          ],
+          [
+            5.4424459,
+            43.5116868
+          ]
+        ]
+      },
+      "id": "way/7989764"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697321",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "30",
+        "name": "Rond-Point Commandant Henri Bartier",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4357217,
+            43.5098945
+          ],
+          [
+            5.4357761,
+            43.5098538
+          ],
+          [
+            5.4358289,
+            43.509832
+          ],
+          [
+            5.4359208,
+            43.5098182
+          ],
+          [
+            5.4360131,
+            43.5098302
+          ],
+          [
+            5.4360739,
+            43.5098549
+          ],
+          [
+            5.4361228,
+            43.5098908
+          ],
+          [
+            5.4361559,
+            43.5099353
+          ],
+          [
+            5.4361711,
+            43.5100027
+          ],
+          [
+            5.4361505,
+            43.5100693
+          ],
+          [
+            5.436097,
+            43.5101255
+          ],
+          [
+            5.436032,
+            43.5101586
+          ],
+          [
+            5.4359559,
+            43.5101752
+          ],
+          [
+            5.435868,
+            43.510172
+          ],
+          [
+            5.4357871,
+            43.5101466
+          ],
+          [
+            5.4357236,
+            43.5101023
+          ],
+          [
+            5.4356856,
+            43.5100447
+          ],
+          [
+            5.4356772,
+            43.5100058
+          ],
+          [
+            5.4356806,
+            43.5099666
+          ],
+          [
+            5.4356957,
+            43.5099289
+          ],
+          [
+            5.4357217,
+            43.5098945
+          ]
+        ]
+      },
+      "id": "way/23697321"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697322",
+        "highway": "primary",
+        "lanes": "2",
+        "maxspeed": "80",
+        "name": "Route des Milles",
+        "ref": "D 9",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4217447,
+            43.50809
+          ],
+          [
+            5.422767,
+            43.5080443
+          ],
+          [
+            5.4232786,
+            43.5080416
+          ],
+          [
+            5.4237383,
+            43.5080505
+          ],
+          [
+            5.4238558,
+            43.5080528
+          ],
+          [
+            5.4250022,
+            43.5080618
+          ],
+          [
+            5.4252988,
+            43.5080625
+          ]
+        ]
+      },
+      "id": "way/23697322"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697325",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source:maxspeed": "sign",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4356856,
+            43.5100447
+          ],
+          [
+            5.4356354,
+            43.5100136
+          ],
+          [
+            5.4355817,
+            43.5099828
+          ],
+          [
+            5.4354557,
+            43.5099404
+          ],
+          [
+            5.4353217,
+            43.509917
+          ]
+        ]
+      },
+      "id": "way/23697325"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697326",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.432169,
+            43.5095129
+          ],
+          [
+            5.4323778,
+            43.5095527
+          ],
+          [
+            5.4324212,
+            43.5095674
+          ],
+          [
+            5.4324481,
+            43.5095759
+          ],
+          [
+            5.432511,
+            43.5095957
+          ],
+          [
+            5.4326239,
+            43.5096289
+          ],
+          [
+            5.4327216,
+            43.509652
+          ],
+          [
+            5.4328648,
+            43.5096853
+          ]
+        ]
+      },
+      "id": "way/23697326"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697359",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422707,
+            43.5113242
+          ],
+          [
+            5.4422698,
+            43.5112733
+          ],
+          [
+            5.4422632,
+            43.5111939
+          ],
+          [
+            5.442256,
+            43.5111483
+          ],
+          [
+            5.4422399,
+            43.5110439
+          ]
+        ]
+      },
+      "id": "way/23697359"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697368",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source:maxspeed": "sign",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4360131,
+            43.5098302
+          ],
+          [
+            5.4361827,
+            43.5097759
+          ],
+          [
+            5.4363671,
+            43.5097004
+          ],
+          [
+            5.4364601,
+            43.5096705
+          ],
+          [
+            5.4366272,
+            43.5096368
+          ],
+          [
+            5.4368506,
+            43.5095977
+          ],
+          [
+            5.4371703,
+            43.5095537
+          ],
+          [
+            5.4377678,
+            43.5095551
+          ]
+        ]
+      },
+      "id": "way/23697368"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697382",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Pascal Fieschi",
+        "oneway": "yes",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4400443,
+            43.5098973
+          ],
+          [
+            5.4399388,
+            43.50982
+          ],
+          [
+            5.4399026,
+            43.5097594
+          ],
+          [
+            5.4399517,
+            43.5096483
+          ]
+        ]
+      },
+      "id": "way/23697382"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697383",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.440462,
+            43.5092271
+          ],
+          [
+            5.4403698,
+            43.509167
+          ],
+          [
+            5.4402134,
+            43.5090649
+          ]
+        ]
+      },
+      "id": "way/23697383"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23697711",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.440462,
+            43.5092271
+          ],
+          [
+            5.440557,
+            43.5092825
+          ]
+        ]
+      },
+      "id": "way/23697711"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23976134",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4424002,
+            43.5129088
+          ],
+          [
+            5.4424136,
+            43.5128296
+          ],
+          [
+            5.4424104,
+            43.512785
+          ],
+          [
+            5.4423923,
+            43.5125339
+          ]
+        ]
+      },
+      "id": "way/23976134"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23976135",
+        "bridge": "yes",
+        "highway": "primary",
+        "lane_markings": "yes",
+        "lanes": "2",
+        "layer": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt",
+        "turn:lanes": "left|through"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4424459,
+            43.5116868
+          ],
+          [
+            5.4424665,
+            43.5120578
+          ]
+        ]
+      },
+      "id": "way/23976135"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23976136",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4424665,
+            43.5120578
+          ],
+          [
+            5.4424915,
+            43.5125222
+          ]
+        ]
+      },
+      "id": "way/23976136"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23976138",
+        "highway": "primary",
+        "lane_markings": "yes",
+        "lanes": "2",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4423424,
+            43.5116867
+          ],
+          [
+            5.4423242,
+            43.5116089
+          ]
+        ]
+      },
+      "id": "way/23976138"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/26396931",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "80",
+        "noname": "yes",
+        "source": "BDOrtho IGN",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4259485,
+            43.5080941
+          ],
+          [
+            5.4259264,
+            43.5081235
+          ],
+          [
+            5.4258945,
+            43.5081477
+          ],
+          [
+            5.425855,
+            43.5081651
+          ],
+          [
+            5.4258155,
+            43.5081738
+          ],
+          [
+            5.4257742,
+            43.5081757
+          ],
+          [
+            5.4257335,
+            43.5081705
+          ],
+          [
+            5.4256956,
+            43.5081586
+          ],
+          [
+            5.4256579,
+            43.5081373
+          ],
+          [
+            5.4256295,
+            43.5081095
+          ]
+        ]
+      },
+      "id": "way/26396931"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/26396941",
+        "highway": "primary",
+        "maxspeed": "80",
+        "oneway": "yes",
+        "ref": "D 9",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4259091,
+            43.5079578
+          ],
+          [
+            5.4259499,
+            43.5079584
+          ],
+          [
+            5.4259968,
+            43.5079611
+          ],
+          [
+            5.4260513,
+            43.5079617
+          ],
+          [
+            5.4262657,
+            43.5079583
+          ]
+        ]
+      },
+      "id": "way/26396941"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/26396942",
+        "highway": "primary",
+        "maxspeed": "80",
+        "oneway": "yes",
+        "ref": "D 9",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4256295,
+            43.5081095
+          ],
+          [
+            5.4255707,
+            43.5081118
+          ],
+          [
+            5.4254508,
+            43.508084
+          ],
+          [
+            5.4252988,
+            43.5080625
+          ]
+        ]
+      },
+      "id": "way/26396942"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/26396943",
+        "highway": "primary",
+        "maxspeed": "80",
+        "oneway": "yes",
+        "ref": "D 9",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4262657,
+            43.5079583
+          ],
+          [
+            5.4261473,
+            43.5080034
+          ],
+          [
+            5.4261056,
+            43.5080174
+          ],
+          [
+            5.4260137,
+            43.5080606
+          ],
+          [
+            5.4259485,
+            43.5080941
+          ]
+        ]
+      },
+      "id": "way/26396943"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/35207051",
+        "highway": "primary",
+        "maxspeed": "80",
+        "name": "Route des Milles",
+        "oneway": "no",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4262657,
+            43.5079583
+          ],
+          [
+            5.4264236,
+            43.5079289
+          ],
+          [
+            5.426813,
+            43.5078669
+          ],
+          [
+            5.4272645,
+            43.5078077
+          ],
+          [
+            5.4276977,
+            43.5077968
+          ],
+          [
+            5.42807,
+            43.5078281
+          ],
+          [
+            5.4284264,
+            43.5078894
+          ],
+          [
+            5.4290404,
+            43.5080516
+          ],
+          [
+            5.4295374,
+            43.5082845
+          ],
+          [
+            5.4310286,
+            43.5090053
+          ],
+          [
+            5.4316967,
+            43.5093184
+          ],
+          [
+            5.432169,
+            43.5095129
+          ]
+        ]
+      },
+      "id": "way/35207051"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/35558828",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Ernest Prados",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4400443,
+            43.5098973
+          ],
+          [
+            5.4396216,
+            43.50979
+          ]
+        ]
+      },
+      "id": "way/35558828"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/35559064",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4421599,
+            43.5104633
+          ],
+          [
+            5.4421308,
+            43.5103804
+          ],
+          [
+            5.4420594,
+            43.5102904
+          ],
+          [
+            5.4419927,
+            43.5102131
+          ]
+        ]
+      },
+      "id": "way/35559064"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/35559065",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Ernest Prados",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4421599,
+            43.5104633
+          ],
+          [
+            5.4420956,
+            43.5104347
+          ],
+          [
+            5.4419899,
+            43.5104036
+          ],
+          [
+            5.4418887,
+            43.5103798
+          ],
+          [
+            5.4412954,
+            43.5102404
+          ],
+          [
+            5.4411058,
+            43.5101884
+          ],
+          [
+            5.4400443,
+            43.5098973
+          ]
+        ]
+      },
+      "id": "way/35559065"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/35559066",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4419927,
+            43.5102131
+          ],
+          [
+            5.4420584,
+            43.5102344
+          ],
+          [
+            5.4421152,
+            43.5102621
+          ],
+          [
+            5.442208,
+            43.5103382
+          ]
+        ]
+      },
+      "id": "way/35559066"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/35559067",
+        "highway": "primary",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422709,
+            43.5105745
+          ],
+          [
+            5.4422789,
+            43.5107022
+          ]
+        ]
+      },
+      "id": "way/35559067"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/39791968",
+        "bridge": "yes",
+        "highway": "primary",
+        "lane_markings": "yes",
+        "lanes": "2",
+        "layer": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4423717,
+            43.5120775
+          ],
+          [
+            5.4423424,
+            43.5116867
+          ]
+        ]
+      },
+      "id": "way/39791968"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/48938054",
+        "highway": "primary",
+        "maxspeed": "80",
+        "oneway": "yes",
+        "ref": "D 9",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4252988,
+            43.5080625
+          ],
+          [
+            5.4254237,
+            43.5080243
+          ],
+          [
+            5.4255254,
+            43.5080003
+          ],
+          [
+            5.4256384,
+            43.5079759
+          ]
+        ]
+      },
+      "id": "way/48938054"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/60753090",
+        "highway": "primary",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422124,
+            43.510704
+          ],
+          [
+            5.4422003,
+            43.5105952
+          ]
+        ]
+      },
+      "id": "way/60753090"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/60753091",
+        "bridge": "yes",
+        "highway": "primary",
+        "layer": "1",
+        "maxspeed": "50",
+        "maxweight": "19",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source": "Bing",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422399,
+            43.5110439
+          ],
+          [
+            5.4422124,
+            43.510704
+          ]
+        ]
+      },
+      "id": "way/60753091"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/60753093",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4423131,
+            43.511042
+          ],
+          [
+            5.4423188,
+            43.5111458
+          ],
+          [
+            5.4423272,
+            43.5111924
+          ]
+        ]
+      },
+      "id": "way/60753093"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/60753094",
+        "bridge": "yes",
+        "highway": "primary",
+        "layer": "1",
+        "maxspeed": "50",
+        "maxweight": "19",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source": "Bing",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422789,
+            43.5107022
+          ],
+          [
+            5.4423131,
+            43.511042
+          ]
+        ]
+      },
+      "id": "way/60753094"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/68294399",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Pascal Fieschi",
+        "oneway": "yes",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4398664,
+            43.5096996
+          ],
+          [
+            5.4397808,
+            43.5097574
+          ],
+          [
+            5.4397108,
+            43.5097781
+          ],
+          [
+            5.4396216,
+            43.50979
+          ]
+        ]
+      },
+      "id": "way/68294399"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/68294402",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Pascal Fieschi",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4396077,
+            43.5097356
+          ],
+          [
+            5.4397566,
+            43.509731
+          ],
+          [
+            5.4398664,
+            43.5096996
+          ]
+        ]
+      },
+      "id": "way/68294402"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/68294403",
+        "cycleway:right": "lane",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Pascal Fieschi",
+        "oneway": "yes",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4401463,
+            43.5094655
+          ],
+          [
+            5.4402241,
+            43.5093231
+          ],
+          [
+            5.4402323,
+            43.5092814
+          ],
+          [
+            5.4402415,
+            43.509217
+          ],
+          [
+            5.4402328,
+            43.5091445
+          ],
+          [
+            5.4402134,
+            43.5090649
+          ]
+        ]
+      },
+      "id": "way/68294403"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/68294405",
+        "cycleway:right": "lane",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Pascal Fieschi",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4399517,
+            43.5096483
+          ],
+          [
+            5.4401463,
+            43.5094655
+          ]
+        ]
+      },
+      "id": "way/68294405"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/68294413",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Pascal Fieschi",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4398664,
+            43.5096996
+          ],
+          [
+            5.4399517,
+            43.5096483
+          ]
+        ]
+      },
+      "id": "way/68294413"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/179311698",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4423923,
+            43.5125339
+          ],
+          [
+            5.4423807,
+            43.5121792
+          ],
+          [
+            5.4423717,
+            43.5120775
+          ]
+        ]
+      },
+      "id": "way/179311698"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/224112098",
+        "highway": "primary",
+        "lanes": "2",
+        "maxspeed": "30",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.440557,
+            43.5092825
+          ],
+          [
+            5.4408819,
+            43.5094983
+          ],
+          [
+            5.4415666,
+            43.5099529
+          ],
+          [
+            5.4416138,
+            43.5099842
+          ],
+          [
+            5.4419535,
+            43.5101902
+          ]
+        ]
+      },
+      "id": "way/224112098"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/486361558",
+        "highway": "primary",
+        "lane_markings": "yes",
+        "lanes": "2",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4424915,
+            43.5125222
+          ],
+          [
+            5.4424925,
+            43.5126167
+          ],
+          [
+            5.4424982,
+            43.5127379
+          ],
+          [
+            5.4425073,
+            43.5127817
+          ],
+          [
+            5.4425235,
+            43.5128191
+          ],
+          [
+            5.442576,
+            43.512879
+          ]
+        ]
+      },
+      "id": "way/486361558"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/557390409",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "50",
+        "name": "Rond-Point Daniel Labit",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.442497,
+            43.5113288
+          ],
+          [
+            5.4425677,
+            43.5113851
+          ]
+        ]
+      },
+      "id": "way/557390409"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/557390410",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "50",
+        "name": "Rond-Point Daniel Labit",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4423871,
+            43.5113032
+          ],
+          [
+            5.4424599,
+            43.5113146
+          ],
+          [
+            5.442497,
+            43.5113288
+          ]
+        ]
+      },
+      "id": "way/557390410"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/557390411",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "50",
+        "name": "Rond-Point Daniel Labit",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422707,
+            43.5113242
+          ],
+          [
+            5.4423135,
+            43.5113104
+          ],
+          [
+            5.4423871,
+            43.5113032
+          ]
+        ]
+      },
+      "id": "way/557390411"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/557390412",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "50",
+        "name": "Rond-Point Daniel Labit",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4421673,
+            43.5114843
+          ],
+          [
+            5.4421679,
+            43.5114303
+          ],
+          [
+            5.4421868,
+            43.5113893
+          ],
+          [
+            5.442231,
+            43.5113458
+          ],
+          [
+            5.4422707,
+            43.5113242
+          ]
+        ]
+      },
+      "id": "way/557390412"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/557390413",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "50",
+        "name": "Rond-Point Daniel Labit",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4423242,
+            43.5116089
+          ],
+          [
+            5.4422578,
+            43.511587
+          ],
+          [
+            5.4422008,
+            43.5115454
+          ],
+          [
+            5.4421673,
+            43.5114843
+          ]
+        ]
+      },
+      "id": "way/557390413"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/557390414",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "50",
+        "name": "Rond-Point Daniel Labit",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4424515,
+            43.5116048
+          ],
+          [
+            5.4423857,
+            43.511614
+          ],
+          [
+            5.4423242,
+            43.5116089
+          ]
+        ]
+      },
+      "id": "way/557390414"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/579502119",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Rue Pascal Fieschi",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010",
+        "source:maxspeed": "FR:zone30"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4401463,
+            43.5094655
+          ],
+          [
+            5.4402764,
+            43.5093449
+          ],
+          [
+            5.4403687,
+            43.5092871
+          ],
+          [
+            5.440462,
+            43.5092271
+          ]
+        ]
+      },
+      "id": "way/579502119"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/579502120",
+        "cycleway:left": "track",
+        "highway": "primary",
+        "lanes": "2",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4376242,
+            43.5074409
+          ],
+          [
+            5.4363823,
+            43.5066621
+          ],
+          [
+            5.4360128,
+            43.5064275
+          ],
+          [
+            5.4359399,
+            43.5063641
+          ]
+        ]
+      },
+      "id": "way/579502120"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/579502122",
+        "cycleway:right": "lane",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4353217,
+            43.509917
+          ],
+          [
+            5.4351825,
+            43.5099182
+          ],
+          [
+            5.4348686,
+            43.5099228
+          ],
+          [
+            5.4343135,
+            43.5099274
+          ],
+          [
+            5.4339809,
+            43.5099157
+          ],
+          [
+            5.4336878,
+            43.5098916
+          ],
+          [
+            5.4333801,
+            43.5098553
+          ],
+          [
+            5.433087,
+            43.5097999
+          ],
+          [
+            5.4329867,
+            43.5097823
+          ]
+        ]
+      },
+      "id": "way/579502122"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/640885490",
+        "cycleway:right": "lane",
+        "highway": "primary",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4389164,
+            43.508251
+          ],
+          [
+            5.4376242,
+            43.5074409
+          ]
+        ]
+      },
+      "id": "way/640885490"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/640885491",
+        "cycleway:right": "lane",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4402134,
+            43.5090649
+          ],
+          [
+            5.4399785,
+            43.5089076
+          ]
+        ]
+      },
+      "id": "way/640885491"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/642708349",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4382411,
+            43.5096231
+          ],
+          [
+            5.4377187,
+            43.5096067
+          ],
+          [
+            5.4376263,
+            43.5096077
+          ],
+          [
+            5.4375987,
+            43.509608
+          ],
+          [
+            5.4371694,
+            43.5096129
+          ],
+          [
+            5.4368776,
+            43.5096503
+          ],
+          [
+            5.4364828,
+            43.5097188
+          ],
+          [
+            5.4363992,
+            43.5097476
+          ],
+          [
+            5.4362636,
+            43.5098123
+          ],
+          [
+            5.4361799,
+            43.5098695
+          ],
+          [
+            5.4361559,
+            43.5099353
+          ]
+        ]
+      },
+      "id": "way/642708349"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/642708351",
+        "cycleway:right": "lane",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "sign",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4392499,
+            43.5097244
+          ],
+          [
+            5.4391644,
+            43.5097093
+          ],
+          [
+            5.4390062,
+            43.5096814
+          ],
+          [
+            5.4384912,
+            43.5096316
+          ],
+          [
+            5.4384234,
+            43.5096282
+          ],
+          [
+            5.4383929,
+            43.5096267
+          ],
+          [
+            5.438335,
+            43.5096261
+          ],
+          [
+            5.4382411,
+            43.5096231
+          ]
+        ]
+      },
+      "id": "way/642708351"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/642708352",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4390319,
+            43.5096338
+          ],
+          [
+            5.4396077,
+            43.5097356
+          ]
+        ]
+      },
+      "id": "way/642708352"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/642708353",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4377678,
+            43.5095551
+          ],
+          [
+            5.4382447,
+            43.509581
+          ],
+          [
+            5.438332,
+            43.5095857
+          ],
+          [
+            5.4383957,
+            43.5095892
+          ],
+          [
+            5.4384659,
+            43.509593
+          ],
+          [
+            5.4385197,
+            43.5095959
+          ],
+          [
+            5.4390319,
+            43.5096338
+          ]
+        ]
+      },
+      "id": "way/642708353"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/655433515",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "sign",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4396216,
+            43.50979
+          ],
+          [
+            5.4392499,
+            43.5097244
+          ]
+        ]
+      },
+      "id": "way/655433515"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/675489072",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "FR:urban",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4423272,
+            43.5111924
+          ],
+          [
+            5.4423609,
+            43.5112764
+          ],
+          [
+            5.4423871,
+            43.5113032
+          ]
+        ]
+      },
+      "id": "way/675489072"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/675489076",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2009",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422003,
+            43.5105952
+          ],
+          [
+            5.4421599,
+            43.5104633
+          ]
+        ]
+      },
+      "id": "way/675489076"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/686309880",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422713,
+            43.5104623
+          ],
+          [
+            5.4422709,
+            43.5105745
+          ]
+        ]
+      },
+      "id": "way/686309880"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/686309883",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4422414,
+            43.5103846
+          ],
+          [
+            5.4422713,
+            43.5104623
+          ]
+        ]
+      },
+      "id": "way/686309883"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/686309885",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Pierre Brossolette",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.442208,
+            43.5103382
+          ],
+          [
+            5.4422414,
+            43.5103846
+          ]
+        ]
+      },
+      "id": "way/686309885"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/687787900",
+        "highway": "primary",
+        "junction": "roundabout",
+        "source": "BDOrtho IGN",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4256202,
+            43.5080007
+          ],
+          [
+            5.4256384,
+            43.5079759
+          ]
+        ]
+      },
+      "id": "way/687787900"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/687787902",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "80",
+        "source": "BDOrtho IGN",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4256295,
+            43.5081095
+          ],
+          [
+            5.4256147,
+            43.5080835
+          ],
+          [
+            5.4256081,
+            43.5080558
+          ],
+          [
+            5.4256083,
+            43.5080523
+          ],
+          [
+            5.42561,
+            43.5080278
+          ],
+          [
+            5.4256202,
+            43.5080007
+          ]
+        ]
+      },
+      "id": "way/687787902"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/687793086",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "80",
+        "noname": "yes",
+        "source": "BDOrtho IGN",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4256384,
+            43.5079759
+          ],
+          [
+            5.4256594,
+            43.5079576
+          ],
+          [
+            5.4257039,
+            43.5079341
+          ],
+          [
+            5.4257563,
+            43.5079217
+          ],
+          [
+            5.4258114,
+            43.5079216
+          ],
+          [
+            5.4258473,
+            43.5079286
+          ],
+          [
+            5.4258803,
+            43.5079408
+          ],
+          [
+            5.4259091,
+            43.5079578
+          ]
+        ]
+      },
+      "id": "way/687793086"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/687793087",
+        "highway": "primary",
+        "junction": "roundabout",
+        "maxspeed": "80",
+        "source": "BDOrtho IGN",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4259091,
+            43.5079578
+          ],
+          [
+            5.4259306,
+            43.5079768
+          ],
+          [
+            5.4259466,
+            43.5079983
+          ],
+          [
+            5.4259567,
+            43.5080217
+          ],
+          [
+            5.4259604,
+            43.5080461
+          ],
+          [
+            5.4259577,
+            43.5080705
+          ],
+          [
+            5.4259485,
+            43.5080941
+          ]
+        ]
+      },
+      "id": "way/687793087"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/721233424",
+        "highway": "primary",
+        "maxspeed": "80",
+        "name": "Avenue Fortuné Ferrini",
+        "oneway": "yes",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:rural"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4349154,
+            43.5024824
+          ],
+          [
+            5.4351168,
+            43.5030868
+          ],
+          [
+            5.4351248,
+            43.5031289
+          ]
+        ]
+      },
+      "id": "way/721233424"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/721233425",
+        "highway": "primary",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "oneway": "yes",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4352474,
+            43.5037174
+          ],
+          [
+            5.4352697,
+            43.503823
+          ]
+        ]
+      },
+      "id": "way/721233425"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/721286543",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "oneway": "yes",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4352697,
+            43.503823
+          ],
+          [
+            5.435332,
+            43.5041606
+          ],
+          [
+            5.4353563,
+            43.5042927
+          ],
+          [
+            5.4354078,
+            43.504573
+          ],
+          [
+            5.4354136,
+            43.5048277
+          ]
+        ]
+      },
+      "id": "way/721286543"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/721286544",
+        "highway": "primary",
+        "maxspeed": "80",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:rural"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4349154,
+            43.5024824
+          ],
+          [
+            5.4347824,
+            43.5019426
+          ],
+          [
+            5.4347049,
+            43.5016198
+          ],
+          [
+            5.434278,
+            43.4998403
+          ],
+          [
+            5.4337357,
+            43.4974301
+          ],
+          [
+            5.4336709,
+            43.497142
+          ]
+        ]
+      },
+      "id": "way/721286544"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/721286546",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "oneway": "yes",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4354136,
+            43.5048277
+          ],
+          [
+            5.4353252,
+            43.504469
+          ],
+          [
+            5.4352581,
+            43.5041738
+          ]
+        ]
+      },
+      "id": "way/721286546"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/721286548",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "oneway": "yes",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4352581,
+            43.5041738
+          ],
+          [
+            5.4351915,
+            43.5038808
+          ],
+          [
+            5.4351591,
+            43.5037304
+          ],
+          [
+            5.4350364,
+            43.5031616
+          ],
+          [
+            5.4350306,
+            43.5031349
+          ]
+        ]
+      },
+      "id": "way/721286548"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/790974278",
+        "busway:right": "lane",
+        "cycleway:right": "share_busway",
+        "highway": "primary",
+        "lanes": "2",
+        "lanes:psv": "1",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4328648,
+            43.5096853
+          ],
+          [
+            5.4330211,
+            43.5097179
+          ],
+          [
+            5.433274,
+            43.5097655
+          ],
+          [
+            5.4335029,
+            43.5097992
+          ],
+          [
+            5.4338195,
+            43.5098383
+          ],
+          [
+            5.4340452,
+            43.5098535
+          ],
+          [
+            5.4343255,
+            43.5098657
+          ],
+          [
+            5.4352988,
+            43.5098618
+          ],
+          [
+            5.4354185,
+            43.5098682
+          ],
+          [
+            5.4355634,
+            43.509882
+          ],
+          [
+            5.435644,
+            43.5098876
+          ],
+          [
+            5.4357217,
+            43.5098945
+          ]
+        ]
+      },
+      "id": "way/790974278"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/795657930",
+        "cycleway:right": "lane",
+        "highway": "primary",
+        "maxspeed": "30",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4399785,
+            43.5089076
+          ],
+          [
+            5.4396586,
+            43.508714
+          ],
+          [
+            5.4393138,
+            43.5084954
+          ],
+          [
+            5.4389164,
+            43.508251
+          ]
+        ]
+      },
+      "id": "way/795657930"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/869050921",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "30",
+        "name": "Route des Milles",
+        "oneway": "yes",
+        "ref": "D 9",
+        "source:maxspeed": "FR:zone30",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4329867,
+            43.5097823
+          ],
+          [
+            5.4328878,
+            43.5097626
+          ],
+          [
+            5.4328348,
+            43.5097509
+          ],
+          [
+            5.4326914,
+            43.5097129
+          ],
+          [
+            5.4326304,
+            43.5096928
+          ],
+          [
+            5.4325964,
+            43.5096813
+          ],
+          [
+            5.4323851,
+            43.5096176
+          ],
+          [
+            5.432169,
+            43.5095129
+          ]
+        ]
+      },
+      "id": "way/869050921"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/885118371",
+        "highway": "primary",
+        "lanes": "2",
+        "maxspeed": "30",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N",
+        "source:maxspeed": "FR:zone30"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4419535,
+            43.5101902
+          ],
+          [
+            5.4419927,
+            43.5102131
+          ]
+        ]
+      },
+      "id": "way/885118371"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/908050161",
+        "highway": "primary",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "oneway": "yes",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4351248,
+            43.5031289
+          ],
+          [
+            5.4351729,
+            43.5033823
+          ],
+          [
+            5.4352342,
+            43.5036578
+          ],
+          [
+            5.4352474,
+            43.5037174
+          ]
+        ]
+      },
+      "id": "way/908050161"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/908050162",
+        "highway": "primary",
+        "lanes": "1",
+        "maxspeed": "80",
+        "name": "Avenue Fortuné Ferrini",
+        "oneway": "yes",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4350306,
+            43.5031349
+          ],
+          [
+            5.4350197,
+            43.5030844
+          ],
+          [
+            5.434999,
+            43.5029885
+          ],
+          [
+            5.4349154,
+            43.5024824
+          ]
+        ]
+      },
+      "id": "way/908050162"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/1035856774",
+        "cycleway:left": "track",
+        "highway": "primary",
+        "lanes": "2",
+        "maxspeed": "50",
+        "name": "Avenue Fortuné Ferrini",
+        "ref": "D 8N"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.4359399,
+            43.5063641
+          ],
+          [
+            5.4358411,
+            43.5062781
+          ],
+          [
+            5.4358043,
+            43.5062247
+          ],
+          [
+            5.4357296,
+            43.5061163
+          ],
+          [
+            5.4356714,
+            43.5060002
+          ],
+          [
+            5.4355413,
+            43.5055122
+          ],
+          [
+            5.4354136,
+            43.5048277
+          ]
+        ]
+      },
+      "id": "way/1035856774"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/256594822",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "L'Armelière",
+        "public_transport": "stop_position"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4361505,
+          43.5100693
+        ]
+      },
+      "id": "node/256594822"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/256594828",
+        "crossing": "marked",
+        "crossing:island": "yes",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4252988,
+          43.5080625
+        ]
+      },
+      "id": "node/256594828"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/256594845",
+        "crossing": "marked",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4355634,
+          43.509882
+        ]
+      },
+      "id": "node/256594845"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/256594864",
+        "crossing": "marked",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4355817,
+          43.5099828
+        ]
+      },
+      "id": "node/256594864"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/256595205",
+        "crossing": "uncontrolled",
+        "crossing_ref": "zebra",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4363671,
+          43.5097004
+        ]
+      },
+      "id": "node/256595205"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/256595307",
+        "highway": "traffic_signals",
+        "traffic_signals": "signal",
+        "traffic_signals:direction": "both"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.440462,
+          43.5092271
+        ]
+      },
+      "id": "node/256595307"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/822202429",
+        "highway": "traffic_signals",
+        "traffic_signals": "signal"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4399785,
+          43.5089076
+        ]
+      },
+      "id": "node/822202429"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/822207709",
+        "crossing": "traffic_signals",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4419927,
+          43.5102131
+        ]
+      },
+      "id": "node/822207709"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/822258173",
+        "crossing": "uncontrolled",
+        "crossing_ref": "zebra",
+        "highway": "crossing",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4363992,
+          43.5097476
+        ]
+      },
+      "id": "node/822258173"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/822302248",
+        "crossing": "uncontrolled",
+        "crossing_ref": "zebra",
+        "highway": "crossing",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4423188,
+          43.5111458
+        ]
+      },
+      "id": "node/822302248"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/822302319",
+        "crossing": "uncontrolled",
+        "crossing_ref": "zebra",
+        "highway": "crossing",
+        "source": "cadastre-dgi-fr source : Direction Générale des Impôts - Cadastre. Mise à jour : 2010"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.442256,
+          43.5111483
+        ]
+      },
+      "id": "node/822302319"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2329430496",
+        "name": "Aix-en-Provence",
+        "traffic_sign": "city_limit"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4316967,
+          43.5093184
+        ]
+      },
+      "id": "node/2329430496"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2560070936",
+        "crossing": "traffic_signals",
+        "crossing_ref": "zebra",
+        "highway": "crossing",
+        "source": "Bing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4420956,
+          43.5104347
+        ]
+      },
+      "id": "node/2560070936"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8431707399",
+        "name": "Aix-en-Provence",
+        "traffic_sign": "city_limit"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4351248,
+          43.5031289
+        ]
+      },
+      "id": "node/8431707399"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8431707400",
+        "name": "Aix-en-Provence",
+        "traffic_sign": "city_limit"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4350306,
+          43.5031349
+        ]
+      },
+      "id": "node/8431707400"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8797630833",
+        "crossing": "marked",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4237383,
+          43.5080505
+        ]
+      },
+      "id": "node/8797630833"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8846916236",
+        "bus": "yes",
+        "highway": "bus_stop",
+        "name": "La Parade",
+        "public_transport": "stop_position"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4238558,
+          43.5080528
+        ]
+      },
+      "id": "node/8846916236"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5745548985",
+        "crossing": "traffic_signals",
+        "crossing_ref": "zebra",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4328648,
+          43.5096853
+        ]
+      },
+      "id": "node/5745548985"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7394356643",
+        "highway": "traffic_signals",
+        "traffic_signals": "signal",
+        "traffic_signals:direction": "forward"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4328878,
+          43.5097626
+        ]
+      },
+      "id": "node/7394356643"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7394356647",
+        "crossing": "traffic_signals",
+        "crossing_ref": "zebra",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4323851,
+          43.5096176
+        ]
+      },
+      "id": "node/7394356647"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7394356652",
+        "crossing": "traffic_signals",
+        "crossing_ref": "zebra",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4324212,
+          43.5095674
+        ]
+      },
+      "id": "node/7394356652"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7394356656",
+        "crossing": "traffic_signals",
+        "crossing_ref": "zebra",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4328348,
+          43.5097509
+        ]
+      },
+      "id": "node/7394356656"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7394356660",
+        "highway": "traffic_signals",
+        "traffic_signals": "signal",
+        "traffic_signals:direction": "forward"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4323778,
+          43.5095527
+        ]
+      },
+      "id": "node/7394356660"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4371155509",
+        "crossing": "uncontrolled",
+        "crossing_ref": "zebra",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4383929,
+          43.5096267
+        ]
+      },
+      "id": "node/4371155509"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5590165253",
+        "crossing": "uncontrolled",
+        "crossing_ref": "zebra",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4383957,
+          43.5095892
+        ]
+      },
+      "id": "node/5590165253"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7705425575",
+        "highway": "traffic_signals",
+        "traffic_signals": "signal",
+        "traffic_signals:direction": "forward"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4402323,
+          43.5092814
+        ]
+      },
+      "id": "node/7705425575"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7705425576",
+        "crossing": "traffic_signals",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4402415,
+          43.509217
+        ]
+      },
+      "id": "node/7705425576"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7705425578",
+        "crossing": "traffic_signals",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4403687,
+          43.5092871
+        ]
+      },
+      "id": "node/7705425578"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/7705425579",
+        "crossing": "traffic_signals",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4403698,
+          43.509167
+        ]
+      },
+      "id": "node/7705425579"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8231128746",
+        "crossing": "traffic_signals",
+        "highway": "crossing"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4415666,
+          43.5099529
+        ]
+      },
+      "id": "node/8231128746"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4461930895",
+        "crossing": "marked",
+        "highway": "crossing",
+        "mapillary": "h1dggyqy0oBqKyfDgStnPR",
+        "source": "Bing",
+        "survey:date": "2020-07-21",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4425073,
+          43.5127817
+        ]
+      },
+      "id": "node/4461930895"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4461930898",
+        "crossing": "marked",
+        "highway": "crossing",
+        "mapillary": "SK2MXvBhx41hN8rIyRu0Ni",
+        "source": "Bing",
+        "survey:date": "2020-07-21",
+        "tactile_paving": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4424104,
+          43.512785
+        ]
+      },
+      "id": "node/4461930898"
+    }
+  ]
+}

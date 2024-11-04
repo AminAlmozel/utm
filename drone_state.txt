@@ -6,6 +6,6 @@ d = {"id": len(self.drn),
             "mission": {
                 "type": "delivery",
                 "progress": 0,
-                "waypoints": [xf, xi] # Deliver to the final destination, then come back to the original place
-            },
-            "outcome": "in progress"}
+                "waypoints": [xf], # Deliver to the final destination, then come back to the original place
+                "status":"in progress"
+            }}

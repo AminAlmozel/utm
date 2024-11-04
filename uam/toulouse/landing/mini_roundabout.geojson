@@ -1,0 +1,174 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2022-04-12T09:40:54Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/65122399",
+        "building": "service",
+        "name": "Toulouse",
+        "operator": "Enedis",
+        "power": "substation",
+        "source": "Enedis - 06/2018",
+        "substation": "minor_distribution",
+        "utility": "power",
+        "voltage": "20000;400"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.2319026,
+              47.973593
+            ],
+            [
+              0.2318719,
+              47.9735699
+            ],
+            [
+              0.231917,
+              47.9735428
+            ],
+            [
+              0.2319478,
+              47.9735659
+            ],
+            [
+              0.2319026,
+              47.973593
+            ]
+          ]
+        ]
+      },
+      "id": "way/65122399"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/304155455",
+        "amenity": "restaurant",
+        "building": "yes",
+        "cuisine": "fish",
+        "name": "Toulouse",
+        "website": "https://www.toulouserestaurant.co.uk/"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.6856736,
+              51.5358841
+            ],
+            [
+              0.6856655,
+              51.5358308
+            ],
+            [
+              0.6863361,
+              51.5357974
+            ],
+            [
+              0.6863374,
+              51.5358491
+            ],
+            [
+              0.6856736,
+              51.5358841
+            ]
+          ]
+        ]
+      },
+      "id": "way/304155455"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/592209278",
+        "addr:street": "Rue 11",
+        "amenity": "school",
+        "building": "yes",
+        "building:levels": "4",
+        "name": "Toulouse"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.5902807,
+              33.5350157
+            ],
+            [
+              -7.5903262,
+              33.5349882
+            ],
+            [
+              -7.5903207,
+              33.5349819
+            ],
+            [
+              -7.5903635,
+              33.534956
+            ],
+            [
+              -7.590369,
+              33.5349623
+            ],
+            [
+              -7.590419,
+              33.5349321
+            ],
+            [
+              -7.5903633,
+              33.5348411
+            ],
+            [
+              -7.5902096,
+              33.5349341
+            ],
+            [
+              -7.5902807,
+              33.5350157
+            ]
+          ]
+        ]
+      },
+      "id": "way/592209278"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2067214913",
+        "highway": "mini_roundabout"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.6238673,
+          43.4861947
+        ]
+      },
+      "id": "node/2067214913"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8623460064",
+        "highway": "mini_roundabout"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.5079734,
+          43.5188174
+        ]
+      },
+      "id": "node/8623460064"
+    }
+  ]
+}

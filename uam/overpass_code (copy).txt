@@ -1,0 +1,9 @@
+[timeout:30];(
+  area["name"="Aix-en-Provence"];
+  node[aeroway=aerodrome](area);
+  way[aeroway=aerodrome](area);
+  relation[aeroway=aerodrome](area);
+
+);
+out;
+//out;>;out qt;
