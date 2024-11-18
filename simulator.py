@@ -1,6 +1,7 @@
 # Importing standard libraries
 import time
-from datetime import datetime
+# from datetime import datetime
+import datetime
 import random
 from multiprocessing import Pool
 from queue import Queue
@@ -32,10 +33,10 @@ class simulator(drone.drone):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 1000
+        self.total_iterations = 800
 
         # Parameters
-        self.K = 50  # Number of vehicles
+        self.K = 10  # Number of vehicles
 
         # Parameters for collision avoidance between vehicles
         self.d_x = 3  # Minimum horizontal distance
@@ -52,6 +53,10 @@ class simulator(drone.drone):
         self.vehicles = []
         self.full_traj = []
         self.obs = environment.env()
+
+        today = datetime.date.today()
+        # datetime(year, month, day, hour, minute, second, microsecond)
+        self.sim_start = datetime.datetime(today.year, today.month, today.day, 12, 0, 0)
 
         self.ppp = polygon_pathplanning.polygon_pp()
         self.dummy_obstacles()
@@ -108,9 +113,10 @@ class simulator(drone.drone):
         self.max_vel = self.drn[0].smax[3] # Max velocity
 
     def create_drone(self, xi, waypoints, n):
+        born = self.seconds_from_today(n)
         # Dictionary that contains all the data for the drone, except for the drone object
         d = {"id": len(self.drn),
-                 "born": n,
+                 "born": born,
                  "trajs": [],
                  "alive": 1, # Alive, 0 is dead
                  "state": xi,
@@ -201,18 +207,18 @@ class simulator(drone.drone):
             pool.join()
             self.update()
             io.log_to_json(self.drones)
+        io.log_to_json_dict(self.drones)
 
         t1 = time.time()
         print("Time of execution: %.2f" % (t1 - t0))
 
         io.log_dict(self.drones)
         temp = io.read_log_dict()
-        io.log_to_json(self.drones)
+        # io.log_to_json(self.drones)
 
     def update(self):
         # Check for collision
         self.check_collisions()
-        print(self.drn_list)
         # Update trajectories and the current state
         self.update_vehicle_state()
         # Apply random events
@@ -239,7 +245,6 @@ class simulator(drone.drone):
                         el = [el0, el1]
                         self.drones[drn]["mission"]["waypoints"] += el
                         waypoints = self.drones[drn]["mission"]["waypoints"]
-                        print(waypoints)
                         len(waypoints) - 2
                         progress = self.drones[drn]["mission"]["progress"]
                         self.drones[drn]["mission"]["progress"] = len(waypoints) - 2
@@ -363,33 +368,17 @@ class simulator(drone.drone):
         waypoint = [p.x, p.y, z, 0, 0, 0]
         return self.list2state(waypoint)
 
-    def draw_box(self, ax, obs, color='gray', alpha=0.3):
-        """Draws a 3D box (cuboid) representing an obstacle."""
-        # Define the corners of the obstacle
-        x_corners = [obs['xmin'], obs['xmax'], obs['xmax'], obs['xmin'], obs['xmin']]
-        y_corners = [obs['ymin'], obs['ymin'], obs['ymax'], obs['ymax'], obs['ymin']]
-        z_bottom = obs['zmin']
-        z_top = obs['zmax']
-
-        # Draw the bottom and top faces
-        x = np.array([[obs['xmin'], obs['xmax']], [obs['xmin'], obs['xmax']]])
-        y = np.array([[obs['ymin'], obs['ymin']], [obs['ymax'], obs['ymax']]])
-        z = np.array([[z_bottom, z_bottom], [z_bottom, z_bottom]])
-        ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-        z = np.array([[z_top, z_top], [z_top, z_top]])
-        ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
-        # Draw the side faces
-        for i in range(4):
-            x = np.array([x_corners[i:i+2], x_corners[i:i+2]])
-            y = np.array([y_corners[i:i+2], y_corners[i:i+2]])
-            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
-            z = np.array([[z_bottom, z_bottom], [z_top, z_top]])
-            ax.plot_surface(x, y, z, color=color, alpha=alpha)
-
     def dist_squared(self, xi, xi_1):
         return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
+
+    def seconds_from_today(self, iteration):
+        s = iteration * self.delta_t
+        # datetime.datetime.fromtimestamp(ms/1000.0)
+        ts = self.sim_start.timestamp() + s
+        mission_start = datetime.datetime.fromtimestamp(ts)
+        s = mission_start.strftime("%Y-%m-%d %H:%M:%S")
+        s = mission_start.strftime("%Y-%m-%d")
+        return mission_start
 
     def set_initial_state(self):
         # Initial conditions for each vehicle

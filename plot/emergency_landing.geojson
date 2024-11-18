@@ -1,10 +1,11 @@
 {
 "type": "FeatureCollection",
+"name": "emergency_landing",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Point", "coordinates": [ 39.095979187932684, 22.309393477756185 ] } },
-{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Point", "coordinates": [ 39.094749000023938, 22.309317299990102 ] } },
-{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 39.094112700024063, 22.309171499990054 ], [ 39.094112900024065, 22.309263699990048 ], [ 39.09415630002411, 22.309691399990033 ], [ 39.094381100024151, 22.310651399990018 ], [ 39.095079700023987, 22.310529299990083 ], [ 39.094831200023989, 22.310008799990086 ], [ 39.094714900023973, 22.309682099990088 ], [ 39.094732100023954, 22.309383399990111 ], [ 39.094749000023938, 22.309317299990102 ], [ 39.094112700024063, 22.309171499990054 ] ] ] } },
-{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Point", "coordinates": [ 39.094526630883188, 22.309940569471905 ] } }
+{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Point", "coordinates": [ 39.104658936920195, 22.311973614449101 ] } },
+{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Point", "coordinates": [ 39.105075400022315, 22.315067499990764 ] } },
+{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 39.104722100022435, 22.31545279999072 ], [ 39.10495360002237, 22.315291499990753 ], [ 39.105153100022314, 22.315152499990766 ], [ 39.105075400022315, 22.315067499990764 ], [ 39.104654700022436, 22.315376499990709 ], [ 39.104722100022435, 22.31545279999072 ] ] ] } },
+{ "type": "Feature", "properties": { "stroke": "red", "marker-color": "red", "fill": "red" }, "geometry": { "type": "Point", "coordinates": [ 39.104905648280976, 22.315259270926653 ] } }
 ]
 }

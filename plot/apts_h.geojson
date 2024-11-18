@@ -1,5 +1,6 @@
 {
 "type": "FeatureCollection",
+"name": "apts_h",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "name": "H-4304B", "freq": 1, "zmax": 20, "zmin": 0, "stroke": "orange", "marker-color": "orange", "fill": "orange" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 39.1003955, 22.3094236 ], [ 39.1003411, 22.3099058 ], [ 39.1005424, 22.3099252 ], [ 39.1005967, 22.309443 ], [ 39.1003955, 22.3094236 ] ] ] } },

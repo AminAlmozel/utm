@@ -1,3 +1,5 @@
+import datetime
+
 import geopandas as gp
 import pandas as pd
 import numpy as np
@@ -440,6 +442,33 @@ class myio:
         df.to_crs(crs=4326, inplace=True)
         trajs = df.geometry
         myio.write_geom(trajs, "trajs", "blue")
+
+    def log_to_json_dict(drones):
+        trajs = []
+        dt = 0.1
+        for drone in drones:
+            t = []
+            for traj in drone["trajs"]:
+                # point = Point(traj[0][0], traj[1][0], traj[2][0])
+                point = [traj[0][0], traj[1][0], traj[2][0]]
+                t.append(point)
+            ls = myio.traj_to_linestring(t)
+            # trajs.append(ls)
+            s = drone["born"]
+            # 100 milliseconds for each timestep
+            T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
+            e = s + T
+            trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'length': len(t)})
+
+        df = pd.DataFrame(trajs)
+        gdf = gp.GeoDataFrame(df, crs="EPSG:20437")
+        gdf.to_crs(crs=4326, inplace=True)
+
+        name = "trajs_time"
+        gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
+        now = datetime.date.now()
+        date = now.strftime("%y-%m-%d-%H%M%S")
+        gdf.to_file('plot/trajs/' + name + date + '.geojson', driver='GeoJSON')
 
     def combine_json_files(self, list, output):
         concat_gdf = []
