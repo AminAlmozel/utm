@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2024-11-24T18:37:30Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/478487359",
+        "amenity": "fire_station",
+        "check_date": "2024-04-17",
+        "name": "KAUST Firestation"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1052682,
+          22.3139536
+        ]
+      },
+      "id": "node/478487359"
+    }
+  ]
+}
