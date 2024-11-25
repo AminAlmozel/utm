@@ -1,4 +1,5 @@
 import datetime
+import glob
 
 import geopandas as gp
 import pandas as pd
@@ -6,10 +7,6 @@ import numpy as np
 import pickle as pkl
 
 from shapely.geometry import LineString, Point, Polygon, box
-# from shapely.ops import nearest_points
-import glob
-# from math import radians, cos, sin, asin, atan2, sqrt, pi, ceil, exp, log
-from math import ceil
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -433,9 +430,10 @@ class myio:
         for drone in drones:
             t = []
             for traj in drone["trajs"]:
-                # point = Point(traj[0][0], traj[1][0], traj[2][0])
                 point = [traj[0][0], traj[1][0], traj[2][0]]
                 t.append(point)
+            if len(t) == 1:
+                continue
             ls = myio.traj_to_linestring(t)
             trajs.append(ls)
         df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
@@ -466,7 +464,7 @@ class myio:
 
         name = "trajs_time"
         gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
-        now = datetime.date.now()
+        now = datetime.datetime.now()
         date = now.strftime("%y-%m-%d-%H%M%S")
         gdf.to_file('plot/trajs/' + name + date + '.geojson', driver='GeoJSON')
 

@@ -9,24 +9,21 @@ import numpy as np
 import geopandas as gp
 import pandas as pd
 import shapely
-from shapely.geometry import box, Point
+from shapely.geometry import box, Point, LineString
 import glob
 
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import matplotlib.collections
-import mpl_toolkits.mplot3d as a3
-# from matplotlib._png import read_png
-from matplotlib.cbook import get_sample_data
+from sim_io import myio as io
 
 class env():
     def __init__(self):
+        self.c = 0.0000124187
         self.read_houses()
         self.read_apartments()
         self.read_restaurants()
+        self.read_fire_station()
         self.add_height()
         self.transform_coords()
-        # self.plot()
+
         nearby = self.nearby_obstacles([4, 5, 8], 10)
         # print(nearby)
 
@@ -138,6 +135,29 @@ class env():
         gdf["fill"] = color
         gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
 
+    def read_fire_station(self):
+        # Reading the file
+        filename = "env/fire_station.geojson"
+        file = open(filename)
+        fire_station_df = gp.read_file(file)
+        # Name, polygon, freq
+        # Putting the houses into a dictionary
+        N = fire_station_df.geometry.size
+        fire_station_dict = []
+        for index, row in fire_station_df.iterrows():
+            fire_station_dict.append({'name': row["name"], 'geom': row["geometry"]})
+        df = pd.DataFrame(fire_station_dict)
+        gdf = gp.GeoDataFrame(df, crs=4326, geometry=df['geom'])
+        del gdf['geom']
+        self.fire_station = gdf
+
+        color = "green"
+        name = "fire_station"
+        gdf["stroke"] = color
+        gdf["marker-color"] = color
+        gdf["fill"] = color
+        gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
+
     def add_height(self):
         placeholder_height = 20
         # placeholder_height = np.array([0, placeholder_height])
@@ -158,6 +178,12 @@ class env():
         self.houses.to_crs(epsg=20437, inplace=True)
         self.apts.to_crs(epsg=20437, inplace=True)
         self.restaurants.to_crs(epsg=20437, inplace=True)
+        self.fire_station.to_crs(epsg=20437, inplace=True)
+
+    def transform_meter_global(self, geom):
+        gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
+        gdf.to_crs(epsg=4326, inplace=True)
+        return gdf.geometry
 
     def write_geom(self, gdf, name, color):
         s = gdf
@@ -225,7 +251,58 @@ class env():
         v = [0, 0, 0]
         return v
 
+    def random_fire(self, drones):
+        fire_station = self.fire_station.iloc[0]
+        temp = fire_station.geometry
+        zi = random.randint(0, 30)
+        pi = [temp.x, temp.y, zi]
+        vi = self.random_state(0, fire_station)
+        xi = pi + vi
 
+        # Choose a random house
+        house, pf = self.random_house(12, "placeholder")
+        vf = self.random_state(0, house)
+        xf = pf + vf
+
+        # Make a buffered line going from the fire station to that house
+        # and the area surrounding the location of the fire
+        ls = self.traj_to_linestring([pi, pf])
+        g = gp.GeoSeries([ls.buffer(30), temp.buffer(50), Point(pf).buffer(100)])
+        avoid = g.unary_union
+        avoid = self.transform_meter_global([avoid])[0]
+        io.write_geom([avoid], "avoid", "red")
+
+        # Reconstruct the trajectories of all the other drones
+        trajs = []
+        for drn in drones:
+            if drn["alive"]:
+                progress = drn["mission"]["progress"]
+                waypoints = drn["mission"]["waypoints"]
+                traj = self.waypoints_to_traj(waypoints)
+                ls = self.traj_to_linestring(traj)
+                trajs.append(ls)
+        trajs = self.transform_meter_global(trajs)
+        io.write_geom(trajs, "trajectroies1", "white")
+
+        # Check for intersection with the fire response trajectory
+        trajs = gp.GeoSeries(trajs)
+        result = trajs.intersects(avoid)
+        indices = np.where(result)[0]
+        return xi, [xf, xi], indices, avoid
+
+    def traj_to_linestring(self, traj):
+        points = []
+        for i in range(len(traj)):
+            point = Point(traj[i][0], traj[i][1])
+            points.append(point)
+        s_line = LineString(points)
+        return s_line
+
+    def waypoints_to_traj(self, values):
+        traj = []
+        for waypoint in values:
+            traj.append([waypoint["x"], waypoint["y"]])
+        return traj
 # def main():
 #     enviroment = env()
 

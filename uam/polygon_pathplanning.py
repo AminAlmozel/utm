@@ -30,7 +30,6 @@ class polygon_pp(myio.myio):
         self.project = "uam/kaust/"
         self.sa = self.import_custom("landing")
         self.sa = self.sa.geometry.unary_union
-        # self.sa = gp.GeoSeries()
         fa = self.import_forbidden()
         # Approximating the polygonial airspace
         tolerance = 30 # Meters
@@ -49,12 +48,21 @@ class polygon_pp(myio.myio):
         a = 0
         b = 1
         path = astar.a_star(m_adj, m_heur, a, b)
+
+
         traj = self.path_to_traj(path, ls)
 
         traj = self.transform_coords_meters(traj)
         for i in range(len(traj)):
             traj[i] += [30, 0, 0, 0]
         return traj
+
+    def round_trip(self, one_way):
+        # Return trip
+        return_path = one_way[::-1]
+        one_way.pop() # Remove the last element to make a full trip without duplicates
+        round_trip = one_way + return_path
+        return round_trip
 
     def closest_landing(self, coords):
         # Ignore the height
@@ -104,7 +112,7 @@ class polygon_pp(myio.myio):
         sa = sa.intersection(bbox)
         self.fa_gs = self.fa_gs.intersection(bbox)
         fa = self.fa_gs.unary_union # Geoseries to multipolygon
-
+        tolerance = 30 # Not sure if this is good
         fa = self.simplify_polygon(fa, tolerance)
 
         # Outputting for testing
@@ -260,11 +268,12 @@ class polygon_pp(myio.myio):
         self.fa_gs = p
 
     def add_to_forbidden(self, area):
-        list_of_df = [self.fa_gs, area]
-        self.fa_gs = pd.concat(list_of_df, ignore_index=True)
-        self.fa_gs = gp.GeoSeries(self.fa_gs.unary_union)
-        print("Added area to forbidden")
-        return self.fa_gs.unary_union
+        gs = gp.GeoSeries([self.fa, area])
+        mp = gs.unary_union
+        self.fa = mp
+        self.write_geom([self.fa], "new_nfz", "orange")
+        # print("Added area to forbidden")
+        return self.fa
 
     def m_create_connectivity(self, sa, fa, additional_points):
         # Safe Airspace, Forbidden Airspace
