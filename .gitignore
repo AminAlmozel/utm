@@ -2,3 +2,5 @@
 /uam/__pycache__
 traj.pickle
 /plot/animation
+/plot/simulation
+/plot/trajs

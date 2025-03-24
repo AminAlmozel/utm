@@ -420,10 +420,13 @@ class myio:
 
     def read_log_dict():
         print("Reading trajectories from file")
-        trajfile = open('traj.pickle', 'rb')
-        vehicles_positions = pkl.load(trajfile)
-        trajfile.close()
-        return vehicles_positions
+        filename = 'plot/simulation/read/*'
+        list_of_files = glob.glob(filename)
+        mission_pickle = list_of_files[0]
+        mission_file = open(mission_pickle, 'rb')
+        missions_dict = pkl.load(mission_file)
+        mission_file.close()
+        return missions_dict
 
     def log_to_json(drones):
         trajs = []
@@ -463,6 +466,34 @@ class myio:
         gdf.to_crs(crs=4326, inplace=True)
 
         name = "trajs_time"
+        gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
+        now = datetime.datetime.now()
+        date = now.strftime("%y-%m-%d-%H%M%S")
+        gdf.to_file('plot/trajs/' + name + date + '.geojson', driver='GeoJSON')
+
+    def log_to_pickle(drones):
+        now = datetime.datetime.now()
+        date = now.strftime("%y-%m-%d-%H%M%S")
+        name = 'run_'
+        with open('plot/simulation/' + name + date + '.pkl', 'ab') as fp:
+            pkl.dump(drones, fp, protocol=pkl.HIGHEST_PROTOCOL)
+
+    def log_timed_geom(geoms, time):
+        gs = []
+        dt = 0.1
+        for k, geom in enumerate(geoms):
+            s = time[k][0]
+            e = time[k][1]
+            # T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
+            T = e - s # Placeholder
+            print(geom)
+            gs.append({'geometry': geom, 'start_datetime': s, 'end_datetime': e, 'length': T})
+
+        df = pd.DataFrame(gs)
+        gdf = gp.GeoDataFrame(df, crs="EPSG:20437")
+        gdf.to_crs(crs=4326, inplace=True)
+
+        name = "avoid_time"
         gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
         now = datetime.datetime.now()
         date = now.strftime("%y-%m-%d-%H%M%S")

@@ -29,7 +29,7 @@ class simulator(drone.drone):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
         self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 800
+        self.total_iterations = 1200
 
         # Parameters
         self.n_vehicles = 50 # Starting number of vehicles
@@ -114,7 +114,7 @@ class simulator(drone.drone):
         # print(destination)
         # if destination == 0:
         #     destination += 1 # To resolve an issue with firefighting drones
-        destinations = [waypoints[0], waypoints[destination]]
+        destinations = [waypoints[0], waypoints[destination], waypoints[0]]
 
         self.create_drone(xi, waypoints, n, "delivery", "in progress", destinations)
 
@@ -225,11 +225,13 @@ class simulator(drone.drone):
             self.update()
             io.log_to_json(self.drones)
         io.log_to_json_dict(self.drones)
+        io.log_to_pickle(self.drones)
 
         t1 = time.time()
         print("Time of execution: %.2f" % (t1 - t0))
 
-        io.log_dict(self.drones)
+        io.log_to_pickle(self.drones)
+        # io.log_dict(self.drones)
         temp = io.read_log_dict()
         # io.log_to_json(self.drones)
 
@@ -246,13 +248,13 @@ class simulator(drone.drone):
 
     def random_events(self):
         N = len(self.drn_list)
-        if self.iteration == 100: # Random fire emergency
-            xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones)
+        if self.iteration == 4: # Random fire emergency
+            xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones, self.iteration)
             self.create_firefighting_drone(xi, waypoints)
-
+            self.ppp.add_to_forbidden(fire)
             # Replan for the drones crossing the path and the area surrounding the location of the fire
             # Adding the fire to the no fly zones, so that other drones fly around it
-            self.ppp.add_to_forbidden(fire)
+
             for drn in alert_drones:
                 current_state = self.drones[drn]["state"]
                 home_state = self.drones[drn]["mission"]["destination"][0]
@@ -277,7 +279,7 @@ class simulator(drone.drone):
                 self.drones[drn]["mission"]["waypoints"] = new_waypoints
 
 
-        if self.iteration == 500:
+        if self.iteration == 1500:
             print("ABORT MISSION!!!!11!!!!!! MBS IS HERE!!!!")
             rnd_drn = random.choices(self.drn_list, k=3)
             print(rnd_drn)
@@ -373,7 +375,6 @@ class simulator(drone.drone):
                     # If delivered, change status to returning to base
                     elif drone["mission"]["waypoints"][progress] == drone["mission"]["destination"][1]:
                         drone["mission"]["status"] = "returning"
-
 
     def random_drone(self):
         # Choosing a random entrace

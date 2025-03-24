@@ -419,6 +419,8 @@ class polygon_pp(myio.myio):
                     # dist = 100 * (dist - radius[0]) ** 2 + radius[0] ** 2
                     # dist = 500 * dist + 100 * dist * dist
                     dist = 500 * dist
+                elif (graph[i][j] == 0): # If its within a forbidden area
+                    dist = 1e6 * dist
                 else:
                     dist = 0
                 m_adj[i, j] = dist
@@ -498,6 +500,10 @@ class polygon_pp(myio.myio):
 
     def simplify_polygon(self, fa, tolerance):
         return fa.simplify(tolerance * self.c)
+
+    def sample_polygon(self, polygon, sample_distance):
+        sd = sample_distance
+        pass
 
     def project_meter_to_global(self, geom):
         gdf = gp.GeoDataFrame(crs="EPSG:20437", geometry=geom)

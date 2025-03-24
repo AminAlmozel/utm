@@ -251,7 +251,7 @@ class env():
         v = [0, 0, 0]
         return v
 
-    def random_fire(self, drones):
+    def random_fire(self, drones, iteration):
         fire_station = self.fire_station.iloc[0]
         temp = fire_station.geometry
         zi = random.randint(0, 30)
@@ -271,6 +271,10 @@ class env():
         avoid = g.unary_union
         avoid = self.transform_meter_global([avoid])[0]
         io.write_geom([avoid], "avoid", "red")
+        fire_duration = 1000 # Timesteps, which is 1000 * dt seconds
+        start = iteration
+        end = iteration + fire_duration
+        io.log_timed_geom([avoid], [[start, end]])
 
         # Reconstruct the trajectories of all the other drones
         trajs = []
