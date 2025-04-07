@@ -335,6 +335,11 @@ class myio:
         s_line = LineString(points)
         return s_line
 
+    def transform_meter_global(geom):
+        gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
+        gdf.to_crs(epsg=4326, inplace=True)
+        return gdf.geometry
+
     def write_highways(self, routes, name, color):
         geom = []
         for i in range(len(routes)):
@@ -412,15 +417,9 @@ class myio:
         s["fill"] = color
         s.to_file('plot/circles_' + color + '.geojson', driver='GeoJSON')
 
-    def log_dict(drones):
-        print("Saving trajectories to file")
-        trajfile = open('traj.pickle', 'ab') # Change to wb if it doesn't work
-        pkl.dump(drones, trajfile, protocol=pkl.HIGHEST_PROTOCOL)
-        trajfile.close()
-
-    def read_log_dict():
+    def read_log_pickle(last):
         print("Reading trajectories from file")
-        filename = 'plot/simulation/read/*'
+        filename = 'plot/' + last + '*' + ".pkl"
         list_of_files = glob.glob(filename)
         mission_pickle = list_of_files[0]
         mission_file = open(mission_pickle, 'rb')
@@ -428,7 +427,7 @@ class myio:
         mission_file.close()
         return missions_dict
 
-    def log_to_json(drones):
+    def log_to_json(drones, run, last):
         trajs = []
         for drone in drones:
             t = []
@@ -442,9 +441,10 @@ class myio:
         df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
         df.to_crs(crs=4326, inplace=True)
         trajs = df.geometry
-        myio.write_geom(trajs, "trajs", "blue")
+        myio.write_geom(trajs, run + "trajs", "blue")
+        myio.write_geom(trajs, last + "trajs", "blue")
 
-    def log_to_json_dict(drones):
+    def log_to_json_dict(drones, run, last):
         trajs = []
         dt = 0.1
         for drone in drones:
@@ -466,19 +466,26 @@ class myio:
         gdf.to_crs(crs=4326, inplace=True)
 
         name = "trajs_time"
-        gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
-        now = datetime.datetime.now()
-        date = now.strftime("%y-%m-%d-%H%M%S")
-        gdf.to_file('plot/trajs/' + name + date + '.geojson', driver='GeoJSON')
+        # gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
+        # now = datetime.datetime.now()
+        # date = now.strftime("%y-%m-%d-%H%M%S")
+        # gdf.to_file('plot/trajs/' + name + date + '.geojson', driver='GeoJSON')
 
-    def log_to_pickle(drones):
-        now = datetime.datetime.now()
-        date = now.strftime("%y-%m-%d-%H%M%S")
-        name = 'run_'
-        with open('plot/simulation/' + name + date + '.pkl', 'ab') as fp:
+        gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
+        gdf.to_file('plot/' + last + name + '.geojson', driver='GeoJSON')
+
+    def log_to_pickle(drones, run, last):
+        # now = datetime.datetime.now()
+        # date = now.strftime("%y-%m-%d-%H%M%S")
+
+        name = 'log'
+        with open('plot/' + run + name + '.pkl', 'ab') as fp:
             pkl.dump(drones, fp, protocol=pkl.HIGHEST_PROTOCOL)
 
-    def log_timed_geom(geoms, time):
+        with open('plot/' + last + name + '.pkl', 'ab') as fp:
+            pkl.dump(drones, fp, protocol=pkl.HIGHEST_PROTOCOL)
+
+    def log_timed_geom(geoms, time, run, last):
         gs = []
         dt = 0.1
         for k, geom in enumerate(geoms):
@@ -494,10 +501,9 @@ class myio:
         gdf.to_crs(crs=4326, inplace=True)
 
         name = "avoid_time"
-        gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
-        now = datetime.datetime.now()
-        date = now.strftime("%y-%m-%d-%H%M%S")
-        gdf.to_file('plot/trajs/' + name + date + '.geojson', driver='GeoJSON')
+
+        gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
+        gdf.to_file('plot/' + last + name + '.geojson', driver='GeoJSON')
 
     def combine_json_files(self, list, output):
         concat_gdf = []

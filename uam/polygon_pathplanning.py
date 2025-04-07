@@ -34,6 +34,8 @@ class polygon_pp(myio.myio):
         # Approximating the polygonial airspace
         tolerance = 30 # Meters
         self.fa = self.simplify_polygon(fa.unary_union, tolerance)
+        self.sim_run = ""
+        self.sim_latest = ""
 
     def create_trajectory(self, coords):
         pi = self.transform_coords(coords[0])
@@ -271,7 +273,8 @@ class polygon_pp(myio.myio):
         gs = gp.GeoSeries([self.fa, area])
         mp = gs.unary_union
         self.fa = mp
-        self.write_geom([self.fa], "new_nfz", "orange")
+        self.write_geom([self.fa], self.sim_run + "new_nfz", "orange")
+        self.write_geom([self.fa], self.sim_latest + "new_nfz", "orange")
         # print("Added area to forbidden")
         return self.fa
 

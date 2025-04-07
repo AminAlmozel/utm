@@ -16,7 +16,7 @@ class drone():
     def __init__(self):
         self.N = 40
         self.delta_t = 0.1 # Time step
-        self.N_polygon = 8 # Number of sides for the polygon approximation
+        self.N_polygon = 16 # Number of sides for the polygon approximation
         self.not_collided = True
 
         # Parameters
@@ -57,31 +57,38 @@ class drone():
 
         self.obstacles = []
 
-        # self.env = gp.Env()
         # # self.m = gp.Model(env=env)
 
-    def generate_traj(self, xi, xf, xi_1, obstacles):
+    def generate_traj(self, env, xi, xf, xi_1, obstacles):
         # Clear the model from previously setup constraints
-        self.env = gp.Env()
-        self.env.setParam(GRB.Param.OutputFlag, 0)
-        self.env.setParam(GRB.Param.LogToConsole, 0)
-        self.m = gp.Model(env=self.env)
-        # import obstacles and position of other drones
-        self.set_initial_condition(xi)
-        self.set_final_condition(xf)
-        self.set_obstacles(obstacles)
-        self.set_other_drones_trajectories(xi_1)
+        # self.env = gp.Env()
+        # self.env.resetParams()
+        # with gp.Env() as self.env:
+        env.setParam(GRB.Param.OutputFlag, 0)
+        env.setParam(GRB.Param.LogToConsole, 0)
+        # self.m = gp.Model(env=self.env)
+        with gp.Model(env=env) as self.m:
+            # import obstacles and position of other drones
+            self.set_initial_condition(xi)
+            self.set_final_condition(xf)
+            self.set_obstacles(obstacles)
+            self.set_other_drones_trajectories(xi_1)
 
-        # Setup optimization program for the drone
-        self.setup_variables()
-        self.setup_constraints()
-        self.setup_objective()
+            # Setup optimization program for the drone
+            self.setup_variables()
+            self.setup_constraints()
+            self.setup_objective()
 
-        # Solve
-        self.optimize()
+            # Solve
+            self.optimize()
 
-        # return the full trajectory
-        self.update_vehicle_state()
+            # return the full trajectory
+            self.update_vehicle_state()
+
+        # Clearing and freeing things up
+        self.m.close()
+        # self.env.close()
+        env.close()
         return self.full_traj
 
     def set_initial_condition(self, xi):
@@ -171,8 +178,8 @@ class drone():
                     self.m.addConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] >= self.V_min- self.M * tc_vars[i, k],
                                     f"Min_Vel_{k}_{p}_{i}")
                 # Binary Variable of V_min
-                self.m.addConstr(sum(tc_vars[i, k] for k in range(self.N_polygon)) <= self.N_polygon - 1,
-                                f"Min_Velocity_Constraint_{p}_{i}")
+                # self.m.addConstr(sum(tc_vars[i, k] for k in range(self.N_polygon)) <= self.N_polygon - 1,
+                #                 f"Min_Velocity_Constraint_{p}_{i}")
 
             # Do we need this?
             # Bounded Velocity along Z-Axis (Decoupled)

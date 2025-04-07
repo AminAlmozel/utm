@@ -11,12 +11,14 @@ import numpy as np
 import geopandas as gp
 from shapely.geometry import box, Point
 import shapely
+import gurobipy as grb
 
 import drone
 import environment
 from sim_io import myio as io
 
 import os, sys
+from sys import getsizeof
 sys.path.append(os.path.join(os.path.dirname(__file__), "uam"))
 
 import polygon_pathplanning
@@ -28,11 +30,10 @@ class simulator(drone.drone):
     def __init__(self):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
-        self.N_polygon = 8 # Number of sides for the polygon approximation
-        self.total_iterations = 1200
+        self.total_iterations = 20
 
         # Parameters
-        self.n_vehicles = 50 # Starting number of vehicles
+        self.n_vehicles = 5 # Starting number of vehicles
         self.K = 0 # Number of vehicles
 
         # Parameters for collision avoidance between vehicles
@@ -46,6 +47,7 @@ class simulator(drone.drone):
         self.drn = [] # All drones objects
         self.drones = [] # Drone dictionaries
         self.drn_list = [] # Indices of alive drones
+        self.env_list = [] # List of optimization enviroment for each drone
 
         self.vehicles = []
         self.full_traj = []
@@ -55,7 +57,17 @@ class simulator(drone.drone):
         # datetime(year, month, day, hour, minute, second, microsecond)
         self.sim_start = datetime.datetime(today.year, today.month, today.day, 12, 0, 0)
 
+        now = datetime.datetime.now()
+        date = now.strftime("%y-%m-%d-%H%M%S")
+        self.sim_run = 'simulations/run_' + date + '/'
+        self.sim_latest = 'simulations/last/'
+        os.makedirs('plot/' + self.sim_run)
+        self.obs.sim_run = self.sim_run
+        self.obs.sim_latest = self.sim_latest
+
         self.ppp = polygon_pathplanning.polygon_pp()
+        self.ppp.sim_run = self.sim_run
+        self.ppp.sim_latest = self.sim_latest
         self.dummy_obstacles()
         self.initialize_drones()
 
@@ -130,7 +142,6 @@ class simulator(drone.drone):
         self.K += 1
         born = self.seconds_from_today(n)
         # Dictionary that contains all the data for the drone, except for the drone object
-
         d = {"id": len(self.drn),
                  "born": born,
                  "trajs": [],
@@ -150,8 +161,10 @@ class simulator(drone.drone):
         # Drone object
         self.drn.append(drone.drone())
         self.drn_list.append(len(self.drn) - 1)
+        # self.env_list.append(grb.Env())
 
     def prepare_and_generate(self, k):
+        t0 = time.time()
         self.proximity = 2 * self.N * self.delta_t * self.max_vel
         drone_prox_list = []
         # Finding the drones in proximity
@@ -178,12 +191,20 @@ class simulator(drone.drone):
         # Other drones trajectories
         xi_1 = [self.drones[i]["trajs"][-1] for i in drone_prox_list]
 
+        env = grb.Env()
         # Generating trajectories
-        return self.drn[k].generate_traj(xi, xf, xi_1, obstacles)
+        result = self.drn[k].generate_traj(env, xi, xf, xi_1, obstacles)
+        env.close()
+
+        t1 = time.time()
+        print("T1 of drone: %.2f" % (t1 - t0))
+
+        return result
 
     def m_start_simulation(self):
         print("Starting Simulation")
         t0 = time.time()
+
         # Main loop for optimization
         for self.iteration in range(self.total_iterations):
             print("%d============================" % (self.iteration))
@@ -205,12 +226,16 @@ class simulator(drone.drone):
                 print("No drones in simulation. Finishing up the run.")
                 break
             print(self.drn_list)
+            t00 = time.time()
             pool = Pool()
             with Pool() as pool:
                 # prepare arguments
                 # items = [(k, ) for k in range(K)]
                 items = [(k, ) for k in self.drn_list]
+                t02 = time.time()
                 for i, result in enumerate(pool.starmap(self.prepare_and_generate, items)):
+                    if i == 0:
+                        t03 = time.time()
                     # report the value to show progress
                     k = self.drn_list[i]
                     if result == -1:
@@ -219,21 +244,23 @@ class simulator(drone.drone):
                         print("Error in trajectory for drone %d" %(k))
                     else:
                         self.drn[k].full_traj = result
-
             pool.close()
             pool.join()
             self.update()
-            io.log_to_json(self.drones)
-        io.log_to_json_dict(self.drones)
-        io.log_to_pickle(self.drones)
+            io.log_to_json(self.drones, self.sim_run, self.sim_latest)
+
+            t01 = time.time()
+            print("Time of iteration: %.2f" % (t01 - t00))
+            print("T1 of iteration: %.2f" % (t03 - t02))
+
+
+        io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
+        io.log_to_pickle(self.drones, self.sim_run, self.sim_latest)
+        temp = io.read_log_pickle(self.sim_latest)
+        # io.log_to_json(self.drones, self.sim_run, self.sim_latest)
 
         t1 = time.time()
         print("Time of execution: %.2f" % (t1 - t0))
-
-        io.log_to_pickle(self.drones)
-        # io.log_dict(self.drones)
-        temp = io.read_log_dict()
-        # io.log_to_json(self.drones)
 
     def update(self):
         # Check for collision
@@ -265,7 +292,7 @@ class simulator(drone.drone):
                 pf = [dest_state['x'], dest_state['y']]
                 # If the delivery is not finished yet, finish it first, then go back to base
                 if self.drones[drn]["mission"]["status"] == "in progress":
-                    print("In progress")
+                    print("Recalculating trajectory")
                     waypoints1 = self.ppp.create_trajectory([pi, pf])
                     waypoints2 = self.ppp.create_trajectory([pf, px])
                     new_waypoints = waypoints1 + waypoints2
@@ -279,7 +306,7 @@ class simulator(drone.drone):
                 self.drones[drn]["mission"]["waypoints"] = new_waypoints
 
 
-        if self.iteration == 1500:
+        if self.iteration == 5500:
             print("ABORT MISSION!!!!11!!!!!! MBS IS HERE!!!!")
             rnd_drn = random.choices(self.drn_list, k=3)
             print(rnd_drn)

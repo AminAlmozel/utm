@@ -23,6 +23,8 @@ class env():
         self.read_fire_station()
         self.add_height()
         self.transform_coords()
+        self.sim_run = ""
+        self.sim_latest = ""
 
         nearby = self.nearby_obstacles([4, 5, 8], 10)
         # print(nearby)
@@ -270,11 +272,12 @@ class env():
         g = gp.GeoSeries([ls.buffer(30), temp.buffer(50), Point(pf).buffer(100)])
         avoid = g.unary_union
         avoid = self.transform_meter_global([avoid])[0]
-        io.write_geom([avoid], "avoid", "red")
+        io.write_geom([avoid], self.sim_run + "avoid", "red")
+        io.write_geom([avoid], self.sim_latest + "avoid", "red")
         fire_duration = 1000 # Timesteps, which is 1000 * dt seconds
         start = iteration
         end = iteration + fire_duration
-        io.log_timed_geom([avoid], [[start, end]])
+        io.log_timed_geom([avoid], [[start, end]], self.sim_run, self.sim_latest)
 
         # Reconstruct the trajectories of all the other drones
         trajs = []
