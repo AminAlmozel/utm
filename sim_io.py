@@ -340,6 +340,11 @@ class myio:
         gdf.to_crs(epsg=4326, inplace=True)
         return gdf.geometry
 
+    def transform_global_meter(geom):
+        gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:4326")
+        gdf.to_crs(epsg=20437, inplace=True)
+        return gdf.geometry
+
     def write_highways(self, routes, name, color):
         geom = []
         for i in range(len(routes)):
@@ -422,6 +427,7 @@ class myio:
         filename = 'plot/' + last + '*' + ".pkl"
         list_of_files = glob.glob(filename)
         mission_pickle = list_of_files[0]
+        print(mission_pickle)
         mission_file = open(mission_pickle, 'rb')
         missions_dict = pkl.load(mission_file)
         mission_file.close()

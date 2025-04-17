@@ -30,7 +30,7 @@ class simulator(drone.drone):
     def __init__(self):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
-        self.total_iterations = 20
+        self.total_iterations = 5000
 
         # Parameters
         self.n_vehicles = 5 # Starting number of vehicles
@@ -208,13 +208,9 @@ class simulator(drone.drone):
         # Main loop for optimization
         for self.iteration in range(self.total_iterations):
             print("%d============================" % (self.iteration))
-            # if iteration%10 == 0:
-            #     # xi, xf = self.random_drone()
-            #     xi, xf = self.obs.random_mission(0)
-            #     xi = self.list2state(xi)
-            #     xf = self.list2state(xf)
-            #     self.create_drone(xi, xf, iteration)
-            #     print("Created drone")
+            if self.iteration%10 == 0 and self.iteration < 200:
+                self.create_delivery_drone(self.iteration)
+                print("Created drUone")
 
             # K = len(self.drn_list)
             self.drn_list = []

@@ -95,15 +95,25 @@ class env():
         gdf.to_file('plot/' + name + '.geojson', driver='GeoJSON')
 
     def read_restaurants(self):
-        # Reading the file
-        filename = "env/restaurants.geojson"
-        # filename = "env/cafe.geojson"
-        file = open(filename)
-        orig_df = gp.read_file(file)
-
         # Name, point, freq
         # Putting the restaurants into a dictionary
         restaurant_dict = []
+
+        # Reading the file
+        filename = "env/albaik.geojson"
+        file = open(filename)
+        orig_df = gp.read_file(file)
+        for index, row in orig_df.iterrows():
+            if row.geometry.geom_type == "Polygon":
+                p = row.geometry.centroid
+            else:
+                p = row.geometry
+            if row["amenity"] == "fast_food":
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "cafe"})
+
+        filename = "env/restaurants.geojson"
+        file = open(filename)
+        orig_df = gp.read_file(file)
         for index, row in orig_df.iterrows():
             if row.geometry.geom_type == "Polygon":
                 p = row.geometry.centroid
@@ -125,6 +135,7 @@ class env():
                 p = row.geometry
             if row["amenity"] == "cafe":
                 restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "cafe"})
+
 
         df = pd.DataFrame(restaurant_dict)
         gdf = gp.GeoDataFrame(df, crs=4326, geometry=df['geom'])
@@ -203,9 +214,13 @@ class env():
         restaurant, pi = self.random_restaurant(tod)
         vi = self.random_state(tod, restaurant)
 
-        # apt, pf = self.random_apt(tod, restaurant)
-        house, pf = self.random_house(tod, restaurant)
-        vf = self.random_state(tod, house)
+        apt_chance = 70 #%
+        if random.randint(0, 100) < apt_chance:
+            house, pf = self.random_apt(tod, restaurant)
+            vf = self.random_state(tod, house)
+        else:
+            house, pf = self.random_house(tod, restaurant)
+            vf = self.random_state(tod, house)
         print("Going from %s to %s" % (restaurant["name"], house["name"]))
         xi = pi + vi
         xf = pf + vf
@@ -218,6 +233,7 @@ class env():
         n = self.restaurants.shape[0] - 1
         # Using uniform distribution
         i = random.randint(0, n)
+        i = 0
         temp = self.restaurants.iloc[i].geometry
         p = [temp.x, temp.y, zi]
         return self.restaurants.iloc[i], p
@@ -289,7 +305,7 @@ class env():
                 ls = self.traj_to_linestring(traj)
                 trajs.append(ls)
         trajs = self.transform_meter_global(trajs)
-        io.write_geom(trajs, "trajectroies1", "white")
+        io.write_geom(trajs, "rerouting", "white")
 
         # Check for intersection with the fire response trajectory
         trajs = gp.GeoSeries(trajs)

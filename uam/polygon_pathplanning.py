@@ -45,6 +45,8 @@ class polygon_pp(myio.myio):
         sa = self.sa.buffer(self.c * 100)
         sa = self.simplify_polygon(sa, 5)
         self.write_geom([sa], "Buffered area", "green")
+        self.write_geom([sa], self.sim_run + "safe", "green")
+        self.write_geom([sa], self.sim_latest + "safe", "green")
         graph, ls = self.m_create_connectivity(sa, self.fa, coords)
         m_adj, m_heur = self.create_adjacency_matrix(graph, ls)
         a = 0
