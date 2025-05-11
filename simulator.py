@@ -33,7 +33,7 @@ class simulator(drone.drone):
         self.total_iterations = 5000
 
         # Parameters
-        self.n_vehicles = 5 # Starting number of vehicles
+        self.n_vehicles = 10 # Starting number of vehicles
         self.K = 0 # Number of vehicles
 
         # Parameters for collision avoidance between vehicles
@@ -110,7 +110,7 @@ class simulator(drone.drone):
         self.max_vel = self.drn[0].smax[3] # Max velocity
 
     def create_delivery_drone(self, n):
-        xi, xf = self.obs.random_mission(0)
+        xi, xf = self.obs.random_mission(n)
         xi = self.list2state(xi)
         xf = self.list2state(xf)
         # self.create_drone(self.xi[k], self.final_conditions[k], 0)
@@ -251,7 +251,7 @@ class simulator(drone.drone):
 
 
         io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
-        io.log_to_pickle(self.drones, self.sim_run, self.sim_latest)
+        io.log_to_pickle(self.drones, "log", self.sim_run, self.sim_latest)
         temp = io.read_log_pickle(self.sim_latest)
         # io.log_to_json(self.drones, self.sim_run, self.sim_latest)
 

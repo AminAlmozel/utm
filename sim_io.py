@@ -433,6 +433,16 @@ class myio:
         mission_file.close()
         return missions_dict
 
+    def read_pickle(last, name):
+        # print("Reading missions from file")
+        filename = 'plot/' + last + name + ".pkl"
+        list_of_files = glob.glob(filename)
+        mission_pickle = list_of_files[0]
+        mission_file = open(mission_pickle, 'rb')
+        missions_dict = pkl.load(mission_file)
+        mission_file.close()
+        return missions_dict
+
     def log_to_json(drones, run, last):
         trajs = []
         for drone in drones:
@@ -480,16 +490,14 @@ class myio:
         gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
         gdf.to_file('plot/' + last + name + '.geojson', driver='GeoJSON')
 
-    def log_to_pickle(drones, run, last):
+    def log_to_pickle(dictionary, name, run, last):
         # now = datetime.datetime.now()
         # date = now.strftime("%y-%m-%d-%H%M%S")
+        with open('plot/' + run + name + '.pkl', 'wb') as fp:
+            pkl.dump(dictionary, fp, protocol=pkl.HIGHEST_PROTOCOL)
 
-        name = 'log'
-        with open('plot/' + run + name + '.pkl', 'ab') as fp:
-            pkl.dump(drones, fp, protocol=pkl.HIGHEST_PROTOCOL)
-
-        with open('plot/' + last + name + '.pkl', 'ab') as fp:
-            pkl.dump(drones, fp, protocol=pkl.HIGHEST_PROTOCOL)
+        with open('plot/' + last + name + '.pkl', 'wb') as fp:
+            pkl.dump(dictionary, fp, protocol=pkl.HIGHEST_PROTOCOL)
 
     def log_timed_geom(geoms, time, run, last):
         gs = []

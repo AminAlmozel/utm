@@ -25,6 +25,9 @@ class env():
         self.transform_coords()
         self.sim_run = ""
         self.sim_latest = ""
+        self.mission_log = []
+        self.mission_progress = 0
+        self.repeat = 1
 
         nearby = self.nearby_obstacles([4, 5, 8], 10)
         # print(nearby)
@@ -211,19 +214,33 @@ class env():
         return self.houses[dist<=range]
 
     def random_mission(self, tod):
-        restaurant, pi = self.random_restaurant(tod)
-        vi = self.random_state(tod, restaurant)
+        if self.repeat:
+            missions = io.read_pickle(self.sim_latest, "mission_log")
+            i = self.mission_progress
+            restaurant = missions[i]["mission"][0]
+            house = missions[i]["mission"][1]
+            xi = missions[i]["state"][0]
+            xf = missions[i]["state"][1]
+            print("Going from %s to %s" % (restaurant["name"], house["name"]))
+            self.mission_progress += 1
 
-        apt_chance = 70 #%
-        if random.randint(0, 100) < apt_chance:
-            house, pf = self.random_apt(tod, restaurant)
-            vf = self.random_state(tod, house)
         else:
-            house, pf = self.random_house(tod, restaurant)
-            vf = self.random_state(tod, house)
-        print("Going from %s to %s" % (restaurant["name"], house["name"]))
-        xi = pi + vi
-        xf = pf + vf
+            restaurant, pi = self.random_restaurant(tod)
+            vi = self.random_state(tod, restaurant)
+
+            apt_chance = 70 #%
+            if random.randint(0, 100) < apt_chance:
+                house, pf = self.random_apt(tod, restaurant)
+                vf = self.random_state(tod, house)
+            else:
+                house, pf = self.random_house(tod, restaurant)
+                vf = self.random_state(tod, house)
+            print("Going from %s to %s" % (restaurant["name"], house["name"]))
+            xi = pi + vi
+            xf = pf + vf
+            mission = {"mission": [restaurant, house], "state": [xi, xf], "time": tod}
+            self.mission_log.append(mission)
+            io.log_to_pickle(self.mission_log, "mission_log", self.sim_run, self.sim_latest)
         return xi, xf
 
     def random_restaurant(self, tod):
@@ -270,18 +287,33 @@ class env():
         return v
 
     def random_fire(self, drones, iteration):
-        fire_station = self.fire_station.iloc[0]
-        temp = fire_station.geometry
-        zi = random.randint(0, 30)
-        pi = [temp.x, temp.y, zi]
-        vi = self.random_state(0, fire_station)
-        xi = pi + vi
+        if self.repeat:
+            missions = io.read_pickle(self.sim_latest, "mission_log")
+            i = self.mission_progress
+            fire_station = missions[i]["mission"][0]
+            temp = fire_station.geometry
+            house = missions[i]["mission"][1]
+            xi = missions[i]["state"][0]
+            xf = missions[i]["state"][1]
+            pi = missions[i]["position"][0]
+            pf = missions[i]["position"][1]
+            self.mission_progress += 1
+        else:
+            fire_station = self.fire_station.iloc[0]
+            temp = fire_station.geometry
+            zi = random.randint(0, 30)
+            pi = [temp.x, temp.y, zi]
+            vi = self.random_state(0, fire_station)
+            xi = pi + vi
 
-        # Choose a random house
-        house, pf = self.random_house(12, "placeholder")
-        vf = self.random_state(0, house)
-        xf = pf + vf
-
+            # Choose a random house
+            house, pf = self.random_house(12, "placeholder")
+            vf = self.random_state(0, house)
+            xf = pf + vf
+            mission = {"mission": [fire_station, house], "state": [xi, xf], "position": [pi, pf], "time": iteration}
+            self.mission_log.append(mission)
+            io.log_to_pickle(self.mission_log, "mission_log", self.sim_run, self.sim_latest)
+        print("Fire at %s" % (house["name"]))
         # Make a buffered line going from the fire station to that house
         # and the area surrounding the location of the fire
         ls = self.traj_to_linestring([pi, pf])
