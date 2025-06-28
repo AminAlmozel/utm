@@ -101,6 +101,12 @@ def measure_safe_distance(traj, safe, nfz):
     outside = traj.difference(combined_area).length
     return [safe_dist, outside, unsafe]
 
+def measure_geofence_breaches(trajs):
+    pass
+
+def measure_link_loss(trajs):
+    pass
+
 def measure_emergency_landing_response(trajs, born, ground_stop):
     T = timedelta(seconds = measure_total_time(trajs))
     landed = born + T
@@ -110,6 +116,12 @@ def measure_emergency_landing_response(trajs, born, ground_stop):
         return (landed - ground_stop).total_seconds()
 
 def measure_mid_air_collisions(trajs):
+    pass
+
+def measure_near_collisions(trajs):
+    pass
+
+def measure_throughput(trajs):
     pass
 
 def write_geom(geom, name, color):

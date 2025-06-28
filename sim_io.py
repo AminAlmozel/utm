@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 import pickle as pkl
 
+# from data_analysis import *
+
 from shapely.geometry import LineString, Point, Polygon, box
 
 import warnings
@@ -475,6 +477,7 @@ class myio:
             # 100 milliseconds for each timestep
             T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
             e = s + T
+            [safe_dist, outside, unsafe] = measure_safe_distance(traj, safe, nfz)
             trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'length': len(t)})
 
         df = pd.DataFrame(trajs)

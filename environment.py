@@ -16,7 +16,7 @@ from sim_io import myio as io
 
 class env():
     def __init__(self):
-        self.c = 0.0000124187
+        self.flow = 0.0003
         self.read_houses()
         self.read_apartments()
         self.read_restaurants()
@@ -50,10 +50,10 @@ class env():
                 p = row.geometry.convex_hull
                 edges = len(p.exterior.coords) - 1
                 if row["addr:housenumber"] != None:
-                    houses_dict.append({'name': row["addr:housenumber"], 'geom': p, 'freq': 1, 'n_edges': edges})
+                    houses_dict.append({'name': row["addr:housenumber"], 'geom': p, 'freq': 1 * self.flow, 'n_edges': edges})
 
                 if row["name"] != None:
-                    houses_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'n_edges': edges})
+                    houses_dict.append({'name': row["name"], 'geom': p, 'freq': 1 * self.flow, 'n_edges': edges})
 
         df = pd.DataFrame(houses_dict)
         gdf = gp.GeoDataFrame(df, crs=4326, geometry=df['geom'])
@@ -81,10 +81,10 @@ class env():
             if row.geometry.geom_type == "Polygon":
                 p = row.geometry.convex_hull
                 if row["addr:housenumber"] != None:
-                    apt_dict.append({'name': row["addr:housenumber"], 'geom': p, 'freq': 1})
+                    apt_dict.append({'name': row["addr:housenumber"], 'geom': p, 'freq': 1 * self.flow})
 
                 if row["name"] != None:
-                    apt_dict.append({'name': row["name"], 'geom': p, 'freq': 1})
+                    apt_dict.append({'name': row["name"], 'geom': p, 'freq': 1 * self.flow})
 
         df = pd.DataFrame(apt_dict)
         gdf = gp.GeoDataFrame(df, crs=4326, geometry=df['geom'])
@@ -112,7 +112,7 @@ class env():
             else:
                 p = row.geometry
             if row["amenity"] == "fast_food":
-                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "cafe"})
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1 * self.flow, 'amenity': "cafe"})
 
         filename = "env/restaurants.geojson"
         file = open(filename)
@@ -123,10 +123,10 @@ class env():
             else:
                 p = row.geometry
             if row["amenity"] == "restaurant":
-                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "restaurant"})
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 0.5 * self.flow, 'amenity': "restaurant"})
 
             if row["amenity"] == "fast_food":
-                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "fast_food"})
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1 * self.flow, 'amenity': "fast_food"})
 
         filename = "env/cafe.geojson"
         file = open(filename)
@@ -137,7 +137,7 @@ class env():
             else:
                 p = row.geometry
             if row["amenity"] == "cafe":
-                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 1, 'amenity': "cafe"})
+                restaurant_dict.append({'name': row["name"], 'geom': p, 'freq': 0.1 * self.flow, 'amenity': "cafe"})
 
 
         df = pd.DataFrame(restaurant_dict)
@@ -227,14 +227,7 @@ class env():
         else:
             restaurant, pi = self.random_restaurant(tod)
             vi = self.random_state(tod, restaurant)
-
-            apt_chance = 70 #%
-            if random.randint(0, 100) < apt_chance:
-                house, pf = self.random_apt(tod, restaurant)
-                vf = self.random_state(tod, house)
-            else:
-                house, pf = self.random_house(tod, restaurant)
-                vf = self.random_state(tod, house)
+            house, pf, vf = self.random_delivery_location(tod, restaurant)
             print("Going from %s to %s" % (restaurant["name"], house["name"]))
             xi = pi + vi
             xf = pf + vf
@@ -254,6 +247,16 @@ class env():
         temp = self.restaurants.iloc[i].geometry
         p = [temp.x, temp.y, zi]
         return self.restaurants.iloc[i], p
+
+    def random_delivery_location(self, tod, restaurant):
+        apt_chance = 70 #%
+        if random.randint(0, 100) < apt_chance:
+            house, pf = self.random_apt(tod, restaurant)
+            vf = self.random_state(tod, house)
+        else:
+            house, pf = self.random_house(tod, restaurant)
+            vf = self.random_state(tod, house)
+        return house, pf, vf
 
     def random_house(self, tod, restaurant):
         zmin = 20

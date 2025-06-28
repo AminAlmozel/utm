@@ -385,6 +385,12 @@ class simulator(drone.drone):
             if drone["alive"]:
                 drn = drone["state"]
                 progress = drone["mission"]["progress"]
+
+                if drone["mission"]["status"] == "waiting": # If the drone is waiting
+                    drone["mission"]["waypoints"][progress] -= 1 # Countdown the timer
+                    if drone["mission"]["waypoints"][progress] == 0: # If the timer is finished
+                        drone["mission"]["progress"] += 1 # Go to the next step of the mission
+                    continue
                 dest = drone["mission"]["waypoints"][progress]
                 dist = np.sqrt(self.dist_squared(drn, dest))
                 if dist < 5:
@@ -398,6 +404,8 @@ class simulator(drone.drone):
                     # If delivered, change status to returning to base
                     elif drone["mission"]["waypoints"][progress] == drone["mission"]["destination"][1]:
                         drone["mission"]["status"] = "returning"
+
+
 
     def random_drone(self):
         # Choosing a random entrace
