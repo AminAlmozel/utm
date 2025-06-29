@@ -185,8 +185,12 @@ class simulator(drone.drone):
         # Initial state
         xi = self.drones[k]["state"]
         # Final state
+
+
         waypoint = self.drones[k]["mission"]["progress"]
         # print("Drone %d, waypoint: %d, alive: %d" %(k, waypoint, self.drones[k]["alive"]))
+        if self.drones[k]["mission"]["status"] == "waiting": # If the drone is waiting, stay at the last waypoint
+            waypoint -= 1
         xf = self.drones[k]["mission"]["waypoints"][waypoint]
         # Other drones trajectories
         xi_1 = [self.drones[i]["trajs"][-1] for i in drone_prox_list]
@@ -388,10 +392,13 @@ class simulator(drone.drone):
 
                 if drone["mission"]["status"] == "waiting": # If the drone is waiting
                     drone["mission"]["waypoints"][progress] -= 1 # Countdown the timer
-                    if drone["mission"]["waypoints"][progress] == 0: # If the timer is finished
+                    if drone["mission"]["waypoints"][progress] <= 0: # If the timer is finished
                         drone["mission"]["progress"] += 1 # Go to the next step of the mission
                     continue
                 dest = drone["mission"]["waypoints"][progress]
+                if isinstance(dest, int):
+                    drone["mission"]["status"] = "waiting"
+                    continue
                 dist = np.sqrt(self.dist_squared(drn, dest))
                 if dist < 5:
                     print("Drone %d reached destination!" %(k))

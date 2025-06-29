@@ -1,5 +1,7 @@
 import pickle as pkl
 import numpy as np
+
+from datetime import timedelta
 import random
 
 import environment
@@ -9,8 +11,9 @@ def main():
 
     lam = 0.0005 # lambda, the rate for the poisson distribution
     dt = 0.1
-    timesteps = 1 * 60 * 60 / dt
+    timesteps = int(1 * 60 * 60 / dt)
     traffic = generate_traffic_schedule(env, timesteps)
+    traffic = sort_traffic(traffic)
     # traffic = generate_vehicle_traffic(lam)        # Generate traffic data
     write_file("traffic", traffic) # Write the generated traffic into a pickle file (.pkl)
     traffic = read_vehicle_traffic()  # Load the traffic data from file
@@ -30,7 +33,7 @@ def generate_traffic_schedule(env, timesteps):
             deliveries.append(mission)
     # Firefighting
     firefighting = []
-    lam = 0.001
+    lam = 0.00002
     traffic = generate_vehicle_traffic(lam, timesteps)
     for i, time in enumerate(traffic):
         mission = create_firefighting_mission(time, env)
@@ -81,9 +84,6 @@ def create_delivery_mission(time, env, restaurant):
     mission = {"mission": [restaurant, delivery_location], "state": [xi, xf], "time": time}
     destinations = [restaurant, delivery_location, restaurant]
     mission = create_mission(xi, [], time, "delivery", "in progress", destinations, time)
-
-    print(restaurant["name"], "\tto\t" + delivery_location["name"] + "\tat\t", end="")
-    print("%.1f" % (time * dt))
     return mission
 
 def create_firefighting_mission(time, env):
@@ -105,8 +105,6 @@ def create_firefighting_mission(time, env):
     wait = 3 * 60 / dt
     destinations = [fire_station, house, wait, fire_station]
     mission = create_mission(xi, [], time, "firefighting", "in progress", destinations, time)
-    print("Fire at\t" + house["name"] + "\tat\t", end="")
-    print("%.1f" % (time * dt))
     return mission
 
 def create_recreational_mission(time, env):
@@ -134,6 +132,23 @@ def create_mission(xi, waypoints, n, type, status, destinations, time):
                     "status":status
                 }}
     return d
+
+def sort_traffic(traffic):
+    missions_sorted = sorted(traffic, key=lambda mission: mission["born"])
+    for mission in missions_sorted:
+        if mission["mission"]["type"] == "delivery":
+            restaurant = mission["mission"]["destination"][0]
+            delivery_location = mission["mission"]["destination"][1]
+            time = mission["born"]
+            print(restaurant["name"], "\tto\t" + delivery_location["name"] + "\tat\t", end="")
+            # print("%.1f" % (time * dt))
+            milliseconds_to_hours(time * 100)
+        if mission["mission"]["type"] == "firefighting":
+            house = mission["mission"]["destination"][1]
+            print("Fire at\t" + house["name"] + "\tat\t", end="")
+            dt = 0.1
+            milliseconds_to_hours(time * 100)
+    return missions_sorted
 
 def write_file(filename, traffic):
     # Save traffic data to file
@@ -188,6 +203,21 @@ def list2state(values):
 
 def state2list(values):
     return [values["x"], values["y"], values["z"]]
+
+def milliseconds_to_hours(time):
+    # Convert to timedelta
+    td = timedelta(milliseconds=time)
+
+    # Get total seconds and break into hh:mm:ss
+    total_seconds = int(td.total_seconds())
+    hours = total_seconds // 3600 + 12
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+
+    # Format as hh:mm:ss with leading zeros
+    formatted_time = f"{hours:02}:{minutes:02}:{seconds:02}pm"
+
+    print(formatted_time)
 
 # Run the main function
 main()
