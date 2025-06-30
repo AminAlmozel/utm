@@ -69,7 +69,8 @@ class simulator(drone.drone):
         self.ppp.sim_run = self.sim_run
         self.ppp.sim_latest = self.sim_latest
         self.dummy_obstacles()
-        self.initialize_drones()
+        self.missions = io.import_missions()
+        # self.initialize_drones()
 
     def dummy_obstacles(self):
         # obstacles = [
@@ -103,19 +104,37 @@ class simulator(drone.drone):
             temp_dict.append({'geom': p, 'height': [obs["zmin"], obs["zmax"]], 'freq': 1, 'edges': edges})
         self.obstacles = temp_dict
 
+    def check_new_missions(self):
+        # Checking for missions that start at the current self.iteration
+        # The missions list must be sorted by time
+        condition = (self.missions[self.mission_counter]["born"] == self.iteration)
+        while(condition == True):
+            mission = self.missions[self.mission_counter]
+            self.create_mission(mission)
+            self.mission_counter += 1
+            condition = (self.missions[self.mission_counter]["born"] == self.iteration)
+
     def initialize_drones(self):
         # Initalize delivery drones
         for k in range(self.n_vehicles):
             self.create_delivery_drone(0)
         self.max_vel = self.drn[0].smax[3] # Max velocity
 
-    def create_delivery_drone(self, n):
-        xi, xf = self.obs.random_mission(n)
-        xi = self.list2state(xi)
-        xf = self.list2state(xf)
+    def create_mission(self, mission):
+        # print(mission)
+        mission_type = mission["mission"]["type"]
+        print(mission_type)
+        if mission_type == "delivery":
+            self.create_delivery_drone(mission)
+        if mission_type == "firefighting":
+            self.create_firefighting_drone(mission)
+
+    def create_delivery_drone(self, mission):
+        xi = mission["mission"]["destination"][0]["geometry"]
+        xf = mission["mission"]["destination"][1]["geometry"].centroid
         # self.create_drone(self.xi[k], self.final_conditions[k], 0)
-        pi = [xi['x'], xi['y']]
-        pf = [xf['x'], xf['y']]
+        pi = [xi.x, xi.y]
+        pf = [xf.x, xf.y]
         # print([pi, pf])
         waypoints = self.ppp.create_trajectory([pi, pf])
         waypoints = self.ppp.round_trip(waypoints)
@@ -127,16 +146,49 @@ class simulator(drone.drone):
         # if destination == 0:
         #     destination += 1 # To resolve an issue with firefighting drones
         destinations = [waypoints[0], waypoints[destination], waypoints[0]]
+        self.create_drone(mission["state"], waypoints, self.iteration, "delivery", "in progress", destinations)
 
-        self.create_drone(xi, waypoints, n, "delivery", "in progress", destinations)
+    # def create_delivery_drone(self, n):
+    #     xi, xf = self.obs.random_mission(n)
+    #     xi = self.list2state(xi)
+    #     xf = self.list2state(xf)
+    #     # self.create_drone(self.xi[k], self.final_conditions[k], 0)
+    #     pi = [xi['x'], xi['y']]
+    #     pf = [xf['x'], xf['y']]
+    #     # print([pi, pf])
+    #     waypoints = self.ppp.create_trajectory([pi, pf])
+    #     waypoints = self.ppp.round_trip(waypoints)
+    #     for i in range(len(waypoints)):
+    #         waypoints[i] = self.list2state(waypoints[i])
+    #     # waypoints = [xi, xf]
+    #     destination = int((len(waypoints) - 1) / 2)
+    #     # print(destination)
+    #     # if destination == 0:
+    #     #     destination += 1 # To resolve an issue with firefighting drones
+    #     destinations = [waypoints[0], waypoints[destination], waypoints[0]]
 
-    def create_firefighting_drone(self, xi, waypoints):
-        xi = self.list2state(xi)
-        for i in range(len(waypoints)):
-            waypoints[i] = self.list2state(waypoints[i])
+    #     self.create_drone(xi, waypoints, n, "delivery", "in progress", destinations)
+
+    def create_firefighting_drone(self, mission):
+        destinations = mission["mission"]["destination"]
+        waypoints = []
+        for dest in destinations:
+            if isinstance(dest, float):
+                waypoints.append(dest)
+            else:
+                destination = [dest["geometry"].centroid.x, dest["geometry"].centroid.y] + [30, 0, 0, 0]
+                waypoints.append(self.list2state(destination))
         # Create a drone or multiple to go from the fire station to the location of the fire
-        destinations = waypoints
-        self.create_drone(xi, waypoints, self.iteration, "firefighting", "in progress", destinations)
+        self.create_drone(mission["state"], waypoints, self.iteration, "firefighting", "in progress", destinations)
+
+    # def create_firefighting_drone(self, xi, waypoints):
+    #     xi = self.list2state(xi)
+    #     for i in range(len(waypoints)):
+    #         waypoints[i] = self.list2state(waypoints[i])
+    #     # Create a drone or multiple to go from the fire station to the location of the fire
+    #     destinations = waypoints
+    #     self.create_drone(xi, waypoints, self.iteration, "firefighting", "in progress", destinations)
+
 
     def create_drone(self, xi, waypoints, n, type, status, destinations):
         self.K += 1
@@ -208,13 +260,15 @@ class simulator(drone.drone):
     def m_start_simulation(self):
         print("Starting Simulation")
         t0 = time.time()
-
+        self.mission_counter = 0
         # Main loop for optimization
         for self.iteration in range(self.total_iterations):
             print("%d============================" % (self.iteration))
-            if self.iteration%10 == 0 and self.iteration < 200:
-                self.create_delivery_drone(self.iteration)
-                print("Created drUone")
+            self.check_new_missions()
+
+            # if self.iteration%10 == 0 and self.iteration < 200:
+            #     self.create_delivery_drone(self.iteration)
+            #     print("Created drone")
 
             # K = len(self.drn_list)
             self.drn_list = []
@@ -222,7 +276,7 @@ class simulator(drone.drone):
                 if drone["alive"] == 1:
                     self.drn_list.append(k)
             K = len(self.drn_list)
-            if K == 0:
+            if K == 0 and (len(self.missions) == self.mission_counter):
                 print("No drones in simulation. Finishing up the run.")
                 break
             print(self.drn_list)
@@ -251,8 +305,7 @@ class simulator(drone.drone):
 
             t01 = time.time()
             print("Time of iteration: %.2f" % (t01 - t00))
-            print("T1 of iteration: %.2f" % (t03 - t02))
-
+            # print("T1 of iteration: %.2f" % (t03 - t02))
 
         io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
         io.log_to_pickle(self.drones, "log", self.sim_run, self.sim_latest)
@@ -411,33 +464,6 @@ class simulator(drone.drone):
                     # If delivered, change status to returning to base
                     elif drone["mission"]["waypoints"][progress] == drone["mission"]["destination"][1]:
                         drone["mission"]["status"] = "returning"
-
-
-
-    def random_drone(self):
-        # Choosing a random entrace
-        entrance_prob = [0.25, 0.25, 0.25, 0.25]
-        i_index = random.choices(range(4), weights=entrance_prob)[0]
-        # Choosing a random exit (except for the chosen entrace)
-        exit_prob = [0.25, 0.25, 0.25, 0.25]
-        exit_prob[i_index] = 0
-        e_index = random.choices(range(4), weights=exit_prob)[0]
-        pi = self.random_gate(i_index, 0)
-        pf = self.random_gate(e_index, 0)
-        vi, vf = self.random_state(pi, pf)
-        xi = self.list2state(pi + vi)
-        xf = self.list2state(pf + vf)
-        return xi, xf
-
-    def random_gate(self, index, z):
-        x = 95
-        y = 95
-        z = 0
-        gates = [[0, y, z],
-                 [0, -y, z],
-                 [x, 0, z],
-                 [-x, 0, z]]
-        return gates[index]
 
     def random_state(self, xi, xf):
         v = 2

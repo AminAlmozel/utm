@@ -156,38 +156,38 @@ class drone():
             # State and velocity constraints with slack variables
             for i in range(1, self.N):  # i = 1 to N
                 for j in range(6):  # Position and velocity deviation constraints
-                    self.m.addConstr(
+                    self.m.addLConstr(
                         s[i, j] - self.final_conditions[p][['x', 'y', 'z', 'xdot', 'ydot', 'zdot'][j]] <= w[i, j],
                         f"State_Dev_{j}_{p}_{i}")
-                    self.m.addConstr(
+                    self.m.addLConstr(
                         -s[i, j] + self.final_conditions[p][['x', 'y', 'z', 'xdot', 'ydot', 'zdot'][j]] <= w[i, j],
                         f"State_Dev_Neg_{j}_{p}_{i}")
 
             # Do we need this?
             for i in range(1, self.N):  # State bounds 1 to N
                 for j in range(3):
-                    self.m.addConstr(s[i, j] >= self.smin[j], f"State_Lower_Bound_{j}_{p}_{i}")
-                    self.m.addConstr(s[i, j] <= self.smax[j], f"State_Upper_Bound_{j}_{p}_{i}")
+                    self.m.addLConstr(s[i, j] >= self.smin[j], f"State_Lower_Bound_{j}_{p}_{i}")
+                    self.m.addLConstr(s[i, j] <= self.smax[j], f"State_Upper_Bound_{j}_{p}_{i}")
 
             # Velocity magnitude limitation using polygon approximation
             for i in range(1, self.N):
                 for k, angle in enumerate(self.theta):
 
-                    self.m.addConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] <= self.V_max,
+                    self.m.addLConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] <= self.V_max,
                                     f"Velocity_Poly_{k}_{p}_{i}")
-                    self.m.addConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] >= self.V_min- self.M * tc_vars[i, k],
+                    self.m.addLConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] >= self.V_min- self.M * tc_vars[i, k],
                                     f"Min_Vel_{k}_{p}_{i}")
                 # Binary Variable of V_min
-                # self.m.addConstr(sum(tc_vars[i, k] for k in range(self.N_polygon)) <= self.N_polygon - 1,
+                # self.m.addLConstr(sum(tc_vars[i, k] for k in range(self.N_polygon)) <= self.N_polygon - 1,
                 #                 f"Min_Velocity_Constraint_{p}_{i}")
 
             # Do we need this?
             # Bounded Velocity along Z-Axis (Decoupled)
             for i in range(1, self.N):
-                # self.m.addConstr(smin[5] <= s[i, 5] <= smax[5], f"Min_MAX_z_Vel_{p}_{i}")
+                # self.m.addLConstr(smin[5] <= s[i, 5] <= smax[5], f"Min_MAX_z_Vel_{p}_{i}")
 
-                self.m.addConstr(s[i, 5] >= self.smin[5], f"z_Vel_Lower_Bound_{p}_{i}")
-                self.m.addConstr(s[i, 5] <= self.smax[5], f"z_Vel_Upper_Bound_{p}_{i}")
+                self.m.addLConstr(s[i, 5] >= self.smin[5], f"z_Vel_Lower_Bound_{p}_{i}")
+                self.m.addLConstr(s[i, 5] <= self.smax[5], f"z_Vel_Upper_Bound_{p}_{i}")
 
     def control_constraints(self):
 
@@ -198,19 +198,19 @@ class drone():
             # Control constraints with slack variables
             for i in range(self.N):  # i = 0 to N - 1
                 for j in range(3):  # Control effort constraints
-                    self.m.addConstr(u[i, j] <= v_vars[i, j], f"Control_Effort_{j}_{p}_{i}")
-                    self.m.addConstr(-u[i, j] <= v_vars[i, j], f"Control_Effort_Neg_{j}_{p}_{i}")
+                    self.m.addLConstr(u[i, j] <= v_vars[i, j], f"Control_Effort_{j}_{p}_{i}")
+                    self.m.addLConstr(-u[i, j] <= v_vars[i, j], f"Control_Effort_Neg_{j}_{p}_{i}")
 
             # Bounded Acceleration along Z-Axis (Decoupled)
             for i in range(0, self.N-1):
-                # self.m.addConstr(umin[2] <= u[i, 2] <= umax[2], f"Min_MAX_z_Acc_{p}_{i}")
-                self.m.addConstr(u[i, 2] >= self.umin[2], f"z_Acc_Lower_Bound_{p}_{i}")
-                self.m.addConstr(u[i, 2] <= self.umax[2], f"z_Acc_Upper_Bound_{p}_{i}")
+                # self.m.addLConstr(umin[2] <= u[i, 2] <= umax[2], f"Min_MAX_z_Acc_{p}_{i}")
+                self.m.addLConstr(u[i, 2] >= self.umin[2], f"z_Acc_Lower_Bound_{p}_{i}")
+                self.m.addLConstr(u[i, 2] <= self.umax[2], f"z_Acc_Upper_Bound_{p}_{i}")
 
             # Acceleration magnitude limitation using polygon approximation, no A_min
             for i in range(0, self.N - 1):
                 for k, angle in enumerate(self.theta):
-                    self.m.addConstr(np.sin(angle) * u[i, 0] + np.cos(angle) * u[i, 1] <= self.A_max,
+                    self.m.addLConstr(np.sin(angle) * u[i, 0] + np.cos(angle) * u[i, 1] <= self.A_max,
                                          f"Accel_Poly_{k}_{p}_{i}")
 
     def state_transition_constraints(self):
@@ -220,20 +220,20 @@ class drone():
 
             # Dynamics constraints
             for i in range(0, self.N-1):# 0 to N-1
-                self.m.addConstr(s[i + 1, 0] == s[i, 0] + self.delta_t * s[i, 3] + ((self.delta_t ** 2)/2)*u[i, 0], f"Dynamics_x_{p}_{i}")
-                self.m.addConstr(s[i + 1, 1] == s[i, 1] + self.delta_t * s[i, 4] + ((self.delta_t ** 2)/2)*u[i, 1], f"Dynamics_y_{p}_{i}")
-                self.m.addConstr(s[i + 1, 2] == s[i, 2] + self.delta_t * s[i, 5] + ((self.delta_t ** 2)/2)*u[i, 2], f"Dynamics_z_{p}_{i}")
-                self.m.addConstr(s[i + 1, 3] == s[i, 3] + self.delta_t * u[i, 0], f"Dynamics_xdot_{p}_{i}")
-                self.m.addConstr(s[i + 1, 4] == s[i, 4] + self.delta_t * u[i, 1], f"Dynamics_ydot_{p}_{i}")
-                self.m.addConstr(s[i + 1, 5] == s[i, 5] + self.delta_t * u[i, 2], f"Dynamics_ydot_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 0] == s[i, 0] + self.delta_t * s[i, 3] + ((self.delta_t ** 2)/2)*u[i, 0], f"Dynamics_x_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 1] == s[i, 1] + self.delta_t * s[i, 4] + ((self.delta_t ** 2)/2)*u[i, 1], f"Dynamics_y_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 2] == s[i, 2] + self.delta_t * s[i, 5] + ((self.delta_t ** 2)/2)*u[i, 2], f"Dynamics_z_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 3] == s[i, 3] + self.delta_t * u[i, 0], f"Dynamics_xdot_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 4] == s[i, 4] + self.delta_t * u[i, 1], f"Dynamics_ydot_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 5] == s[i, 5] + self.delta_t * u[i, 2], f"Dynamics_ydot_{p}_{i}")
 
     def initial_final_condition_constraints(self):
         # Add constraints and objective components for each vehicle
         for p, vehicle in enumerate(self.vehicles):
             s, u, w, v_vars, t_vars, tc_vars = vehicle['s'], vehicle['u'], vehicle['w'], vehicle['v'], vehicle['t'], vehicle['tc']
             # Initial and final conditions
-            self.m.addConstrs((s[0, j] == self.initial_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Initial_{p}")
-            # self.m.addConstrs((s[N - 1, j] == self.final_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Final_{p}")
+            self.m.addLConstrs((s[0, j] == self.initial_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Initial_{p}")
+            # self.m.addLConstrs((s[N - 1, j] == self.final_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Final_{p}")
 
     def obstacle_avoidance_constraints(self):
         # Add constraints and objective components for each vehicle
@@ -243,13 +243,13 @@ class drone():
             for c, obs in enumerate(self.obstacles):
                 t = t_vars[c]
                 for i in range(1, self.N):  # i = 1 to N
-                    self.m.addConstr(s[i, 0] <= obs['xmin'] - self.min_dist + self.M * t[i, 0], f"Obstacle_x_{c}_{p}_{i}")
-                    self.m.addConstr(-s[i, 0] <= -obs['xmax'] - self.min_dist + self.M * t[i, 1], f"Obstacle_Neg_x_{c}_{p}_{i}")
-                    self.m.addConstr(s[i, 1] <= obs['ymin'] - self.min_dist + self.M * t[i, 2], f"Obstacle_y_{c}_{p}_{i}")
-                    self.m.addConstr(-s[i, 1] <= -obs['ymax'] - self.min_dist + self.M * t[i, 3], f"Obstacle_Neg_y_{c}_{p}_{i}")
-                    self.m.addConstr(s[i, 2] <= obs['zmin'] - self.min_dist + self.M * t[i, 4], f"Obstacle_z_{c}_{p}_{i}")
-                    self.m.addConstr(-s[i, 2] <= -obs['zmax'] - self.min_dist + self.M * t[i, 5], f"Obstacle_Neg_z_{c}_{p}_{i}")
-                    self.m.addConstr(t[i, 0] + t[i, 1] + t[i, 2] + t[i, 3] + t[i, 4] + t[i, 5] <= 5, f"Obstacle_Sum_{c}_{p}_{i}")
+                    self.m.addLConstr(s[i, 0] <= obs['xmin'] - self.min_dist + self.M * t[i, 0], f"Obstacle_x_{c}_{p}_{i}")
+                    self.m.addLConstr(-s[i, 0] <= -obs['xmax'] - self.min_dist + self.M * t[i, 1], f"Obstacle_Neg_x_{c}_{p}_{i}")
+                    self.m.addLConstr(s[i, 1] <= obs['ymin'] - self.min_dist + self.M * t[i, 2], f"Obstacle_y_{c}_{p}_{i}")
+                    self.m.addLConstr(-s[i, 1] <= -obs['ymax'] - self.min_dist + self.M * t[i, 3], f"Obstacle_Neg_y_{c}_{p}_{i}")
+                    self.m.addLConstr(s[i, 2] <= obs['zmin'] - self.min_dist + self.M * t[i, 4], f"Obstacle_z_{c}_{p}_{i}")
+                    self.m.addLConstr(-s[i, 2] <= -obs['zmax'] - self.min_dist + self.M * t[i, 5], f"Obstacle_Neg_z_{c}_{p}_{i}")
+                    self.m.addLConstr(t[i, 0] + t[i, 1] + t[i, 2] + t[i, 3] + t[i, 4] + t[i, 5] <= 5, f"Obstacle_Sum_{c}_{p}_{i}")
 
     def general_obstacle_avoidance_constraints(self):
          # Add constraints and objective components for each vehicle
@@ -269,32 +269,32 @@ class drone():
                         p1 = [vertices[i][0], vertices[i][1]]
                         p2 = [vertices[i + 1][0], vertices[i + 1][1]]
                         a, b, c, sign = self.get_line_coeff(p1, p2)
-                        self.m.addConstr(sign * (a * s[n, 1] + b * s[n, 0] + c) <= self.M * t[n, i])
+                        self.m.addLConstr(sign * (a * s[n, 1] + b * s[n, 0] + c) <= self.M * t[n, i])
                         binary_sum += t[n, i]
 
                     i = self.max_edges + 2
-                    self.m.addConstr(-s[n, 2] <= -height[0] - self.min_dist + self.M * t[n, i - 2], f"Obstacle_Neg_z_{c}_{p}_{i}")
-                    self.m.addConstr(s[n, 2] <= height[1] - self.min_dist + self.M * t[n, i - 1], f"Obstacle_z_{c}_{p}_{i}")
+                    self.m.addLConstr(-s[n, 2] <= -height[0] - self.min_dist + self.M * t[n, i - 2], f"Obstacle_Neg_z_{c}_{p}_{i}")
+                    self.m.addLConstr(s[n, 2] <= height[1] - self.min_dist + self.M * t[n, i - 1], f"Obstacle_z_{c}_{p}_{i}")
                     binary_sum += t[n, i - 2] + t[n, i - 1]
                     total_sum = len(vertices) - 1 # -1 Because shapley rings double count a vertex
                     total_sum += 2 # for the top and bottom constraints (height)
                     # Total sum has to be less than the number of half-plane constraints by one
-                    self.m.addConstr(binary_sum  <= total_sum - 1)
+                    self.m.addLConstr(binary_sum  <= total_sum - 1)
 
     def vehicle_collision_avoidance_constraints(self):
         # Collision avoidance constraints between vehicles
         for p in range(self.K):
             for q in range(p + 1, self.K):
                 for i in range(1, self.N):  # i = 1 to N
-                    self.m.addConstr(self.vehicles[p]['s'][i, 0] - self.vehicles[q]['s'][i, 0] >= self.d_x - self.M * self.b_vars[(p, q)][i, 0], f"Collision_x_{p}_{q}_{i}")
-                    self.m.addConstr(self.vehicles[q]['s'][i, 0] - self.vehicles[p]['s'][i, 0] >= self.d_x - self.M * self.b_vars[(p, q)][i, 1], f"Collision_Neg_x_{p}_{q}_{i}")
-                    self.m.addConstr(self.vehicles[p]['s'][i, 1] - self.vehicles[q]['s'][i, 1] >= self.d_y - self.M * self.b_vars[(p, q)][i, 2], f"Collision_y_{p}_{q}_{i}")
-                    self.m.addConstr(self.vehicles[q]['s'][i, 1] - self.vehicles[p]['s'][i, 1] >= self.d_y - self.M * self.b_vars[(p, q)][i, 3], f"Collision_Neg_y_{p}_{q}_{i}")
-                    self.m.addConstr(self.vehicles[p]['s'][i, 2] - self.vehicles[q]['s'][i, 2] >= self.d_z - self.M * self.b_vars[(p, q)][i, 4],
+                    self.m.addLConstr(self.vehicles[p]['s'][i, 0] - self.vehicles[q]['s'][i, 0] >= self.d_x - self.M * self.b_vars[(p, q)][i, 0], f"Collision_x_{p}_{q}_{i}")
+                    self.m.addLConstr(self.vehicles[q]['s'][i, 0] - self.vehicles[p]['s'][i, 0] >= self.d_x - self.M * self.b_vars[(p, q)][i, 1], f"Collision_Neg_x_{p}_{q}_{i}")
+                    self.m.addLConstr(self.vehicles[p]['s'][i, 1] - self.vehicles[q]['s'][i, 1] >= self.d_y - self.M * self.b_vars[(p, q)][i, 2], f"Collision_y_{p}_{q}_{i}")
+                    self.m.addLConstr(self.vehicles[q]['s'][i, 1] - self.vehicles[p]['s'][i, 1] >= self.d_y - self.M * self.b_vars[(p, q)][i, 3], f"Collision_Neg_y_{p}_{q}_{i}")
+                    self.m.addLConstr(self.vehicles[p]['s'][i, 2] - self.vehicles[q]['s'][i, 2] >= self.d_z - self.M * self.b_vars[(p, q)][i, 4],
                                     f"Collision_z_{p}_{q}_{i}")
-                    self.m.addConstr(self.vehicles[q]['s'][i, 2] - self.vehicles[p]['s'][i, 2] >= self.d_z - self.M * self.b_vars[(p, q)][i, 5],
+                    self.m.addLConstr(self.vehicles[q]['s'][i, 2] - self.vehicles[p]['s'][i, 2] >= self.d_z - self.M * self.b_vars[(p, q)][i, 5],
                                     f"Collision_Neg_z_{p}_{q}_{i}")
-                    self.m.addConstr(self.b_vars[(p, q)][i, 0] + self.b_vars[(p, q)][i, 1] + self.b_vars[(p, q)][i, 2] + self.b_vars[(p, q)][i, 3] + self.b_vars[(p, q)][i, 4]+ self.b_vars[(p, q)][i, 5] <= 5, f"Collision_Sum_{p}_{q}_{i}")
+                    self.m.addLConstr(self.b_vars[(p, q)][i, 0] + self.b_vars[(p, q)][i, 1] + self.b_vars[(p, q)][i, 2] + self.b_vars[(p, q)][i, 3] + self.b_vars[(p, q)][i, 4]+ self.b_vars[(p, q)][i, 5] <= 5, f"Collision_Sum_{p}_{q}_{i}")
 
     def fixed_vehicle_collision_avoidance_constraints(self):
         # Collision avoidance constraints between vehicles
@@ -302,15 +302,15 @@ class drone():
             q = 0
             N = min(len(vehicle[0]), self.N - 1) # The smaller of the prediction horizon and the given trajectories
             for n in range(1, N + 1):  # i = 1 to N
-                self.m.addConstr(vehicle[0][n - 1] - self.vehicles[q]['s'][n, 0] >= self.d_x - self.M * self.b_vars[p][n, 0], f"Collision_x_{p}_{q}_{n}")
-                self.m.addConstr(self.vehicles[q]['s'][n, 0] - vehicle[0][n - 1] >= self.d_x - self.M * self.b_vars[p][n, 1], f"Collision_Neg_x_{p}_{q}_{n}")
-                self.m.addConstr(vehicle[1][n - 1] - self.vehicles[q]['s'][n, 1] >= self.d_y - self.M * self.b_vars[p][n, 2], f"Collision_y_{p}_{q}_{n}")
-                self.m.addConstr(self.vehicles[q]['s'][n, 1] - vehicle[1][n - 1] >= self.d_y - self.M * self.b_vars[p][n, 3], f"Collision_Neg_y_{p}_{q}_{n}")
-                self.m.addConstr(vehicle[2][n - 1] - self.vehicles[q]['s'][n, 2] >= self.d_z - self.M * self.b_vars[p][n, 4],
+                self.m.addLConstr(vehicle[0][n - 1] - self.vehicles[q]['s'][n, 0] >= self.d_x - self.M * self.b_vars[p][n, 0], f"Collision_x_{p}_{q}_{n}")
+                self.m.addLConstr(self.vehicles[q]['s'][n, 0] - vehicle[0][n - 1] >= self.d_x - self.M * self.b_vars[p][n, 1], f"Collision_Neg_x_{p}_{q}_{n}")
+                self.m.addLConstr(vehicle[1][n - 1] - self.vehicles[q]['s'][n, 1] >= self.d_y - self.M * self.b_vars[p][n, 2], f"Collision_y_{p}_{q}_{n}")
+                self.m.addLConstr(self.vehicles[q]['s'][n, 1] - vehicle[1][n - 1] >= self.d_y - self.M * self.b_vars[p][n, 3], f"Collision_Neg_y_{p}_{q}_{n}")
+                self.m.addLConstr(vehicle[2][n - 1] - self.vehicles[q]['s'][n, 2] >= self.d_z - self.M * self.b_vars[p][n, 4],
                                 f"Collision_z_{p}_{q}_{n}")
-                self.m.addConstr(self.vehicles[q]['s'][n, 2] - vehicle[2][n - 1] >= self.d_z - self.M * self.b_vars[p][n, 5],
+                self.m.addLConstr(self.vehicles[q]['s'][n, 2] - vehicle[2][n - 1] >= self.d_z - self.M * self.b_vars[p][n, 5],
                                 f"Collision_Neg_z_{p}_{q}_{n}")
-                self.m.addConstr(self.b_vars[p][n, 0] + self.b_vars[p][n, 1] + self.b_vars[p][n, 2] + self.b_vars[p][n, 3] + self.b_vars[p][n, 4]+ self.b_vars[p][n, 5] <= 5, f"Collision_Sum_{p}_{q}_{n}")
+                self.m.addLConstr(self.b_vars[p][n, 0] + self.b_vars[p][n, 1] + self.b_vars[p][n, 2] + self.b_vars[p][n, 3] + self.b_vars[p][n, 4]+ self.b_vars[p][n, 5] <= 5, f"Collision_Sum_{p}_{q}_{n}")
 
     def setup_objective(self):
         # Initialize the objective function

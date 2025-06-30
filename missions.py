@@ -33,7 +33,8 @@ def generate_traffic_schedule(env, timesteps):
             deliveries.append(mission)
     # Firefighting
     firefighting = []
-    lam = 0.00002
+    # lam = 0.00002
+    lam = 0.001
     traffic = generate_vehicle_traffic(lam, timesteps)
     for i, time in enumerate(traffic):
         mission = create_firefighting_mission(time, env)

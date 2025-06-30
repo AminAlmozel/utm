@@ -290,32 +290,32 @@ class env():
         return v
 
     def random_fire(self, drones, iteration):
-        if self.repeat:
-            missions = io.read_pickle(self.sim_latest, "mission_log")
-            i = self.mission_progress
-            fire_station = missions[i]["mission"][0]
-            temp = fire_station.geometry
-            house = missions[i]["mission"][1]
-            xi = missions[i]["state"][0]
-            xf = missions[i]["state"][1]
-            pi = missions[i]["position"][0]
-            pf = missions[i]["position"][1]
-            self.mission_progress += 1
-        else:
-            fire_station = self.fire_station.iloc[0]
-            temp = fire_station.geometry
-            zi = random.randint(0, 30)
-            pi = [temp.x, temp.y, zi]
-            vi = self.random_state(0, fire_station)
-            xi = pi + vi
+        # if self.repeat:
+        #     missions = io.read_pickle(self.sim_latest, "mission_log")
+        #     i = self.mission_progress
+        #     fire_station = missions[i]["mission"][0]
+        #     temp = fire_station.geometry
+        #     house = missions[i]["mission"][1]
+        #     xi = missions[i]["state"][0]
+        #     xf = missions[i]["state"][1]
+        #     pi = missions[i]["position"][0]
+        #     pf = missions[i]["position"][1]
+        #     self.mission_progress += 1
+        # else:
+        #     fire_station = self.fire_station.iloc[0]
+        #     temp = fire_station.geometry
+        #     zi = random.randint(0, 30)
+        #     pi = [temp.x, temp.y, zi]
+        #     vi = self.random_state(0, fire_station)
+        #     xi = pi + vi
 
-            # Choose a random house
-            house, pf = self.random_house(12, "placeholder")
-            vf = self.random_state(0, house)
-            xf = pf + vf
-            mission = {"mission": [fire_station, house], "state": [xi, xf], "position": [pi, pf], "time": iteration}
-            self.mission_log.append(mission)
-            io.log_to_pickle(self.mission_log, "mission_log", self.sim_run, self.sim_latest)
+        #     # Choose a random house
+        #     house, pf = self.random_house(12, "placeholder")
+        #     vf = self.random_state(0, house)
+        #     xf = pf + vf
+        #     mission = {"mission": [fire_station, house], "state": [xi, xf], "position": [pi, pf], "time": iteration}
+        #     self.mission_log.append(mission)
+        #     io.log_to_pickle(self.mission_log, "mission_log", self.sim_run, self.sim_latest)
         print("Fire at %s" % (house["name"]))
         # Make a buffered line going from the fire station to that house
         # and the area surrounding the location of the fire

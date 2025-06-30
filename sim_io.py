@@ -289,6 +289,16 @@ class myio:
         if self.logging:
             color.to_file('plot/fa.geojson', driver='GeoJSON')
 
+    def import_missions():
+        """
+        Reads vehicle traffic data from a pickle file.
+        """
+        filename = "traffic"
+        print("Reading traffic from file")
+        with open("missions/" + filename + '.pkl', 'rb') as traffic_file:
+            traffic = pkl.load(traffic_file)
+        return traffic
+
     def store_adjacency_matrix(self):
         print("Saving adjacency matrix to file")
         df = pd.DataFrame(self.m_adj)
@@ -329,6 +339,8 @@ class myio:
         return routes
 
     def traj_to_linestring(traj):
+        if len(traj) <= 1:
+            return
         points = []
         for i in range(len(traj)):
             point = Point(traj[i][0], traj[i][1], traj[i][2]) # 3D trajectory
@@ -463,6 +475,9 @@ class myio:
         myio.write_geom(trajs, last + "trajs", "blue")
 
     def log_to_json_dict(drones, run, last):
+        if len(drones) == 0:
+            print("No drones to log")
+            return
         trajs = []
         dt = 0.1
         for drone in drones:
@@ -477,7 +492,7 @@ class myio:
             # 100 milliseconds for each timestep
             T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
             e = s + T
-            [safe_dist, outside, unsafe] = measure_safe_distance(traj, safe, nfz)
+            # [safe_dist, outside, unsafe] = measure_safe_distance(traj, safe, nfz)
             trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'length': len(t)})
 
         df = pd.DataFrame(trajs)
