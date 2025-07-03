@@ -1,10 +1,12 @@
 import pickle as pkl
 import numpy as np
+import geopandas as gp
 
 from datetime import timedelta
 import random
 
 import environment
+from sim_io import myio as io
 
 def main():
     env = environment.env()
@@ -113,7 +115,25 @@ def create_recreational_mission(time, env):
     pass
 
 def create_inpsection_mission(time, env):
-    pass
+    points = io.import_inspection()
+    inspection_site = random.randint(0, len(points)-1)
+    wp = create_random_waypoints(points[inspection_site]["geometry"])
+    waiting_times = generate_waiting_times(len(wp))
+    print(waiting_times)
+    z = 30
+    waypoints = []
+    for i in range(len(wp)):
+        p = [wp.iloc[i].x, wp.iloc[i].y] + [30, 0, 0, 0]
+        waypoints.append(list2state(p))
+        if i == 0 or i == len(wp) - 1:
+            continue
+        waypoints.append(waiting_times[i])
+    print(waypoints)
+    pi = points[inspection_site]["geometry"][0]
+    xi = list2state([pi.x, pi.y] + [30, 0, 0, 0])
+    destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    print(destinations)
+    mission = create_mission(xi, waypoints, time, "inspection", "in progress", destinations, time)
 
 def create_research_mission(time, env):
     pass
@@ -222,5 +242,66 @@ def milliseconds_to_hours(time):
 
     print(formatted_time)
 
+def sample_grid_points(polygon, spacing):
+    minx, miny, maxx, maxy = polygon.bounds
+    points = []
+
+    y = miny
+    row = 0
+    while y <= maxy:
+        x_range = np.arange(minx, maxx, spacing)
+        if row % 2 == 1:  # zigzag for efficient pathing
+            x_range = x_range[::-1]
+        for x in x_range:
+            p = gp.Point(x, y)
+            if polygon.contains(p):
+                points.append(p)
+        y += spacing
+        row += 1
+    return points
+
+def sample_random_points(polygon, n_points):
+    points = []
+    minx, miny, maxx, maxy = polygon.bounds
+    while len(points) < n_points:
+        p = gp.Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
+        if polygon.contains(p):
+            points.append(p)
+    return points
+
+def create_random_waypoints(waypoints, avg_points=7, variation=2, altitude=40):
+    """
+    points: list of (x, y) or (x, y, z) tuples
+    avg_points: average number of waypoints desired
+    variation: maximum random variation in number of points
+    altitude: altitude to assign if input points are 2D
+    """
+    points = range(1, len(waypoints))
+    n_points = max(1, avg_points + random.randint(-variation, variation))
+    selected_points = random.sample(points, min(n_points, len(points)))
+    selected_points = [0] + selected_points + [0]
+    return waypoints[selected_points]
+
+def generate_waiting_times(n, mean=80, variance=40, min_time=30):
+    """
+    Generate n random integer waiting times with given mean and variance.
+
+    Parameters:
+        n (int): Number of waiting times.
+        mean (float): Desired mean.
+        variance (float): Desired variance.
+        min_time (int): Minimum allowed waiting time.
+
+    Returns:
+        List[int]: Random waiting times.
+    """
+    std_dev = np.sqrt(variance)
+    times = np.random.normal(loc=mean, scale=std_dev, size=n)
+
+    # Round to nearest integer and clip to min_time
+    times = np.round(times).astype(int)
+    times = np.clip(times, min_time, None)
+
+    return times.tolist()
 # Run the main function
 main()

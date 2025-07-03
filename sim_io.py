@@ -299,6 +299,17 @@ class myio:
             traffic = pkl.load(traffic_file)
         return traffic
 
+    def import_inspection():
+        filename = "env/solar*.geojson"
+        list_of_files = glob.glob(filename)
+        list_of_df = []
+        for filename in list_of_files:
+            file = open(filename)
+            df = gp.read_file(file)
+            list_of_df.append(df)
+        # return pd.concat(list_of_df, ignore_index=True)
+        return list_of_df
+
     def store_adjacency_matrix(self):
         print("Saving adjacency matrix to file")
         df = pd.DataFrame(self.m_adj)
