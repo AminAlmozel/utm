@@ -289,7 +289,7 @@ class env():
         v = [0, 0, 0]
         return v
 
-    def random_fire(self, drones, iteration):
+    def random_fire(self, drone, iteration):
         # if self.repeat:
         #     missions = io.read_pickle(self.sim_latest, "mission_log")
         #     i = self.mission_progress
@@ -348,6 +348,48 @@ class env():
         indices = np.where(result)[0]
         return xi, [xf, xi], indices, avoid
 
+    def fire_response(self, mission, vehicles, iteration):
+        # Make a buffered line going from the fire station to that house
+        fire_station = mission["mission"]["destination"][0]["geometry"]
+        house = mission["mission"]["destination"][1]["geometry"]
+        pi = fire_station.centroid
+        pf = house.centroid
+        # and the area surrounding the location of the fire
+        ls = LineString([pi, pf])
+        g = gp.GeoSeries([ls.buffer(30), fire_station.buffer(50), pf.buffer(100)])
+        avoid = g.unary_union
+        avoid = self.transform_meter_global([avoid])[0]
+        io.write_geom([avoid], self.sim_run + "avoid", "red")
+        io.write_geom([avoid], self.sim_latest + "avoid", "red")
+        fire_duration = 1000 # Timesteps, which is 1000 * dt seconds
+        start = iteration
+        end = iteration + fire_duration
+        io.log_timed_geom([avoid], [[start, end]], self.sim_run, self.sim_latest)
+        # Reconstruct the trajectories of all the other drones
+        trajs = []
+        for drn in vehicles:
+
+            if drn["id"] == mission["id"]: # If the drone is the current firefighting drone
+                continue
+            if drn["mission"]["type"] == "firefighting": # Don't change the trajectory of other firefighting drones
+                continue
+            if drn["alive"]:
+                progress = drn["mission"]["progress"]
+                waypoints = drn["mission"]["waypoints"][progress:]
+                state = [[drn["state"]["x"], drn["state"]["y"]]]
+                traj = self.waypoints_to_traj(waypoints)
+                traj = state + traj
+                ls = self.traj_to_linestring(traj)
+                trajs.append(ls)
+        trajs = self.transform_meter_global(trajs)
+        io.write_geom(trajs, "rerouting", "white")
+
+        # Check for intersection with the fire response trajectory
+        trajs = gp.GeoSeries(trajs)
+        result = trajs.intersects(avoid)
+        indices = np.where(result)[0]
+        return indices, avoid
+
     def traj_to_linestring(self, traj):
         points = []
         for i in range(len(traj)):
@@ -356,11 +398,14 @@ class env():
         s_line = LineString(points)
         return s_line
 
-    def waypoints_to_traj(self, values):
+    def waypoints_to_traj(self, waypoints):
         traj = []
-        for waypoint in values:
+        for waypoint in waypoints:
+            if isinstance(waypoint, float):
+                continue
             traj.append([waypoint["x"], waypoint["y"]])
         return traj
+
 # def main():
 #     enviroment = env()
 

@@ -488,12 +488,12 @@ class myio:
                 t.append(point)
             ls = myio.traj_to_linestring(t)
             # trajs.append(ls)
-            s = drone["born"]
+            s = drone["birthday"]
             # 100 milliseconds for each timestep
             T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
             e = s + T
             # [safe_dist, outside, unsafe] = measure_safe_distance(traj, safe, nfz)
-            trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'length': len(t)})
+            trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'iteration': drone["iteration"], 'length': len(t)})
 
         df = pd.DataFrame(trajs)
         gdf = gp.GeoDataFrame(df, crs="EPSG:20437")
@@ -525,7 +525,6 @@ class myio:
             e = time[k][1]
             # T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
             T = e - s # Placeholder
-            print(geom)
             gs.append({'geometry': geom, 'start_datetime': s, 'end_datetime': e, 'length': T})
 
         df = pd.DataFrame(gs)

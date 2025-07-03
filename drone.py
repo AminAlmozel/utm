@@ -232,7 +232,9 @@ class drone():
         for p, vehicle in enumerate(self.vehicles):
             s, u, w, v_vars, t_vars, tc_vars = vehicle['s'], vehicle['u'], vehicle['w'], vehicle['v'], vehicle['t'], vehicle['tc']
             # Initial and final conditions
-            self.m.addLConstrs((s[0, j] == self.initial_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Initial_{p}")
+            for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot']):
+                self.m.addLConstr(s[0, j] == self.initial_conditions[p][key])
+            # self.m.addConstrs((s[0, j] == self.initial_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Initial_{p}")
             # self.m.addLConstrs((s[N - 1, j] == self.final_conditions[p][key] for j, key in enumerate(['x', 'y', 'z', 'xdot', 'ydot', 'zdot'])), f"Final_{p}")
 
     def obstacle_avoidance_constraints(self):
@@ -352,53 +354,6 @@ class drone():
         tory = 0
         # if self.m.status == GRB.OPTIMAL:
         #     # print("find the optimal")
-        #     self.update_visualization_positions()
-            # self.update_plot()
-
-            # iteration_positions = []  # Temporary list to store positions for all vehicles in the current iteration
-            # for vehicle in self.vehicles:
-            #     x_positions = [vehicle['s'][i, 0].X for i in range(self.N)]
-            #     y_positions = [vehicle['s'][i, 1].X for i in range(self.N)]
-            #     z_positions = [vehicle['s'][i, 2].X for i in range(self.N)]
-            #     iteration_positions.append((x_positions, y_positions, z_positions))
-            # self.vehicles_positions.append(iteration_positions)
-
-                # # Used for Debugging or for validation
-                # xd = [vehicle['s'][i, 3].X for i in range(N)]
-                # yd = [vehicle['s'][i, 4].X for i in range(N)]
-                # zd = [vehicle['s'][i, 5].X for i in range(N)]
-                #
-                # vel = np.sqrt(np.square(xd) + np.square(yd))
-                # print("==================================================\n")
-                # print('vehicle', tory)
-                # print("Velocity: ", vel)
-                # print("velocity in z", zd)
-                #
-                # xdd = [vehicle['u'][i, 0].X for i in range(N)]
-                # ydd = [vehicle['u'][i, 1].X for i in range(N)]
-                # zdd = [vehicle['u'][i, 2].X for i in range(N)]
-                #
-                # acc = np.sqrt(np.square(xdd) + np.square(ydd))
-                #
-                # print("Acceleration: ", acc)
-                # print("Acceleration in z", zdd, "\n")
-                # print("==================================================\n")
-            # print("old vehicle", self.vehicles_positions)
-
-            # total_fuel_consumption = sum(
-            #     abs(vehicle['u'][i, 0].X) + abs(vehicle['u'][i, 1].X) + abs(vehicle['u'][i, 2].X) for i in range(N))
-
-            # for p, vehicle in enumerate(self.vehicles):
-            #     print(f"\nVehicle {p + 1} Solution:")
-            #     for i in range(self.N):
-            #         # Extract and print state vector
-            #         state = [vehicle['s'][i, j].X for j in range(6)]
-            #         print(f"Time Step {i}: State = {state}")
-            #
-            #         # Extract and print control input if it's not the last step
-            #         if i < self.N - 1:
-            #             control = [vehicle['u'][i, j].X for j in range(3)]
-            #             print(f"Time Step {i}: Control = {control}")
 
     def update_vehicle_state(self):
         self.full_traj = [[], [], [], [], [], []]
@@ -441,29 +396,3 @@ class drone():
         # Positive sign => larger
         sign = copysign(1.0, a * (p1[1] + normal[1]) + b * (p1[0] + normal[0]) + c)
         return a, b, c, sign
-
-    # def update_plot(self):
-    #     # Check if there is data to plot
-    #     if not self.vehicles_positions:
-    #         return  # No data to plot
-    #
-    #     # Ensure the number of position sets matches the number of lines
-    #     latest_positions = self.vehicles_positions[-1]  # Get the latest positions
-    #     if len(latest_positions) != len(self.lines):
-    #         raise ValueError("Mismatch between the number of vehicles and plot lines.")
-    #
-    #
-    #     for idx, vehicle_position in enumerate(latest_positions):
-    #         x, y, z = vehicle_position
-    #         self.lines[idx].set_data([x], [y])
-    #         self.lines[idx].set_3d_properties([z])
-    #
-    #     for idx, vehicle in enumerate(self.vehicles_horizon):
-    #         # print(len(vehicle))
-    #         x, y, z = vehicle
-    #         self.lines[idx].set_data(x, y)
-    #         self.lines[idx].set_3d_properties(z)
-    #
-    #
-    #     plt.draw()
-    #     plt.pause(0.05)  # Pause to update the plot

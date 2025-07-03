@@ -51,7 +51,8 @@ def generate_traffic_schedule(env, timesteps):
     # Research
     create_research_mission(time, env)
 
-    return deliveries + firefighting
+    # return deliveries + firefighting
+    return firefighting
 
 def generate_vehicle_traffic(lam, timesteps):
     """
@@ -120,7 +121,8 @@ def create_research_mission(time, env):
 def create_mission(xi, waypoints, n, type, status, destinations, time):
     # Dictionary that contains all the data for the drone, except for the drone object
     d = {"id": -1,
-                "born": time,
+                "birthday": time,
+                "iteration": time,
                 "trajs": [],
                 "alive": 1, # Alive, 0 is dead
                 "state": xi,
@@ -135,12 +137,12 @@ def create_mission(xi, waypoints, n, type, status, destinations, time):
     return d
 
 def sort_traffic(traffic):
-    missions_sorted = sorted(traffic, key=lambda mission: mission["born"])
+    missions_sorted = sorted(traffic, key=lambda mission: mission["iteration"])
     for mission in missions_sorted:
+        time = mission["iteration"]
         if mission["mission"]["type"] == "delivery":
             restaurant = mission["mission"]["destination"][0]
             delivery_location = mission["mission"]["destination"][1]
-            time = mission["born"]
             print(restaurant["name"], "\tto\t" + delivery_location["name"] + "\tat\t", end="")
             # print("%.1f" % (time * dt))
             milliseconds_to_hours(time * 100)

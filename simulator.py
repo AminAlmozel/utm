@@ -70,7 +70,8 @@ class simulator(drone.drone):
         self.ppp.sim_latest = self.sim_latest
         self.dummy_obstacles()
         self.missions = io.import_missions()
-        # self.initialize_drones()
+
+        self.max_vel = drone.drone().V_max # Max velocity
 
     def dummy_obstacles(self):
         # obstacles = [
@@ -107,21 +108,14 @@ class simulator(drone.drone):
     def check_new_missions(self):
         # Checking for missions that start at the current self.iteration
         # The missions list must be sorted by time
-        condition = (self.missions[self.mission_counter]["born"] == self.iteration)
+        condition = (self.missions[self.mission_counter]["iteration"] == self.iteration)
         while(condition == True):
             mission = self.missions[self.mission_counter]
             self.create_mission(mission)
             self.mission_counter += 1
-            condition = (self.missions[self.mission_counter]["born"] == self.iteration)
-
-    def initialize_drones(self):
-        # Initalize delivery drones
-        for k in range(self.n_vehicles):
-            self.create_delivery_drone(0)
-        self.max_vel = self.drn[0].smax[3] # Max velocity
+            condition = (self.missions[self.mission_counter]["iteration"] == self.iteration)
 
     def create_mission(self, mission):
-        # print(mission)
         mission_type = mission["mission"]["type"]
         print(mission_type)
         if mission_type == "delivery":
@@ -132,7 +126,6 @@ class simulator(drone.drone):
     def create_delivery_drone(self, mission):
         xi = mission["mission"]["destination"][0]["geometry"]
         xf = mission["mission"]["destination"][1]["geometry"].centroid
-        # self.create_drone(self.xi[k], self.final_conditions[k], 0)
         pi = [xi.x, xi.y]
         pf = [xf.x, xf.y]
         # print([pi, pf])
@@ -146,7 +139,7 @@ class simulator(drone.drone):
         # if destination == 0:
         #     destination += 1 # To resolve an issue with firefighting drones
         destinations = [waypoints[0], waypoints[destination], waypoints[0]]
-        self.create_drone(mission["state"], waypoints, self.iteration, "delivery", "in progress", destinations)
+        self.create_drone(len(self.drn), mission["state"], waypoints, self.iteration, "delivery", "in progress", destinations)
 
     # def create_delivery_drone(self, n):
     #     xi, xf = self.obs.random_mission(n)
@@ -179,23 +172,51 @@ class simulator(drone.drone):
                 destination = [dest["geometry"].centroid.x, dest["geometry"].centroid.y] + [30, 0, 0, 0]
                 waypoints.append(self.list2state(destination))
         # Create a drone or multiple to go from the fire station to the location of the fire
-        self.create_drone(mission["state"], waypoints, self.iteration, "firefighting", "in progress", destinations)
+        mission = self.create_drone(len(self.drn), mission["state"], waypoints, self.iteration, "firefighting", "in progress", destinations)
+        # xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones, self.iteration)
+        alert_drones, fire = self.obs.fire_response(mission, self.drones, self.iteration)
+        # self.create_firefighting_drone(xi, waypoints)
+        self.ppp.add_to_forbidden(fire)
+        # Replan for the drones crossing the path and the area surrounding the location of the fire
+        # Adding the fire to the no fly zones, so that other drones fly around it
 
-    # def create_firefighting_drone(self, xi, waypoints):
-    #     xi = self.list2state(xi)
-    #     for i in range(len(waypoints)):
-    #         waypoints[i] = self.list2state(waypoints[i])
-    #     # Create a drone or multiple to go from the fire station to the location of the fire
-    #     destinations = waypoints
-    #     self.create_drone(xi, waypoints, self.iteration, "firefighting", "in progress", destinations)
+        for drn in alert_drones:
+            current_state = self.drones[drn]["state"]
+            home_state = self.drones[drn]["mission"]["destination"][0]["geometry"].centroid
+            dest_state = self.drones[drn]["mission"]["destination"][1]["geometry"].centroid
 
+            pi = [current_state['x'], current_state['y']]
+            ph = [home_state.x, home_state.y]
+            pf = [dest_state.x, dest_state.y]
+            # If the delivery is not finished yet, finish it first, then go back to base
+            status = self.drones[drn]["mission"]["status"]
+            print(status)
+            if status == "in progress":
+                print("Recalculating trajectory")
+                waypoints1 = self.ppp.create_trajectory([pi, pf])
+                waypoints2 = self.ppp.create_trajectory([pf, ph])
+                new_waypoints = waypoints1 + waypoints2
+            # If the delivery is finished, just go back to base
+            if status == "returning":
+                print("Returning")
+                # This was ph to pf
+                new_waypoints = self.ppp.create_trajectory([pi, ph])
+            if status == "waiting":
+                print("Waiting")
+                # This was ph to pf
+                new_waypoints = self.ppp.create_trajectory([pi, ph])
+            # Putting the waypoints in the proper format
+            for i in range(len(new_waypoints)):
+                new_waypoints[i] = self.list2state(new_waypoints[i])
+            self.drones[drn]["mission"]["waypoints"] = new_waypoints
 
-    def create_drone(self, xi, waypoints, n, type, status, destinations):
+    def create_drone(self, id, xi, waypoints, n, type, status, destinations):
         self.K += 1
-        born = self.seconds_from_today(n)
+        birthday = self.seconds_from_today(n)
         # Dictionary that contains all the data for the drone, except for the drone object
-        d = {"id": len(self.drn),
-                 "born": born,
+        d = {"id": id,
+                 "birthday": birthday,
+                 "iteration": n,
                  "trajs": [],
                  "alive": 1, # Alive, 0 is dead
                  "state": xi,
@@ -214,6 +235,7 @@ class simulator(drone.drone):
         self.drn.append(drone.drone())
         self.drn_list.append(len(self.drn) - 1)
         # self.env_list.append(grb.Env())
+        return d
 
     def prepare_and_generate(self, k):
         t0 = time.time()
@@ -238,12 +260,11 @@ class simulator(drone.drone):
         xi = self.drones[k]["state"]
         # Final state
 
-
-        waypoint = self.drones[k]["mission"]["progress"]
+        progress = self.drones[k]["mission"]["progress"]
         # print("Drone %d, waypoint: %d, alive: %d" %(k, waypoint, self.drones[k]["alive"]))
         if self.drones[k]["mission"]["status"] == "waiting": # If the drone is waiting, stay at the last waypoint
-            waypoint -= 1
-        xf = self.drones[k]["mission"]["waypoints"][waypoint]
+            progress -= 1
+        xf = self.drones[k]["mission"]["waypoints"][progress]
         # Other drones trajectories
         xi_1 = [self.drones[i]["trajs"][-1] for i in drone_prox_list]
 
@@ -265,12 +286,6 @@ class simulator(drone.drone):
         for self.iteration in range(self.total_iterations):
             print("%d============================" % (self.iteration))
             self.check_new_missions()
-
-            # if self.iteration%10 == 0 and self.iteration < 200:
-            #     self.create_delivery_drone(self.iteration)
-            #     print("Created drone")
-
-            # K = len(self.drn_list)
             self.drn_list = []
             for k, drone in enumerate(self.drones):
                 if drone["alive"] == 1:
@@ -281,6 +296,9 @@ class simulator(drone.drone):
                 break
             print(self.drn_list)
             t00 = time.time()
+            if K == 0:
+                print("No drones to simulate. Skip")
+                continue
             pool = Pool()
             with Pool() as pool:
                 # prepare arguments
@@ -302,6 +320,8 @@ class simulator(drone.drone):
             pool.join()
             self.update()
             io.log_to_json(self.drones, self.sim_run, self.sim_latest)
+            io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
+
 
             t01 = time.time()
             print("Time of iteration: %.2f" % (t01 - t00))
@@ -321,43 +341,13 @@ class simulator(drone.drone):
         # Update trajectories and the current state
         self.update_vehicle_state()
         # Apply random events
-        self.random_events()
+        # self.random_events()
         # Check the mission progress
         self.update_mission()
         # Update the trajectories
 
     def random_events(self):
         N = len(self.drn_list)
-        if self.iteration == 4: # Random fire emergency
-            xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones, self.iteration)
-            self.create_firefighting_drone(xi, waypoints)
-            self.ppp.add_to_forbidden(fire)
-            # Replan for the drones crossing the path and the area surrounding the location of the fire
-            # Adding the fire to the no fly zones, so that other drones fly around it
-
-            for drn in alert_drones:
-                current_state = self.drones[drn]["state"]
-                home_state = self.drones[drn]["mission"]["destination"][0]
-                dest_state = self.drones[drn]["mission"]["destination"][1]
-
-                pi = [current_state['x'], current_state['y']]
-                px = [home_state['x'], home_state['y']]
-                pf = [dest_state['x'], dest_state['y']]
-                # If the delivery is not finished yet, finish it first, then go back to base
-                if self.drones[drn]["mission"]["status"] == "in progress":
-                    print("Recalculating trajectory")
-                    waypoints1 = self.ppp.create_trajectory([pi, pf])
-                    waypoints2 = self.ppp.create_trajectory([pf, px])
-                    new_waypoints = waypoints1 + waypoints2
-                # If the delivery is finished, just go back to base
-                if self.drones[drn]["mission"]["status"] == "returning":
-                    print("Returning")
-                    new_waypoints = self.ppp.create_trajectory([px, pf])
-                # Putting the waypoints in the proper format
-                for i in range(len(new_waypoints)):
-                    new_waypoints[i] = self.list2state(new_waypoints[i])
-                self.drones[drn]["mission"]["waypoints"] = new_waypoints
-
 
         if self.iteration == 5500:
             print("ABORT MISSION!!!!11!!!!!! MBS IS HERE!!!!")
@@ -444,26 +434,42 @@ class simulator(drone.drone):
                 progress = drone["mission"]["progress"]
 
                 if drone["mission"]["status"] == "waiting": # If the drone is waiting
-                    drone["mission"]["waypoints"][progress] -= 1 # Countdown the timer
+                    print("waiting")
+                    drone["mission"]["waypoints"][progress] -= 400 # Countdown the timer
+                    print(drone["mission"]["waypoints"][progress])
                     if drone["mission"]["waypoints"][progress] <= 0: # If the timer is finished
                         drone["mission"]["progress"] += 1 # Go to the next step of the mission
+                        drone["mission"]["status"] = "returning"
                     continue
-                dest = drone["mission"]["waypoints"][progress]
-                if isinstance(dest, int):
-                    drone["mission"]["status"] = "waiting"
-                    continue
-                dist = np.sqrt(self.dist_squared(drn, dest))
-                if dist < 5:
+                waypoint = drone["mission"]["waypoints"][progress]
+
+                dist = np.sqrt(self.dist_squared(drn, waypoint))
+                if dist < 100:
                     print("Drone %d reached destination!" %(k))
-                    drone["mission"]["progress"] += 1
+                    # drone["mission"]["progress"] += 1
                     progress = drone["mission"]["progress"]
-                    if drone["mission"]["progress"] == len(drone["mission"]["waypoints"]): # If it completed the mission
+                    geom = drone["mission"]["destination"][1]["geometry"].centroid
+                    zmin = drone["mission"]["destination"][1]["zmin"]
+                    zmin = 30
+                    destination = [geom.x, geom.y, zmin]
+                    waypoint = [drone["mission"]["waypoints"][progress]['x'],
+                                 drone["mission"]["waypoints"][progress]['y'],
+                                   drone["mission"]["waypoints"][progress]['z']]
+                    print("Mission progress: ", drone["mission"]["progress"])
+                    print("Length of waypoints: ", len(drone["mission"]["waypoints"]))
+                    if drone["mission"]["progress"] == len(drone["mission"]["waypoints"]) - 1: # If it completed the mission
                         drone["mission"]["status"] = "completed" # Mark it as completed
                         drone["alive"] = 0 # Mark it as dead/offline
                         print("MISSION COMPLETED WOOOHOOOOOO!!!1111!!!!!!11!1")
+                        continue
                     # If delivered, change status to returning to base
-                    elif drone["mission"]["waypoints"][progress] == drone["mission"]["destination"][1]:
+                    elif waypoint == destination:
                         drone["mission"]["status"] = "returning"
+                    drone["mission"]["progress"] += 1
+                progress = drone["mission"]["progress"]
+                waypoint = drone["mission"]["waypoints"][progress]
+                if isinstance(waypoint, float):
+                    drone["mission"]["status"] = "waiting"
 
     def random_state(self, xi, xf):
         v = 2
