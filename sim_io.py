@@ -299,61 +299,37 @@ class myio:
             traffic = pkl.load(traffic_file)
         return traffic
 
-    def import_inspection():
-        filename = "env/solar*.geojson"
-        list_of_files = glob.glob(filename)
-        list_of_df = []
-        for filename in list_of_files:
-            file = open(filename)
-            df = gp.read_file(file)
-            df.to_crs(epsg=20437, inplace=True)
-            list_of_df.append(df)
 
-        return list_of_df
+    def load_geojson_files(pattern: str, concat: bool = False, crs_epsg: int = 20437):
+        """
+        Load and transform GeoJSON files matching a pattern.
+
+        Parameters:
+            pattern (str): Glob pattern for filenames.
+            concat (bool): If True, returns a single concatenated GeoDataFrame.
+            crs_epsg (int): EPSG code to reproject the data to.
+
+        Returns:
+            list[GeoDataFrame] or GeoDataFrame: Loaded and reprojected data.
+        """
+        files = glob.glob(pattern)
+        gdfs = [gp.read_file(f).to_crs(epsg=crs_epsg) for f in files]
+        return pd.concat(gdfs, ignore_index=True) if concat else gdfs
+
+    def import_inspection():
+        return myio.load_geojson_files("env/solar*.geojson", concat=False)
 
     def import_research():
-        filename = "env/mangrove.geojson"
-        list_of_files = glob.glob(filename)
-        list_of_df = []
-        for filename in list_of_files:
-            file = open(filename)
-            df = gp.read_file(file)
-            df.to_crs(epsg=20437, inplace=True)
-            list_of_df.append(df)
-        return pd.concat(list_of_df, ignore_index=True)
+        return myio.load_geojson_files("env/mangrove.geojson", concat=True)
 
     def import_recreational():
-        filename = "env/recreational.geojson"
-        list_of_files = glob.glob(filename)
-        list_of_df = []
-        for filename in list_of_files:
-            file = open(filename)
-            df = gp.read_file(file)
-            df.to_crs(epsg=20437, inplace=True)
-            list_of_df.append(df)
-        return pd.concat(list_of_df, ignore_index=True)
+        return myio.load_geojson_files("env/recreational.geojson", concat=True)
 
     def import_perimeter():
-        filename = "env/perimeter.geojson"
-        list_of_files = glob.glob(filename)
-        list_of_df = []
-        for filename in list_of_files:
-            file = open(filename)
-            df = gp.read_file(file)
-            df.to_crs(epsg=20437, inplace=True)
-            list_of_df.append(df)
-        return pd.concat(list_of_df, ignore_index=True)
+        return myio.load_geojson_files("env/perimeter.geojson", concat=True)
 
     def import_traffic_zones():
-        filename = "env/intersections.geojson"
-        list_of_files = glob.glob(filename)
-        list_of_df = []
-        for filename in list_of_files:
-            file = open(filename)
-            df = gp.read_file(file)
-            df.to_crs(epsg=20437, inplace=True)
-            list_of_df.append(df)
-        return pd.concat(list_of_df, ignore_index=True)
+        return myio.load_geojson_files("env/intersections.geojson", concat=True)
 
     def store_adjacency_matrix(self):
         print("Saving adjacency matrix to file")
