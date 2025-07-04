@@ -26,6 +26,7 @@ def main():
     # traffic_stats(traffic)
 
 def generate_traffic_schedule(env, timesteps):
+    display = []
     deliveries = []
     # Deliveries
     for index, restaurant in env.restaurants.iterrows():
@@ -83,7 +84,8 @@ def generate_traffic_schedule(env, timesteps):
     mission = create_research_mission(time, sites, research_site)
     research.append(mission)
 
-    # print(research)
+    # display = transform_meter_global(display)
+    # io.write_geom(display, "missions", "white")
     # return deliveries + firefighting
     return firefighting
 
@@ -180,7 +182,7 @@ def create_inpsection_mission(time, env, inspection_site):
 
 def create_research_mission(time, env, research_site):
     polygon = env["geometry"][research_site]
-    wp = sample_grid_points(polygon, 100)
+    wp = sample_grid_points(polygon, 50)
     waiting_times = generate_waiting_times(len(wp))
     z = 30
     waypoints = []
@@ -456,5 +458,27 @@ def sample_points_in_circle(center: Point, radius: float, avg_points=7, variatio
 
     return points
 
+def display_mission(mission):
+    points = []
+    for waypoint in mission["mission"]["waypoints"]:
+        if isinstance(waypoint, int):
+            continue
+        wp = state2list(waypoint)
+        points.append(wp)
+    ls = traj_to_linestring(points)
+    return ls
+
+def traj_to_linestring(traj):
+    points = []
+    for i in range(len(traj)):
+        point = Point(traj[i][0], traj[i][1])
+        points.append(point)
+    s_line = LineString(points)
+    return s_line
+
+def transform_meter_global(geom):
+    gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
+    gdf.to_crs(epsg=4326, inplace=True)
+    return gdf.geometry
 # Run the main function
 main()

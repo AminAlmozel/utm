@@ -329,6 +329,7 @@ class myio:
         for filename in list_of_files:
             file = open(filename)
             df = gp.read_file(file)
+            df.to_crs(epsg=20437, inplace=True)
             list_of_df.append(df)
         return pd.concat(list_of_df, ignore_index=True)
 
@@ -339,6 +340,7 @@ class myio:
         for filename in list_of_files:
             file = open(filename)
             df = gp.read_file(file)
+            df.to_crs(epsg=20437, inplace=True)
             list_of_df.append(df)
         return pd.concat(list_of_df, ignore_index=True)
 
@@ -349,6 +351,7 @@ class myio:
         for filename in list_of_files:
             file = open(filename)
             df = gp.read_file(file)
+            df.to_crs(epsg=20437, inplace=True)
             list_of_df.append(df)
         return pd.concat(list_of_df, ignore_index=True)
 
