@@ -1,6 +1,7 @@
 import pickle as pkl
 import numpy as np
 import geopandas as gp
+from shapely.geometry import Point, LineString
 
 from datetime import timedelta
 import random
@@ -43,16 +44,46 @@ def generate_traffic_schedule(env, timesteps):
         firefighting.append(mission)
 
     # Security
+    security = []
+    # lot = io.import_parking()
+    # mission = create_parkinglot_monitoring(time, env, lot)
+
+    # Perimeter patrol
+    time = random.randint(0, timesteps) # To get one random perimeter section mission
+    perimeter = io.import_perimeter()
+    section = random.randint(0, len(perimeter)/2-1)
+    mission = create_perimeter_patrol_mission(time, perimeter, section)
+    security.append(mission)
+
+    # Traffic zones
+    zones = io.import_traffic_zones()
+    intersection = random.randint(0, len(zones)-1)
+    mission = create_traffic_monitoring_mission(time, zones, intersection)
+    security.append(mission)
 
     # Recreational
-    create_recreational_mission(time, env)
+    recreational = []
+    time = random.randint(0, timesteps) # To get one random inspection mission
+    field = io.import_recreational()
+    mission = create_recreational_mission(time, field)
+    recreational.append(mission)
 
     # Solar panels inspection and maintenance
-    create_inpsection_mission(time, env)
+    inspection = []
+    time = random.randint(0, timesteps) # To get one random inspection mission
+    sites = io.import_inspection()
+    inspection_site = random.randint(0, len(sites)-1)
+    mission = create_inpsection_mission(time, sites, inspection_site)
+    inspection.append(mission)
 
     # Research
-    create_research_mission(time, env)
+    research = []
+    sites = io.import_research()
+    research_site = random.randint(0, 1)
+    mission = create_research_mission(time, sites, research_site)
+    research.append(mission)
 
+    # print(research)
     # return deliveries + firefighting
     return firefighting
 
@@ -112,14 +143,9 @@ def create_firefighting_mission(time, env):
     return mission
 
 def create_recreational_mission(time, env):
-    pass
-
-def create_inpsection_mission(time, env):
-    points = io.import_inspection()
-    inspection_site = random.randint(0, len(points)-1)
-    wp = create_random_waypoints(points[inspection_site]["geometry"])
+    field = env["geometry"]
+    wp = create_random_waypoints(field)
     waiting_times = generate_waiting_times(len(wp))
-    print(waiting_times)
     z = 30
     waypoints = []
     for i in range(len(wp)):
@@ -128,15 +154,90 @@ def create_inpsection_mission(time, env):
         if i == 0 or i == len(wp) - 1:
             continue
         waypoints.append(waiting_times[i])
-    print(waypoints)
-    pi = points[inspection_site]["geometry"][0]
+    pi = field[0]
     xi = list2state([pi.x, pi.y] + [30, 0, 0, 0])
     destinations = [waypoints[0], waypoints[-3], waypoints[0]]
-    print(destinations)
-    mission = create_mission(xi, waypoints, time, "inspection", "in progress", destinations, time)
+    mission = create_mission(xi, waypoints, time, "recreational", "in progress", destinations, time)
+    return mission
 
-def create_research_mission(time, env):
+def create_inpsection_mission(time, env, inspection_site):
+    points = env[inspection_site]["geometry"]
+    wp = create_random_waypoints(points)
+    waiting_times = generate_waiting_times(len(wp))
+    z = 30
+    waypoints = []
+    for i in range(len(wp)):
+        p = [wp.iloc[i].x, wp.iloc[i].y] + [z, 0, 0, 0]
+        waypoints.append(list2state(p))
+        if i == 0 or i == len(wp) - 1:
+            continue
+        waypoints.append(waiting_times[i])
+    pi = points[0]
+    xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
+    destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    mission = create_mission(xi, waypoints, time, "inspection", "in progress", destinations, time)
+    return mission
+
+def create_research_mission(time, env, research_site):
+    polygon = env["geometry"][research_site]
+    wp = sample_grid_points(polygon, 100)
+    waiting_times = generate_waiting_times(len(wp))
+    z = 30
+    waypoints = []
+    for i in range(len(wp)):
+        p = [wp[i].x, wp[i].y] + [z, 0, 0, 0]
+        waypoints.append(list2state(p))
+        if i == 0 or i == len(wp) - 1:
+            continue
+        waypoints.append(waiting_times[i])
+    takeoff_point = int(len(env["geometry"])/2 + research_site)
+    pi = env["geometry"][takeoff_point]
+    xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
+    destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    mission = create_mission(xi, waypoints, time, "research", "in progress", destinations, time)
+    return mission
+
+def create_parkinglot_monitoring(time, env, lot):
     pass
+
+def create_perimeter_patrol_mission(time, env, section):
+    perimeter = env["geometry"][section]
+    wp = sample_points_from_linestring(perimeter)
+    waiting_times = generate_waiting_times(len(wp))
+    z = 30
+    waypoints = []
+    for i in range(len(wp)):
+        p = [wp[i].x, wp[i].y] + [z, 0, 0, 0]
+        waypoints.append(list2state(p))
+        if i == 0 or i == len(wp) - 1:
+            continue
+        waypoints.append(waiting_times[i])
+    takeoff_point = int(len(env["geometry"])/2 + section)
+    pi = env["geometry"][takeoff_point]
+    xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
+    destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    mission = create_mission(xi, waypoints, time, "perimeter_patrol", "in progress", destinations, time)
+    return mission
+
+def create_traffic_monitoring_mission(time, env, intersection):
+    zone = env["geometry"][intersection]
+    radius = 50
+    wp = sample_points_in_circle(zone, radius)
+    waiting_times = generate_waiting_times(len(wp))
+    z = 30
+    waypoints = []
+    for i in range(len(wp)):
+        p = [wp[i].x, wp[i].y] + [z, 0, 0, 0]
+        waypoints.append(list2state(p))
+        if i == 0 or i == len(wp) - 1:
+            continue
+        waypoints.append(waiting_times[i])
+    takeoff_point = 0
+    pi = env["geometry"][takeoff_point]
+    xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
+    destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    mission = create_mission(xi, waypoints, time, "traffic_monitoring", "in progress", destinations, time)
+    return mission
 
 def create_mission(xi, waypoints, n, type, status, destinations, time):
     # Dictionary that contains all the data for the drone, except for the drone object
@@ -245,7 +346,6 @@ def milliseconds_to_hours(time):
 def sample_grid_points(polygon, spacing):
     minx, miny, maxx, maxy = polygon.bounds
     points = []
-
     y = miny
     row = 0
     while y <= maxy:
@@ -253,7 +353,7 @@ def sample_grid_points(polygon, spacing):
         if row % 2 == 1:  # zigzag for efficient pathing
             x_range = x_range[::-1]
         for x in x_range:
-            p = gp.Point(x, y)
+            p = Point(x, y)
             if polygon.contains(p):
                 points.append(p)
         y += spacing
@@ -303,5 +403,58 @@ def generate_waiting_times(n, mean=80, variance=40, min_time=30):
     times = np.clip(times, min_time, None)
 
     return times.tolist()
+
+def sample_points_from_linestring(line: LineString, avg_points=7, variation=2, mode="random") -> list[Point]:
+    """
+    Sample points along a LineString.
+
+    Parameters:
+        line (LineString): The input line to sample from.
+        n_points (int): Number of points to sample.
+        mode (str): 'even' for equally spaced, 'random' for randomly spaced.
+
+    Returns:
+        List[Point]: Sampled Shapely Point objects.
+    """
+    n_points = max(1, avg_points + random.randint(-variation, variation))
+    if line.length == 0:
+        return [Point(line.coords[0])] * n_points
+
+    distances = []
+
+    if mode == "even":
+        distances = np.linspace(0, line.length, n_points + 2)[1:-1]  # exclude endpoints
+    elif mode == "random":
+        distances = np.sort(np.random.uniform(0, line.length, n_points))
+    else:
+        raise ValueError("Mode must be 'even' or 'random'.")
+    return [line.interpolate(d) for d in distances]
+
+def sample_points_in_circle(center: Point, radius: float, avg_points=7, variation=2) -> list[Point]:
+    """
+    Sample points uniformly distributed within a circle around a center point.
+
+    Parameters:
+        center (tuple): The (x, y) coordinates of the center point.
+        radius (float): Radius of the circle.
+        n_points (int): Number of points to sample.
+
+    Returns:
+        List[Point]: List of Shapely Point objects.
+    """
+
+    n_points = max(1, avg_points + random.randint(-variation, variation))
+    cx, cy = center.x, center.y
+    points = []
+
+    for _ in range(n_points):
+        r = radius * np.sqrt(np.random.uniform(0, 1))  # ensures uniform density
+        theta = np.random.uniform(0, 2 * np.pi)
+        x = cx + r * np.cos(theta)
+        y = cy + r * np.sin(theta)
+        points.append(Point(x, y))
+
+    return points
+
 # Run the main function
 main()

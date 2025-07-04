@@ -306,9 +306,51 @@ class myio:
         for filename in list_of_files:
             file = open(filename)
             df = gp.read_file(file)
+            df.to_crs(epsg=20437, inplace=True)
             list_of_df.append(df)
-        # return pd.concat(list_of_df, ignore_index=True)
+
         return list_of_df
+
+    def import_research():
+        filename = "env/mangrove.geojson"
+        list_of_files = glob.glob(filename)
+        list_of_df = []
+        for filename in list_of_files:
+            file = open(filename)
+            df = gp.read_file(file)
+            df.to_crs(epsg=20437, inplace=True)
+            list_of_df.append(df)
+        return pd.concat(list_of_df, ignore_index=True)
+
+    def import_recreational():
+        filename = "env/recreational.geojson"
+        list_of_files = glob.glob(filename)
+        list_of_df = []
+        for filename in list_of_files:
+            file = open(filename)
+            df = gp.read_file(file)
+            list_of_df.append(df)
+        return pd.concat(list_of_df, ignore_index=True)
+
+    def import_perimeter():
+        filename = "env/perimeter.geojson"
+        list_of_files = glob.glob(filename)
+        list_of_df = []
+        for filename in list_of_files:
+            file = open(filename)
+            df = gp.read_file(file)
+            list_of_df.append(df)
+        return pd.concat(list_of_df, ignore_index=True)
+
+    def import_traffic_zones():
+        filename = "env/intersections.geojson"
+        list_of_files = glob.glob(filename)
+        list_of_df = []
+        for filename in list_of_files:
+            file = open(filename)
+            df = gp.read_file(file)
+            list_of_df.append(df)
+        return pd.concat(list_of_df, ignore_index=True)
 
     def store_adjacency_matrix(self):
         print("Saving adjacency matrix to file")
