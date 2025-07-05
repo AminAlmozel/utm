@@ -1,0 +1,166 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2025-07-05T12:05:20Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/480679201",
+        "man_made": "tower"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.095031,
+          22.3106417
+        ]
+      },
+      "id": "node/480679201"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/482292865",
+        "man_made": "tower",
+        "name": "Mobily"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.097088,
+          22.3114692
+        ]
+      },
+      "id": "node/482292865"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/487160529",
+        "man_made": "tower"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.0948826,
+          22.3106619
+        ]
+      },
+      "id": "node/487160529"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/510013076",
+        "man_made": "tower",
+        "name": "Mobily"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1010232,
+          22.3117974
+        ]
+      },
+      "id": "node/510013076"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/510013079",
+        "man_made": "tower",
+        "name": "STC"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1008785,
+          22.3117236
+        ]
+      },
+      "id": "node/510013079"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3474996449",
+        "man_made": "tower",
+        "tower:type": "communication"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1095234,
+          22.3126741
+        ]
+      },
+      "id": "node/3474996449"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3474996450",
+        "man_made": "tower",
+        "tower:type": "communication"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1032538,
+          22.3192189
+        ]
+      },
+      "id": "node/3474996450"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3650528635",
+        "man_made": "tower",
+        "tower:type": "communication"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1103284,
+          22.3246375
+        ]
+      },
+      "id": "node/3650528635"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3738962676",
+        "height": "20",
+        "man_made": "tower",
+        "tower:type": "observation"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.088106,
+          22.341714
+        ]
+      },
+      "id": "node/3738962676"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9859072843",
+        "man_made": "tower"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1017167,
+          22.2983662
+        ]
+      },
+      "id": "node/9859072843"
+    }
+  ]
+}

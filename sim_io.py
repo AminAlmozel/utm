@@ -299,7 +299,6 @@ class myio:
             traffic = pkl.load(traffic_file)
         return traffic
 
-
     def load_geojson_files(pattern: str, concat: bool = False, crs_epsg: int = 20437):
         """
         Load and transform GeoJSON files matching a pattern.
@@ -315,6 +314,9 @@ class myio:
         files = glob.glob(pattern)
         gdfs = [gp.read_file(f).to_crs(epsg=crs_epsg) for f in files]
         return pd.concat(gdfs, ignore_index=True) if concat else gdfs
+
+    def import_communication():
+        return myio.load_geojson_files("env/communication.geojson", concat=True)
 
     def import_inspection():
         return myio.load_geojson_files("env/solar*.geojson", concat=False)
