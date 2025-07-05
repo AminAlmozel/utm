@@ -22,6 +22,7 @@ from util import *
 from time import time
 import random
 from multiprocessing import Pool
+from typing import List
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -58,7 +59,7 @@ class sampling_pp(io):
         minx, miny, maxx, maxy = comm.bounds
         bounds = comm.bounds
         # Sample airspace
-        n_points = 30
+        n_points = 300
         samples = samples_poisson(n_points, bounds)
         # samples = samples_biased(n_points, self.mp_areas, bounds, self.nfz, 0.7)
         # samples = samples_uniform(n_points, self.mp_areas, bounds, self.nfz)
@@ -69,13 +70,14 @@ class sampling_pp(io):
         max_distance = 500
         lines = connect_close_points(samples, max_distance)
         # Intersect lines with each of the polygons
-        # t0 = time()
+        t0 = time()
         lengths = line_intersection_lengths(lines, comm)
-        # t1 = time()
+        print(sum(lengths))
+        t1 = time()
         # print(lengths)
-        # lengths = vectorized_line_intersection_lengths(lines, comm)
-        # t2 = time()
-        print(lengths)
+        lengths = calculate_intersection_lengths_vectorized(lines, comm)
+        t2 = time()
+        print(sum(lengths))
         print("T0: %.2f" % (t1 - t0))
         print("T1: %.2f" % (t2 - t1))
 
@@ -199,44 +201,42 @@ def line_intersection_lengths(lines, multipolygon):
     return lengths
 
 
-def vectorized_line_intersection_lengths(lines, multipolygon):
+def calculate_intersection_lengths_vectorized(lines: List[LineString], multipolygon: MultiPolygon) -> np.ndarray:
     """
-    Compute lengths of the segments of lines that intersect a multipolygon.
-
-    Args:
-        lines (list of LineString): The input lines.
-        multipolygon (MultiPolygon): The polygon(s) to intersect with.
-
-    Returns:
-        list of float: Lengths of the intersecting segments.
+    Alternative vectorized approach for very large datasets.
+    May be faster when dealing with thousands of lines.
     """
-    # Create a list of just geometries
-    geometries = list(lines)  # Ensure list, not GeoSeries or array
-    tree = STRtree(geometries)
+    if not lines:
+        return np.array([])
 
-    # Prepare output list
-    result_lengths = [0.0] * len(geometries)
+    lengths = np.zeros(len(lines), dtype=np.float64)
 
-    # Query for candidate geometries
-    candidate_geoms = tree.query(multipolygon)
+    # Create bounds arrays for vectorized operations
+    line_bounds = np.array([line.bounds for line in lines])
 
-    for geom in candidate_geoms:
-        # Find index via position in original list
-        try:
-            idx = geometries.index(geom)
-        except ValueError:
-            continue  # Geometry not found — skip
+    for poly in multipolygon.geoms:
+        poly_bounds = poly.bounds
 
-        intersection = multipolygon.intersection(geom)
+        # Vectorized bounds check to filter lines that can't possibly intersect
+        mask = (
+            (line_bounds[:, 0] <= poly_bounds[2]) &  # minx <= poly_maxx
+            (line_bounds[:, 2] >= poly_bounds[0]) &  # maxx >= poly_minx
+            (line_bounds[:, 1] <= poly_bounds[3]) &  # miny <= poly_maxy
+            (line_bounds[:, 3] >= poly_bounds[1])    # maxy >= poly_miny
+        )
 
-        if intersection.is_empty:
-            continue
-        elif intersection.geom_type == "LineString":
-            result_lengths[idx] = intersection.length
-        elif intersection.geom_type == "MultiLineString":
-            result_lengths[idx] = sum(seg.length for seg in intersection.geoms)
+        # Only process lines that pass the bounds check
+        for i in np.where(mask)[0]:
+            try:
+                intersection = lines[i].intersection(poly)
+                if intersection.geom_type == 'LineString':
+                    lengths[i] += intersection.length
+                elif intersection.geom_type == 'MultiLineString':
+                    lengths[i] += sum(geom.length for geom in intersection.geoms)
+            except Exception:
+                continue
 
-    return result_lengths
+    return lengths
 
 def main():
     spp = sampling_pp()
