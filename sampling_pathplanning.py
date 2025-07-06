@@ -14,7 +14,7 @@ from itertools import combinations
 import glob
 from math import radians, cos, sin, asin, atan2, sqrt, pi, ceil, exp, log
 
-# import astar_uam as astar
+import uam.astar_uam as astar
 # import exploration
 # import terrain
 from sim_io import myio as io
@@ -32,15 +32,6 @@ warnings.simplefilter(action='ignore', category=UserWarning)
 class sampling_pp(io):
     def __init__(self):
         self.radius = 700
-
-        self.logging = True
-        self.project = "uam/kaust/"
-        # self.sa = self.import_custom("landing")
-        # self.sa = self.sa.geometry.unary_union
-        # fa = self.import_forbidden()
-        # Approximating the polygonial airspace
-        tolerance = 30 # Meters
-        # self.fa = self.simplify_polygon(fa.unary_union, tolerance)
         self.sim_run = ""
         self.sim_latest = ""
         self.mp_areas = []
@@ -49,25 +40,31 @@ class sampling_pp(io):
         self.heur = []
         self.nfz = []
         self.nodes = []
-        self.prepare()
+        self.initalize()
+        self.update_graphs()
         a = 0
         b = 1
         self.spp(a, b)
 
-    def spp(self, a, b):
-        adj = sum(self.adj)
-        heur = sum(self.heur)
-        path = astar(adj, heur, a, b)
-        traj = self.nodes[path]
-        ls = LineString(traj)
-        io.write_geom([ls], "traj", "blue")
-        return path
+    def initalize(self):
+        self.project = "uam/kaust/"
+        self.sa = io.load_geojson_files(self.project + "landing/*.geojson", concat=True)
+        self.sa = self.sa.geometry.union_all()
+        self.fa = io.load_geojson_files(self.project + "forbidden/*.geojson", concat=True)
 
-    def prepare(self):
-        self.add_areas()
-        # minx, miny, maxx, maxy = comm.bounds
-        kaust = self.mp_areas[0]
-        bounds = kaust.bounds
+        # Get multipolygons
+        kaust = io.load_geojson_files("env/kaust.geojson", concat=True)["geometry"][0]
+        self.kaust = MultiPolygon([kaust])
+        self.mp_areas.append(self.kaust)
+        self.mp_costs.append(1)
+
+        comm = io.import_communication()
+        r = 400
+        comm = comm["geometry"].buffer(r).union_all()
+        self.add_area(comm, 1)
+        io.write_geom(transform_meter_global([comm]), "comm", "yellow")
+
+        bounds = self.kaust.bounds
 
         # Sample airspace
         n_points = 1500
@@ -77,12 +74,25 @@ class sampling_pp(io):
         # samples = samples_uniform(n_points, self.mp_areas, bounds, self.nfz)
 
         # Remove extra points outside of kaust airspace
-        samples = [p for p in samples if p.within(kaust)]
+        samples = [p for p in samples if p.within(self.kaust)]
         self.nodes = samples
 
+    def spp(self, a, b):
+        adj = sum(self.adj)
+        heur = sum(self.heur)
+        path = astar.a_star(adj, heur, a, b)
+        traj = [self.nodes[p] for p in path]
+        ls = LineString(traj)
+        io.write_geom(transform_meter_global([ls]), "traj", "blue")
+        return path
+
+    def add_nodes(self, new_nodes):
+        self.nodes = new_nodes + self.nodes
+
+    def update_graphs(self):
         # Construct lines from samples
         max_distance = 1500 #km
-        lines, node_pairs = connect_points_within_distance(samples, max_distance)
+        lines, node_pairs = connect_points_within_distance(self.nodes, max_distance)
 
         for i in range(len(self.mp_areas)):
             # Intersect lines with each of the polygons
@@ -90,31 +100,23 @@ class sampling_pp(io):
             lengths = calculate_intersection_lengths_vectorized(lines, self.mp_areas[i])
             lengths *= self.mp_costs[i]
             # Construct adjacency and heuristic matrices
-            adj, heur = create_adjacency_matrix_vectorized(lengths, node_pairs, samples, return_heuristic=True)
+            adj, heur = create_adjacency_matrix_vectorized(lengths, node_pairs, self.nodes, return_heuristic=True)
             self.adj.append(adj)
             self.heur.append(heur)
 
 
-        samples = gp.GeoSeries(samples).buffer(5)
+        samples = gp.GeoSeries(self.nodes).buffer(5)
         samples = transform_meter_global(samples)
         io.write_geom(samples, "samples", "yellow")
         lines = transform_meter_global(lines)
         io.write_geom(lines, "lines", "white")
 
-    def add_areas(self):
-        # Get multipolygons
-        kaust = io.load_geojson_files("env/kaust.geojson", concat=True)["geometry"][0]
-        kaust = MultiPolygon([kaust])
-        self.mp_areas.append(kaust)
-        self.mp_costs.append(1)
-        comm = io.import_communication()
-        r = 400
-        comm = comm["geometry"].buffer(r).union_all()
-        # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
-        comm = MultiPolygon([kaust.difference(comm)])
-        self.mp_areas.append(comm)
-        self.mp_costs.append(1)
-        io.write_geom(transform_meter_global([comm]), "comm", "yellow")
+    def add_area(self, area, cost):
+        area = self.kaust.difference(area)
+        if isinstance(area, Polygon):
+            area = MultiPolygon([area])
+        self.mp_areas.append(area)
+        self.mp_costs.append(cost)
 
 def samples_poisson(n_points, bounds):
     r = get_radius(n_points)
