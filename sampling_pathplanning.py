@@ -8,6 +8,7 @@ from shapely.geometry import LineString, Point, Polygon, MultiPolygon, MultiLine
 from shapely.ops import nearest_points
 from shapely.prepared import prep
 from shapely.strtree import STRtree
+from scipy.spatial.distance import cdist
 
 from itertools import combinations
 import glob
@@ -22,7 +23,7 @@ from util import *
 from time import time
 import random
 from multiprocessing import Pool
-from typing import List
+from typing import List, Tuple, Union
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -44,52 +45,81 @@ class sampling_pp(io):
         self.sim_latest = ""
         self.mp_areas = []
         self.mp_costs = []
+        self.adj = []
+        self.heur = []
         self.nfz = []
+        self.nodes = []
         self.prepare()
+        a = 0
+        b = 1
+        self.spp(a, b)
+
+    def spp(self, a, b):
+        adj = sum(self.adj)
+        heur = sum(self.heur)
+        path = astar(adj, heur, a, b)
+        traj = self.nodes[path]
+        ls = LineString(traj)
+        io.write_geom([ls], "traj", "blue")
+        return path
 
     def prepare(self):
-        # Get multipolygons
-        comm = io.import_communication()
-        r = 400
-        comm = comm["geometry"].buffer(r).union_all()
-        io.write_geom(transform_meter_global([comm]), "comm", "yellow")
-        self.mp_areas = []
-        self.mp_areas.append(comm)
-        self.mp_costs = []
-        minx, miny, maxx, maxy = comm.bounds
-        bounds = comm.bounds
+        self.add_areas()
+        # minx, miny, maxx, maxy = comm.bounds
+        kaust = self.mp_areas[0]
+        bounds = kaust.bounds
+
         # Sample airspace
-        n_points = 300
+        n_points = 1500
+        n_points = 50
         samples = samples_poisson(n_points, bounds)
         # samples = samples_biased(n_points, self.mp_areas, bounds, self.nfz, 0.7)
         # samples = samples_uniform(n_points, self.mp_areas, bounds, self.nfz)
 
-
+        # Remove extra points outside of kaust airspace
+        samples = [p for p in samples if p.within(kaust)]
+        self.nodes = samples
 
         # Construct lines from samples
-        max_distance = 500
-        lines = connect_close_points(samples, max_distance)
-        # Intersect lines with each of the polygons
-        t0 = time()
-        lengths = line_intersection_lengths(lines, comm)
-        print(sum(lengths))
-        t1 = time()
-        # print(lengths)
-        lengths = calculate_intersection_lengths_vectorized(lines, comm)
-        t2 = time()
-        print(sum(lengths))
-        print("T0: %.2f" % (t1 - t0))
-        print("T1: %.2f" % (t2 - t1))
+        max_distance = 1500 #km
+        lines, node_pairs = connect_points_within_distance(samples, max_distance)
 
-        # Construct adjacency and
-        # samples = gp.GeoSeries(samples).buffer(5)
+        for i in range(len(self.mp_areas)):
+            # Intersect lines with each of the polygons
+            # lengths = line_intersection_lengths(lines, comm)
+            lengths = calculate_intersection_lengths_vectorized(lines, self.mp_areas[i])
+            lengths *= self.mp_costs[i]
+            # Construct adjacency and heuristic matrices
+            adj, heur = create_adjacency_matrix_vectorized(lengths, node_pairs, samples, return_heuristic=True)
+            self.adj.append(adj)
+            self.heur.append(heur)
+
+
+        samples = gp.GeoSeries(samples).buffer(5)
         samples = transform_meter_global(samples)
         io.write_geom(samples, "samples", "yellow")
+        lines = transform_meter_global(lines)
+        io.write_geom(lines, "lines", "white")
+
+    def add_areas(self):
+        # Get multipolygons
+        kaust = io.load_geojson_files("env/kaust.geojson", concat=True)["geometry"][0]
+        kaust = MultiPolygon([kaust])
+        self.mp_areas.append(kaust)
+        self.mp_costs.append(1)
+        comm = io.import_communication()
+        r = 400
+        comm = comm["geometry"].buffer(r).union_all()
+        # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
+        comm = MultiPolygon([kaust.difference(comm)])
+        self.mp_areas.append(comm)
+        self.mp_costs.append(1)
+        io.write_geom(transform_meter_global([comm]), "comm", "yellow")
 
 def samples_poisson(n_points, bounds):
-    r = 0.05
+    r = get_radius(n_points)
     dims2d = np.array([1.0,1.0])
-    samples = poisson_disc.Bridson_sampling(dims=dims2d, radius=r, k=n_points, hypersphere_sample=poisson_disc.hypersphere_surface_sample)
+    samples = poisson_disc.Bridson_sampling(dims=dims2d, radius=r, k=30, hypersphere_sample=poisson_disc.hypersphere_surface_sample)
     samples = transpose_points(samples, bounds)
     return samples
 
@@ -147,22 +177,45 @@ def transpose_points(points, bounds):
 
     return [Point(minx + x * width, miny + y * height) for x, y in points]
 
-def connect_close_points(points, max_distance):
+def connect_points_within_distance(points: List[Point], max_distance: float) -> Tuple[List[LineString], List[Tuple[int, int]]]:
     """
-    Connects each pair of Shapely Points with a LineString if they are within max_distance.
+    Connect pairs of Shapely Points with LineStrings if they are within max_distance.
 
     Args:
-        points (list of shapely.geometry.Point): The list of points.
-        max_distance (float): Maximum distance allowed to connect two points.
+        points: List of Shapely Point objects
+        max_distance: Maximum distance for connecting points
 
     Returns:
-        list of shapely.geometry.LineString: Lines connecting points within the given distance.
+        Tuple containing:
+        - List of LineString objects connecting points within distance
+        - List of tuples containing indices of connected points (i, j) where i < j
     """
+    if len(points) < 2:
+        return [], []
+
+    # Extract coordinates for vectorized distance calculations
+    coords = np.array([[point.x, point.y] for point in points])
+
+    # Calculate all pairwise distances at once using scipy
+    distances = cdist(coords, coords, metric='euclidean')
+
+    # Get indices of point pairs within max_distance
+    # Use upper triangle to avoid duplicates (i < j)
+    i_indices, j_indices = np.where(
+        (distances <= max_distance) & (distances > 0) &
+        (np.triu(np.ones_like(distances), k=1) == 1)
+    )
+
+    # Create LineStrings for valid connections
     lines = []
-    for p1, p2 in combinations(points, 2):
-        if p1.distance(p2) <= max_distance:
-            lines.append(LineString([p1, p2]))
-    return lines
+    indices = []
+
+    for i, j in zip(i_indices, j_indices):
+        line = LineString([coords[i], coords[j]])
+        lines.append(line)
+        indices.append((int(i), int(j)))
+
+    return lines, indices
 
 def line_intersection_lengths(lines, multipolygon):
     """
@@ -200,7 +253,6 @@ def line_intersection_lengths(lines, multipolygon):
 
     return lengths
 
-
 def calculate_intersection_lengths_vectorized(lines: List[LineString], multipolygon: MultiPolygon) -> np.ndarray:
     """
     Alternative vectorized approach for very large datasets.
@@ -237,6 +289,176 @@ def calculate_intersection_lengths_vectorized(lines: List[LineString], multipoly
                 continue
 
     return lengths
+
+def create_adjacency_matrix_vectorized(lengths: np.ndarray,
+                                     node_pairs: np.ndarray,
+                                     node_coordinates: Union[np.ndarray, List[Point]] = None,
+                                     num_nodes: int = None,
+                                     symmetric: bool = True,
+                                     return_heuristic: bool = False) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    """
+    Vectorized version for better performance with large datasets.
+
+    Args:
+        lengths: NumPy array of line lengths
+        node_pairs: NumPy array of shape (n_connections, 2) containing node pairs
+        node_coordinates: Either:
+                         - NumPy array of shape (num_nodes, 2) containing (x, y) coordinates
+                         - List of Shapely Point objects
+                         Required if return_heuristic=True
+        num_nodes: Total number of nodes. If None, inferred from max node index + 1
+        symmetric: If True, creates symmetric matrix (undirected graph)
+        return_heuristic: If True, also returns heuristic matrix with Euclidean distances
+
+    Returns:
+        If return_heuristic=False: numpy.ndarray (adjacency matrix)
+        If return_heuristic=True: Tuple[numpy.ndarray, numpy.ndarray] (adjacency matrix, heuristic matrix)
+    """
+    if len(lengths) != len(node_pairs):
+        raise ValueError("lengths and node_pairs must have the same length")
+
+    if return_heuristic and node_coordinates is None:
+        raise ValueError("node_coordinates must be provided when return_heuristic=True")
+
+    # Convert to numpy arrays if not already
+    lengths = np.asarray(lengths, dtype=np.float64)
+    node_pairs = np.asarray(node_pairs, dtype=np.int32)
+
+    if return_heuristic:
+        # Convert Shapely Points to NumPy array if needed
+        if isinstance(node_coordinates, list) and len(node_coordinates) > 0 and isinstance(node_coordinates[0], Point):
+            node_coordinates = np.array([[point.x, point.y] for point in node_coordinates])
+        else:
+            node_coordinates = np.asarray(node_coordinates, dtype=np.float64)
+
+        if node_coordinates.shape[1] != 2:
+            raise ValueError("node_coordinates must have shape (num_nodes, 2) or be a list of Shapely Points")
+
+    if lengths.size == 0:
+        if num_nodes is None:
+            raise ValueError("num_nodes must be specified when no connections are provided")
+        adj_matrix = np.full((num_nodes, num_nodes), np.inf, dtype=np.float64)
+        np.fill_diagonal(adj_matrix, 0)
+
+        if return_heuristic:
+            heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
+            return adj_matrix, heuristic_matrix
+        return adj_matrix
+
+    # Determine number of nodes if not specified
+    if num_nodes is None:
+        num_nodes = np.max(node_pairs) + 1
+
+    # Validate node indices
+    if np.max(node_pairs) >= num_nodes:
+        raise ValueError(f"Node index {np.max(node_pairs)} exceeds num_nodes-1 ({num_nodes-1})")
+
+    if return_heuristic and len(node_coordinates) != num_nodes:
+        raise ValueError(f"node_coordinates length ({len(node_coordinates)}) must match num_nodes ({num_nodes})")
+
+    # Initialize adjacency matrix with infinity
+    adj_matrix = np.full((num_nodes, num_nodes), np.inf, dtype=np.float64)
+
+    # Set diagonal to 0
+    np.fill_diagonal(adj_matrix, 0)
+
+    # Extract i, j indices
+    i_indices = node_pairs[:, 0]
+    j_indices = node_pairs[:, 1]
+
+    # Fill in the connections using advanced indexing
+    adj_matrix[i_indices, j_indices] = lengths
+
+    if symmetric:
+        adj_matrix[j_indices, i_indices] = lengths
+
+    if return_heuristic:
+        heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
+        return adj_matrix, heuristic_matrix
+
+    return adj_matrix
+
+def _create_heuristic_matrix(node_coordinates: np.ndarray, num_nodes: int) -> np.ndarray:
+    """
+    Create a heuristic matrix with Euclidean distances between all node pairs.
+
+    Args:
+        node_coordinates: NumPy array of shape (num_nodes, 2) containing (x, y) coordinates
+        num_nodes: Total number of nodes
+
+    Returns:
+        numpy.ndarray: Heuristic matrix with Euclidean distances
+    """
+    # Calculate all pairwise Euclidean distances
+    # Using broadcasting: (n, 1, 2) - (1, n, 2) -> (n, n, 2)
+    coords_expanded = node_coordinates[:, np.newaxis, :]  # Shape: (n, 1, 2)
+    coords_broadcast = node_coordinates[np.newaxis, :, :]  # Shape: (1, n, 2)
+
+    # Calculate squared differences
+    diff_squared = (coords_expanded - coords_broadcast) ** 2
+
+    # Sum over the coordinate dimension and take square root
+    euclidean_distances = np.sqrt(np.sum(diff_squared, axis=2))
+
+    return euclidean_distances
+
+def get_radius(n_points):
+    data = [
+    (0.01, 8313),
+    (0.012, 5776),
+    (0.014, 4252),
+    (0.016, 3271),
+    (0.018, 2591),
+    (0.02, 2089),
+    (0.022, 1727),
+    (0.024, 1475),
+    (0.026, 1252),
+    (0.028, 1070),
+    (0.03, 948),
+    (0.032, 823),
+    (0.034, 741),
+    (0.036, 661),
+    (0.038, 588),
+    (0.04, 540),
+    (0.042, 482),
+    (0.044, 438),
+    (0.046, 405),
+    (0.048, 371),
+    (0.05, 342),
+    (0.052, 321),
+    (0.054, 296),
+    (0.056, 280),
+    (0.058, 261),
+    (0.06, 245),
+    (0.062, 229),
+    (0.064, 213),
+    (0.066, 199),
+    (0.068, 190),
+    (0.07, 180),
+    (0.072, 176),
+    (0.074, 159),
+    (0.076, 156),
+    (0.078, 146),
+    (0.08, 141),
+    (0.082, 131),
+    (0.084, 125),
+    (0.086, 124),
+    (0.088, 116),
+    (0.09, 112),
+    (0.092, 105),
+    (0.094, 102),
+    (0.096, 99),
+    (0.098, 91),
+    (0.14, 50),
+    (0.20, 25),
+    (0.30, 10),
+    (0.45, 5)]
+    prev_point = data[0]
+    for point in data:
+        if point[1] < n_points:
+            return prev_point[0]
+        prev_point = point
+    return 0.5
 
 def main():
     spp = sampling_pp()
