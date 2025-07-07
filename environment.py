@@ -13,6 +13,7 @@ from shapely.geometry import box, Point, LineString
 import glob
 
 from sim_io import myio as io
+from util import *
 
 class env():
     def __init__(self):
@@ -196,17 +197,12 @@ class env():
         self.restaurants.to_crs(epsg=20437, inplace=True)
         self.fire_station.to_crs(epsg=20437, inplace=True)
 
-    def transform_meter_global(self, geom):
-        gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
-        gdf.to_crs(epsg=4326, inplace=True)
-        return gdf.geometry
-
-    def write_geom(self, gdf, name, color):
-        s = gdf
-        s["stroke"] = color
-        s["marker-color"] = color
-        s["fill"] = color
-        s.to_file('plot/' + name + '.geojson', driver='GeoJSON')
+    # def write_geom(self, gdf, name, color):
+    #     s = gdf
+    #     s["stroke"] = color
+    #     s["marker-color"] = color
+    #     s["fill"] = color
+    #     s.to_file('plot/' + name + '.geojson', driver='GeoJSON')
 
     def nearby_obstacles(self, pos, range):
         position = Point(pos[0], pos[1], pos[2])
@@ -319,10 +315,10 @@ class env():
         print("Fire at %s" % (house["name"]))
         # Make a buffered line going from the fire station to that house
         # and the area surrounding the location of the fire
-        ls = self.traj_to_linestring([pi, pf])
+        ls = traj_to_linestring([pi, pf])
         g = gp.GeoSeries([ls.buffer(30), temp.buffer(50), Point(pf).buffer(100)])
         avoid = g.unary_union
-        avoid = self.transform_meter_global([avoid])[0]
+        avoid = transform_meter_global([avoid])[0]
         io.write_geom([avoid], self.sim_run + "avoid", "red")
         io.write_geom([avoid], self.sim_latest + "avoid", "red")
         fire_duration = 1000 # Timesteps, which is 1000 * dt seconds
@@ -337,7 +333,7 @@ class env():
                 progress = drn["mission"]["progress"]
                 waypoints = drn["mission"]["waypoints"]
                 traj = self.waypoints_to_traj(waypoints)
-                ls = self.traj_to_linestring(traj)
+                ls = traj_to_linestring(traj)
                 trajs.append(ls)
         trajs = self.transform_meter_global(trajs)
         io.write_geom(trajs, "rerouting", "white")
@@ -358,7 +354,7 @@ class env():
         ls = LineString([pi, pf])
         g = gp.GeoSeries([ls.buffer(30), fire_station.buffer(50), pf.buffer(100)])
         avoid = g.unary_union
-        avoid = self.transform_meter_global([avoid])[0]
+        avoid = transform_meter_global([avoid])[0]
         io.write_geom([avoid], self.sim_run + "avoid", "red")
         io.write_geom([avoid], self.sim_latest + "avoid", "red")
         fire_duration = 1000 # Timesteps, which is 1000 * dt seconds
@@ -368,7 +364,6 @@ class env():
         # Reconstruct the trajectories of all the other drones
         trajs = []
         for drn in vehicles:
-
             if drn["id"] == mission["id"]: # If the drone is the current firefighting drone
                 continue
             if drn["mission"]["type"] == "firefighting": # Don't change the trajectory of other firefighting drones
@@ -379,9 +374,9 @@ class env():
                 state = [[drn["state"]["x"], drn["state"]["y"]]]
                 traj = self.waypoints_to_traj(waypoints)
                 traj = state + traj
-                ls = self.traj_to_linestring(traj)
+                ls = traj_to_linestring(traj)
                 trajs.append(ls)
-        trajs = self.transform_meter_global(trajs)
+        trajs = transform_meter_global(trajs)
         io.write_geom(trajs, "rerouting", "white")
 
         # Check for intersection with the fire response trajectory
@@ -389,14 +384,6 @@ class env():
         result = trajs.intersects(avoid)
         indices = np.where(result)[0]
         return indices, avoid
-
-    def traj_to_linestring(self, traj):
-        points = []
-        for i in range(len(traj)):
-            point = Point(traj[i][0], traj[i][1])
-            points.append(point)
-        s_line = LineString(points)
-        return s_line
 
     def waypoints_to_traj(self, waypoints):
         traj = []

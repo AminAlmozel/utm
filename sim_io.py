@@ -7,6 +7,7 @@ import numpy as np
 import pickle as pkl
 
 # from data_analysis import *
+from util import *
 
 from shapely.geometry import LineString, Point, Polygon, box
 
@@ -372,43 +373,22 @@ class myio:
         print(routes)
         return routes
 
-    def traj_to_linestring(traj):
-        if len(traj) <= 1:
-            return
-        points = []
-        for i in range(len(traj)):
-            point = Point(traj[i][0], traj[i][1], traj[i][2]) # 3D trajectory
-            # point = Point(traj[i][1], traj[i][0]) #2D trajectory
-            points.append(point)
-        s_line = LineString(points)
-        return s_line
-
-    def transform_meter_global(geom):
-        gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
-        gdf.to_crs(epsg=4326, inplace=True)
-        return gdf.geometry
-
-    def transform_global_meter(geom):
-        gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:4326")
-        gdf.to_crs(epsg=20437, inplace=True)
-        return gdf.geometry
-
     def write_highways(self, routes, name, color):
         geom = []
         for i in range(len(routes)):
             s = [routes[i][0], routes[i][1]]
             e = [routes[i][2], routes[i][3]]
             traj = [s, e]
-            linestring = self.traj_to_linestring(traj)
+            linestring = traj_to_linestring(traj)
             geom.append(linestring)
         self.write_geom(geom, name, color)
 
-    def write_path(self, path, name, color):
-        traj = self.path_to_traj(path)
-        self.write_traj(traj, name, color)
+    def write_path(path, ls, name, color):
+        traj = path_to_traj(path, ls)
+        myio.write_traj(traj, name, color)
 
-    def write_traj(self, traj, name, color):
-        s_line = self.traj_to_linestring(traj)
+    def write_traj(traj, name, color):
+        s_line = traj_to_linestring(traj)
         traj_gdf = gp.GeoDataFrame(index=[0], crs=4326, geometry=[s_line])
         traj_gdf["stroke"] = color
         traj_gdf["stroke-width"] = 3
@@ -500,7 +480,7 @@ class myio:
                 t.append(point)
             if len(t) == 1:
                 continue
-            ls = myio.traj_to_linestring(t)
+            ls = traj_to_linestring(t)
             trajs.append(ls)
         df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
         df.to_crs(crs=4326, inplace=True)
@@ -520,7 +500,7 @@ class myio:
                 # point = Point(traj[0][0], traj[1][0], traj[2][0])
                 point = [traj[0][0], traj[1][0], traj[2][0]]
                 t.append(point)
-            ls = myio.traj_to_linestring(t)
+            ls = traj_to_linestring(t)
             # trajs.append(ls)
             s = drone["birthday"]
             # 100 milliseconds for each timestep
@@ -570,7 +550,16 @@ class myio:
         gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
         gdf.to_file('plot/' + last + name + '.geojson', driver='GeoJSON')
 
-    def combine_json_files(self, list, output):
+    def write_pickle(filename, traffic):
+        with open(filename, 'wb') as fp:
+            pkl.dump(traffic, fp, protocol=pkl.HIGHEST_PROTOCOL)
+
+    def read_pickle(filename):
+        with open(filename, 'rb') as pickle_file:
+            data = pkl.load(pickle_file)
+        return data
+
+    def combine_json_files(list, output):
         concat_gdf = []
         for filename in list:
             file = open(filename)

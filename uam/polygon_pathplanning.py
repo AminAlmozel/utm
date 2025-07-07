@@ -12,7 +12,8 @@ import astar_uam as astar
 import exploration
 import terrain
 import myio
-# from myio import myio as io
+# from sim_io import myio as io
+from util import *
 
 from time import time
 from multiprocessing import Pool
@@ -52,10 +53,7 @@ class polygon_pp(myio.myio):
         a = 0
         b = 1
         path = astar.a_star(m_adj, m_heur, a, b)
-
-
-        traj = self.path_to_traj(path, ls)
-
+        traj = path_to_traj(path, ls)
         traj = self.transform_coords_meters(traj)
         for i in range(len(traj)):
             traj[i] += [30, 0, 0, 0]
@@ -134,12 +132,12 @@ class polygon_pp(myio.myio):
         a = 0
         b = 1
         path = astar.a_star(m_adj, m_heur, a, b)
-        traj = self.path_to_traj(path, ls)
+        traj = path_to_traj(path, ls)
 
         self.write_path(path, ls, "poly_traj", "blue")
         width = 50
         self.write_corridor(path, width, ls, "corridor", "green")
-        traj_ls = self.traj_to_linestring(self.path_to_traj(path, ls))
+        traj_ls = traj_to_linestring(path_to_traj(path, ls))
         unknown_sections = self.scan_using_lidar(traj_ls, self.construct_airspace())
         self.write_geom(unknown_sections, "unknown_sections", "grey")
 
@@ -441,13 +439,6 @@ class polygon_pp(myio.myio):
         ls = np.insert(ls, 0, a, axis=0)
         return ls
 
-    def path_to_traj(self, path, ls):
-        traj = []
-        for i in range(len(path)):
-            j = path[i]
-            traj.append([ls[j][0], ls[j][1], 0])
-        return traj
-
     def haversine(self, lon1, lat1, lon2, lat2):
         # Calculate the great circle distance between two points
         # on the earth (specified in decimal degrees)
@@ -550,19 +541,19 @@ class polygon_pp(myio.myio):
     #     traj_gdf.to_file("plot/" + name + ".geojson", driver='GeoJSON')
 
     # def write_traj(self, traj, name, color):
-    #     s_line = self.traj_to_linestring(traj)
+    #     s_line = traj_to_linestring(traj)
     #     traj_gdf = gp.GeoDataFrame(index=[0], crs=4326, geometry=[s_line])
     #     traj_gdf["stroke"] = color
     #     traj_gdf["stroke-width"] = 3
     #     traj_gdf.to_file("plot/" + name + ".geojson", driver='GeoJSON')
 
     # def write_path(self, path, ls, name, color):
-    #     traj = self.path_to_traj(path, ls)
+    #     traj = path_to_traj(path, ls)
     #     self.write_traj(traj, name, color)
 
     def write_corridor(self, path, width, ls, name, color):
-        traj = self.path_to_traj(path, ls)
-        s_line = self.traj_to_linestring(traj)
+        traj = path_to_traj(path, ls)
+        s_line = traj_to_linestring(traj)
         buff = self.c * width
         corridor = s_line.buffer(buff, 4)
         self.write_geom([corridor], name, color)
@@ -574,13 +565,13 @@ class polygon_pp(myio.myio):
         s["fill"] = color
         s.to_file('plot/' + name + '.geojson', driver='GeoJSON')
 
-    def traj_to_linestring(self, traj):
-        points = []
-        for i in range(len(traj)):
-            point = Point(traj[i][0], traj[i][1])
-            points.append(point)
-        s_line = LineString(points)
-        return s_line
+    # def traj_to_linestring(self, traj):
+    #     points = []
+    #     for i in range(len(traj)):
+    #         point = Point(traj[i][0], traj[i][1])
+    #         points.append(point)
+    #     s_line = LineString(points)
+    #     return s_line
 
     def combine_json_files(self, list, output):
         concat_gdf = []

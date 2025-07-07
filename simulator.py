@@ -141,27 +141,6 @@ class simulator(drone.drone):
         destinations = [waypoints[0], waypoints[destination], waypoints[0]]
         self.create_drone(len(self.drn), mission["state"], waypoints, self.iteration, "delivery", "in progress", destinations)
 
-    # def create_delivery_drone(self, n):
-    #     xi, xf = self.obs.random_mission(n)
-    #     xi = self.list2state(xi)
-    #     xf = self.list2state(xf)
-    #     # self.create_drone(self.xi[k], self.final_conditions[k], 0)
-    #     pi = [xi['x'], xi['y']]
-    #     pf = [xf['x'], xf['y']]
-    #     # print([pi, pf])
-    #     waypoints = self.ppp.create_trajectory([pi, pf])
-    #     waypoints = self.ppp.round_trip(waypoints)
-    #     for i in range(len(waypoints)):
-    #         waypoints[i] = self.list2state(waypoints[i])
-    #     # waypoints = [xi, xf]
-    #     destination = int((len(waypoints) - 1) / 2)
-    #     # print(destination)
-    #     # if destination == 0:
-    #     #     destination += 1 # To resolve an issue with firefighting drones
-    #     destinations = [waypoints[0], waypoints[destination], waypoints[0]]
-
-    #     self.create_drone(xi, waypoints, n, "delivery", "in progress", destinations)
-
     def create_firefighting_drone(self, mission):
         destinations = mission["mission"]["destination"]
         waypoints = []
@@ -448,6 +427,7 @@ class simulator(drone.drone):
                     print("Drone %d reached destination!" %(k))
                     # drone["mission"]["progress"] += 1
                     progress = drone["mission"]["progress"]
+                    print(drone["mission"]["destination"])
                     geom = drone["mission"]["destination"][1]["geometry"].centroid
                     zmin = drone["mission"]["destination"][1]["zmin"]
                     zmin = 30

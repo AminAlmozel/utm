@@ -8,21 +8,21 @@ import random
 
 import environment
 from sim_io import myio as io
+from util import *
 
 def main():
     env = environment.env()
-
     lam = 0.0005 # lambda, the rate for the poisson distribution
     dt = 0.1
     timesteps = int(1 * 60 * 60 / dt)
     traffic = generate_traffic_schedule(env, timesteps)
     traffic = sort_traffic(traffic)
     # traffic = generate_vehicle_traffic(lam)        # Generate traffic data
-    write_file("traffic", traffic) # Write the generated traffic into a pickle file (.pkl)
-    traffic = read_vehicle_traffic()  # Load the traffic data from file
-    # print(traffic)                 # Print the loaded traffic data
-    min_timedelta = 21.6 #s
-    # traffic = threshold_traffic(traffic, min_timedelta) # Removes any vehicles which have a time delta of less than min_timedelta
+    filename = "traffic"
+    io.write_pickle("missions/" + filename + '.pkl', traffic) # Write the generated traffic into a pickle file (.pkl)
+    traffic = io.read_pickle("missions/" + filename + '.pkl') # Load the traffic data from file
+    # min_timedelta = 21.6 #s
+    # traffic = filter_traffic(traffic, min_timedelta) # Removes any vehicles which have a time delta of less than min_timedelta
     # traffic_stats(traffic)
 
 def generate_traffic_schedule(env, timesteps):
@@ -86,8 +86,8 @@ def generate_traffic_schedule(env, timesteps):
 
     # display = transform_meter_global(display)
     # io.write_geom(display, "missions", "white")
-    # return deliveries + firefighting
-    return firefighting
+    return deliveries + firefighting
+    # return firefighting
 
 def generate_vehicle_traffic(lam, timesteps):
     """
@@ -276,59 +276,38 @@ def sort_traffic(traffic):
             milliseconds_to_hours(time * 100)
     return missions_sorted
 
-def write_file(filename, traffic):
-    # Save traffic data to file
-    with open("missions/" + filename + '.pkl', 'wb') as fp:
-        pkl.dump(traffic, fp, protocol=pkl.HIGHEST_PROTOCOL)
-
-def read_vehicle_traffic():
-    """
-    Reads vehicle traffic data from a pickle file.
-    """
-    filename = "traffic"
-    print("Reading traffic from file")
-    with open("missions/" + filename + '.pkl', 'rb') as traffic_file:
-        traffic = pkl.load(traffic_file)
-    return traffic
-
 def traffic_stats(traffic):
     if len(traffic) <= 1:
         return
     dt = 0.1
-    # Analyze time gaps between consecutive vehicles on the eastbound lane
-    diff = np.ediff1d(traffic)       # Differences between consecutive arrival indices
+    # Analyze time gaps between consecutive vehicles
+    times = []
+    for vehicle in traffic:
+        times.append(vehicle["iteration"])
+    times = np.array(times)
+    diff = np.ediff1d(times)       # Differences between consecutive arrival indices
     sorted_diff = np.sort(diff)         # Sort the time differences
 
     # Print traffic statistics
     print(sorted_diff)
-    print("Total number of vehicles: %.0f in 4 hours" % len(traffic))
+    print("Total number of vehicles: %.0f in 4 hours" % len(times))
     print("A plane flying at 500 knots will cross 3 nautical miles in 21.6s")
     print("Minimum: \t%.1fs" % (diff.min() * dt))
     print("Mean:    \t%.1fs" % (diff.mean() * dt))
     print("Median:  \t%.1fs" % (np.median(diff) * dt))
     print("Std Dev: \t%.1f" % (diff.std() * dt))
 
-def threshold_traffic(traffic, min_delta):
-    def filter_traffic(arrivals, min_delta):
-        dt = 0.1
-        min_delta = int(min_delta / dt)
-        if not arrivals:
-            return []
-
-        filtered = [arrivals[0]]
-        for time in arrivals[1:]:
-            if time - filtered[-1] >= min_delta:
-                filtered.append(time)
-        return filtered
-
-    return [filter_traffic(arrivals, min_delta) for arrivals in traffic]
-
-def list2state(values):
-    keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
-    return dict(zip(keys, values))
-
-def state2list(values):
-    return [values["x"], values["y"], values["z"]]
+def filter_traffic(arrivals, min_delta):
+    dt = 0.1
+    min_delta = int(min_delta / dt)
+    if not arrivals:
+        return []
+    # print(arrivals)
+    filtered = [arrivals[0]]
+    for arrival_dict in arrivals[1:]:
+        if arrival_dict["iteration"] - filtered[-1]["iteration"] >= min_delta:
+            filtered.append(arrival_dict)
+    return filtered
 
 def milliseconds_to_hours(time):
     # Convert to timedelta
@@ -468,17 +447,5 @@ def display_mission(mission):
     ls = traj_to_linestring(points)
     return ls
 
-def traj_to_linestring(traj):
-    points = []
-    for i in range(len(traj)):
-        point = Point(traj[i][0], traj[i][1])
-        points.append(point)
-    s_line = LineString(points)
-    return s_line
-
-def transform_meter_global(geom):
-    gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
-    gdf.to_crs(epsg=4326, inplace=True)
-    return gdf.geometry
 # Run the main function
 main()

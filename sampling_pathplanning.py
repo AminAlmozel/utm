@@ -68,7 +68,7 @@ class sampling_pp(io):
 
         # Sample airspace
         n_points = 1500
-        n_points = 50
+        n_points = 500
         samples = samples_poisson(n_points, bounds)
         # samples = samples_biased(n_points, self.mp_areas, bounds, self.nfz, 0.7)
         # samples = samples_uniform(n_points, self.mp_areas, bounds, self.nfz)

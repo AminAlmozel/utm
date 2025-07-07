@@ -13,13 +13,14 @@ from shapely.geometry import box, Point, LineString
 import glob
 
 from sim_io import myio as io
+from util import *
 
 def main():
     last = 'simulations/last/'
     last = "simulations/run_25-04-08-130710/"
     temp = io.read_log_pickle(last)
-    safe = import_geojson("plot/" + last + "safe.geojson")
-    nfz = import_geojson("plot/" + last + "new_nfz.geojson")
+    safe = io.load_geojson_files("plot/" + last + "safe.geojson", concat=True)["geometry"][0]
+    nfz = io.load_geojson_files("plot/" + last + "new_nfz.geojson", concat=True)["geometry"][0]
     safe = safe.difference(nfz)
 
     print(temp[0]['born'])
@@ -59,22 +60,6 @@ def main():
     df = pd.DataFrame(output)
     df.to_csv("plot/simulation/read/stats.csv", index=False, header=False)
 
-def import_geojson(name):
-    file = open(name)
-    safe = gp.read_file(file).geometry[0]
-    return io.transform_global_meter([safe])[0]
-
-def make_traj(trajs):
-    t = []
-    for traj in trajs:
-        point = [traj[0][0], traj[1][0], traj[2][0]]
-        t.append(point)
-    if len(t) == 1:
-        return 0
-    ls = io.traj_to_linestring(t)
-    # ls = io.transform_meter_global([ls])
-    return ls
-
 def measure_traj_length(traj):
     return traj.length
 
@@ -85,7 +70,7 @@ def measure_straight_distance(destinations):
         t.append(point)
     if len(t) == 1:
         return 0
-    ls = io.traj_to_linestring(t)
+    ls = traj_to_linestring(t)
     return ls
 
 def measure_total_time(trajs):
@@ -123,12 +108,5 @@ def measure_near_collisions(trajs):
 
 def measure_throughput(trajs):
     pass
-
-def write_geom(geom, name, color):
-    s = gp.GeoDataFrame(crs=4326, geometry=geom)
-    s["stroke"] = color
-    s["marker-color"] = color
-    s["fill"] = color
-    s.to_file('plot/' + name + '.geojson', driver='GeoJSON')
 
 main()

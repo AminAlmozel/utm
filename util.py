@@ -3,6 +3,7 @@ import geopandas as gp
 import pandas as pd
 import shapely
 from shapely.geometry import box, Point, LineString
+from typing import List, Tuple, Union, Optional
 
 def make_traj(trajs):
     t = []
@@ -15,16 +16,49 @@ def make_traj(trajs):
     # ls = transform_meter_global([ls])
     return ls
 
-def traj_to_linestring(traj):
+def traj_to_linestring(traj: Union[List[List[float]], np.ndarray],
+                      force_2d: bool = False) -> Optional[LineString]:
+    """
+    Convert a trajectory to a Shapely LineString.
+
+    Args:
+        traj: Trajectory as list of points or numpy array
+              - For 2D: [[x1, y1], [x2, y2], ...]
+              - For 3D: [[x1, y1, z1], [x2, y2, z2], ...]
+        force_2d: If True, forces 2D output even for 3D input (ignores Z coordinate)
+
+    Returns:
+        LineString object or None if trajectory has <= 1 point
+    """
     if len(traj) <= 1:
-        return
-    points = []
-    for i in range(len(traj)):
-        point = Point(traj[i][0], traj[i][1], traj[i][2]) # 3D trajectory
-        # point = Point(traj[i][1], traj[i][0]) #2D trajectory
-        points.append(point)
-    s_line = LineString(points)
-    return s_line
+        return None
+
+    # Convert to numpy array for easier handling
+    traj_array = np.asarray(traj)
+
+    # Determine if trajectory is 2D or 3D
+    if traj_array.shape[1] == 2:
+        # 2D trajectory
+        points = [Point(point[0], point[1]) for point in traj_array]
+    elif traj_array.shape[1] == 3:
+        # 3D trajectory
+        if force_2d:
+            # Use only X and Y coordinates
+            points = [Point(point[0], point[1]) for point in traj_array]
+        else:
+            # Use all three coordinates
+            points = [Point(point[0], point[1], point[2]) for point in traj_array]
+    else:
+        raise ValueError(f"Trajectory must have 2 or 3 coordinates per point, got {traj_array.shape[1]}")
+
+    return LineString(points)
+
+def path_to_traj(path, ls):
+    traj = []
+    for i in range(len(path)):
+        j = path[i]
+        traj.append([ls[j][0], ls[j][1], 0])
+    return traj
 
 def transform_meter_global(geom):
     gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
@@ -36,13 +70,7 @@ def transform_global_meter(geom):
     gdf.to_crs(epsg=20437, inplace=True)
     return gdf.geometry
 
-def traj_to_linestring(traj):
-    points = []
-    for i in range(len(traj)):
-        point = Point(traj[i][0], traj[i][1])
-        points.append(point)
-    s_line = LineString(points)
-    return s_line
+
 
 def waypoints_to_traj(waypoints):
     traj = []
