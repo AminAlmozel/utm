@@ -31,7 +31,7 @@ def generate_traffic_schedule(env, timesteps):
     deliveries = []
     # Deliveries
     for index, restaurant in env.restaurants.iterrows():
-        lam = restaurant["freq"]
+        lam = restaurant["freq"] * 2
         traffic = generate_vehicle_traffic(lam, timesteps)
         for i, time in enumerate(traffic):
             mission = create_delivery_mission(time, env, restaurant)
@@ -90,7 +90,7 @@ def generate_traffic_schedule(env, timesteps):
     # display = transform_meter_global(display)
     # io.write_geom(display, "missions", "white")
     # return security + recreational + inspection + research
-    return recreational + inspection + research
+    return deliveries
 
 def generate_vehicle_traffic(lam, timesteps):
     """

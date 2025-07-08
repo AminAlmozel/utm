@@ -465,7 +465,7 @@ class simulator(drone.drone):
                                  drone["mission"]["waypoints"][progress]['y'],
                                    drone["mission"]["waypoints"][progress]['z']]
                     print("Mission progress: ", drone["mission"]["progress"])
-                    print("Length of waypoints: ", len(drone["mission"]["waypoints"]))
+                    print("Length of waypoints: ", len(drone["mission"]["waypoints"])-1)
                     if drone["mission"]["progress"] == len(drone["mission"]["waypoints"]) - 1: # If it completed the mission
                         drone["mission"]["status"] = "completed" # Mark it as completed
                         drone["alive"] = 0 # Mark it as dead/offline
