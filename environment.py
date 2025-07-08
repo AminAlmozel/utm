@@ -38,10 +38,6 @@ class env():
         filename = "env/houses.geojson"
         file = open(filename)
         houses_df = gp.read_file(file)
-        # for col in houses_df.columns:
-        #     print(col)
-        # print(apartments_df.loc[:, "addr:housenumber"].to_string())
-
         # Name, polygon, freq
         # Putting the houses into a dictionary
         N = houses_df.geometry.size

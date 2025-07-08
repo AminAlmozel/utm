@@ -5,6 +5,7 @@ from shapely.geometry import Point, LineString
 
 from datetime import timedelta
 import random
+import copy
 
 import environment
 from sim_io import myio as io
@@ -86,8 +87,9 @@ def generate_traffic_schedule(env, timesteps):
 
     # display = transform_meter_global(display)
     # io.write_geom(display, "missions", "white")
-    return deliveries + firefighting
-    # return firefighting
+    # return deliveries + firefighting
+    # return security + recreational + inspection + research
+    return security
 
 def generate_vehicle_traffic(lam, timesteps):
     """
@@ -111,37 +113,68 @@ def generate_vehicle_traffic(lam, timesteps):
     return traffic
 
 def create_delivery_mission(time, env, restaurant):
-    dt = 0.1
-    p = restaurant.geometry
-    pi = [p.x, p.y, 20]
-    delivery_location, pf, vf = env.random_delivery_location(time, restaurant)
-    vi = env.random_state(time, restaurant)
-    xi = list2state(pi + vi)
-    xf = list2state(pf + vf)
-    mission = {"mission": [restaurant, delivery_location], "state": [xi, xf], "time": time}
-    destinations = [restaurant, delivery_location, restaurant]
-    mission = create_mission(xi, [], time, "delivery", "in progress", destinations, time)
+    # Get initial position and velocity
+    restaurant_pos = [restaurant.geometry.x, restaurant.geometry.y, 20]
+    initial_velocity = env.random_state(time, restaurant)
+    initial_state = list2state(restaurant_pos + initial_velocity)
+
+    # Get delivery location and desired final state
+    delivery_location, delivery_pos, delivery_velocity = env.random_delivery_location(time, restaurant)
+    final_state = list2state(delivery_pos + delivery_velocity)
+
+    # Create state dictionaries with geometry attached
+    start = copy.deepcopy(initial_state)
+    end = copy.deepcopy(final_state)
+    start["geometry"] = restaurant["geometry"]
+    start["data"] = restaurant
+    end["geometry"] = delivery_location["geometry"]
+    end["data"] = delivery_location
+
+    # Define the delivery mission
+    destinations = [start, end, start]  # Go there and back
+    mission = create_mission(initial_state, [], time, "delivery", "in progress", destinations, time)
+
     return mission
 
 def create_firefighting_mission(time, env):
+    # Get fire station info
     fire_station = env.fire_station.iloc[0]
-    temp = fire_station.geometry
-    zi = random.randint(0, 30)
-    pi = [temp.x, temp.y, zi]
-    vi = env.random_state(0, fire_station)
-    xi = pi + vi
+    station_pos = [fire_station.geometry.x, fire_station.geometry.y, random.randint(0, 30)]
+    station_velocity = env.random_state(time, fire_station)
+    initial_state = list2state(station_pos + station_velocity)
 
-    # Choose a random house
-    house, pf = env.random_house(12, "placeholder")
-    vf = env.random_state(0, house)
-    xf = pf + vf
+    # Choose a random house for the fire
+    house, house_pos = env.random_house(time, "placeholder")
+    house_velocity = env.random_state(time, house)
+    final_state = list2state(house_pos + house_velocity)
 
-    xi = list2state(xi)
-    # Create a drone or multiple to go from the fire station to the location of the fire
+    # Attach geometry to states
+    start = copy.deepcopy(initial_state)
+    end = copy.deepcopy(final_state)
+    start["geometry"] = fire_station["geometry"]
+    start["data"] = fire_station
+    end["geometry"] = house["geometry"]
+    end["data"] = house
+
+    # Time to stay at the fire (e.g., 3 minutes)
     dt = 0.1
-    wait = 3 * 60 / dt
-    destinations = [fire_station, house, wait, fire_station]
-    mission = create_mission(xi, [], time, "firefighting", "in progress", destinations, time)
+    wait_duration = 3 * 60 / dt # seconds
+
+    # Define mission route
+    destinations = [start, end, wait_duration, start]
+    radius = 50
+    wp = sample_points_in_circle(house["geometry"].centroid, radius)
+    waiting_times = generate_waiting_times(len(wp))
+    z = 30
+    waypoints = []
+    for i in range(len(wp)):
+        p = [wp[i].x, wp[i].y] + [z, 0, 0, 0]
+        waypoints.append(list2state(p))
+        if i == 0 or i == len(wp) - 1:
+            continue
+        waypoints.append(waiting_times[i])
+    waypoints = [initial_state] + [final_state] + waypoints + [initial_state]
+    mission = create_mission(initial_state, waypoints, time, "firefighting", "in progress", destinations, time)
     return mission
 
 def create_recreational_mission(time, env):
@@ -264,13 +297,13 @@ def sort_traffic(traffic):
     for mission in missions_sorted:
         time = mission["iteration"]
         if mission["mission"]["type"] == "delivery":
-            restaurant = mission["mission"]["destination"][0]
-            delivery_location = mission["mission"]["destination"][1]
+            restaurant = mission["mission"]["destination"][0]["data"]
+            delivery_location = mission["mission"]["destination"][1]["data"]
             print(restaurant["name"], "\tto\t" + delivery_location["name"] + "\tat\t", end="")
             # print("%.1f" % (time * dt))
             milliseconds_to_hours(time * 100)
         if mission["mission"]["type"] == "firefighting":
-            house = mission["mission"]["destination"][1]
+            house = mission["mission"]["destination"][1]["data"]
             print("Fire at\t" + house["name"] + "\tat\t", end="")
             dt = 0.1
             milliseconds_to_hours(time * 100)

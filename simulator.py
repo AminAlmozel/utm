@@ -16,6 +16,7 @@ import gurobipy as grb
 import drone
 import environment
 from sim_io import myio as io
+from util import *
 
 import os, sys
 from sys import getsizeof
@@ -122,20 +123,27 @@ class simulator(drone.drone):
             self.create_delivery_drone(mission)
         if mission_type == "firefighting":
             self.create_firefighting_drone(mission)
+        if mission_type == "perimeter_patrol":
+            self.create_general_mission(mission)
+        if mission_type == "traffic_monitoring":
+            self.create_traffic_monitoring_mission(mission)
+        if mission_type == "research":
+            self.create_general_mission(mission)
+        if mission_type == "inspection":
+            self.create_general_mission(mission)
+        if mission_type == "recreational":
+            self.create_general_mission(mission)
 
     def create_delivery_drone(self, mission):
         xi = mission["mission"]["destination"][0]["geometry"]
         xf = mission["mission"]["destination"][1]["geometry"].centroid
         pi = [xi.x, xi.y]
         pf = [xf.x, xf.y]
-        # print([pi, pf])
         waypoints = self.ppp.create_trajectory([pi, pf])
         waypoints = self.ppp.round_trip(waypoints)
         for i in range(len(waypoints)):
-            waypoints[i] = self.list2state(waypoints[i])
-        # waypoints = [xi, xf]
+            waypoints[i] = list2state(waypoints[i])
         destination = int((len(waypoints) - 1) / 2)
-        # print(destination)
         # if destination == 0:
         #     destination += 1 # To resolve an issue with firefighting drones
         destinations = [waypoints[0], waypoints[destination], waypoints[0]]
@@ -143,13 +151,13 @@ class simulator(drone.drone):
 
     def create_firefighting_drone(self, mission):
         destinations = mission["mission"]["destination"]
-        waypoints = []
-        for dest in destinations:
-            if isinstance(dest, float):
-                waypoints.append(dest)
-            else:
-                destination = [dest["geometry"].centroid.x, dest["geometry"].centroid.y] + [30, 0, 0, 0]
-                waypoints.append(self.list2state(destination))
+        waypoints = mission["mission"]["waypoints"]
+        # for dest in destinations:
+        #     if isinstance(dest, float):
+        #         waypoints.append(dest)
+        #     else:
+        #         destination = [dest["geometry"].centroid.x, dest["geometry"].centroid.y] + [30, 0, 0, 0]
+        #         waypoints.append(list2state(destination))
         # Create a drone or multiple to go from the fire station to the location of the fire
         mission = self.create_drone(len(self.drn), mission["state"], waypoints, self.iteration, "firefighting", "in progress", destinations)
         # xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones, self.iteration)
@@ -186,8 +194,19 @@ class simulator(drone.drone):
                 new_waypoints = self.ppp.create_trajectory([pi, ph])
             # Putting the waypoints in the proper format
             for i in range(len(new_waypoints)):
-                new_waypoints[i] = self.list2state(new_waypoints[i])
+                new_waypoints[i] = list2state(new_waypoints[i])
             self.drones[drn]["mission"]["waypoints"] = new_waypoints
+
+    def create_traffic_monitoring_mission(self, mission):
+        self.create_general_mission(mission)
+
+    def create_general_mission(self, mission):
+        self.create_drone(len(self.drn),
+                          mission["state"],
+                          mission["mission"]["waypoints"],
+                          self.iteration, mission["mission"]["type"],
+                          mission["mission"]["status"],
+                          mission["mission"]["destination"])
 
     def create_drone(self, id, xi, waypoints, n, type, status, destinations):
         self.K += 1
@@ -258,61 +277,78 @@ class simulator(drone.drone):
         return result
 
     def m_start_simulation(self):
+        """Optimized simulation function with Pool reuse and better resource management"""
         print("Starting Simulation")
         t0 = time.time()
         self.mission_counter = 0
-        # Main loop for optimization
-        for self.iteration in range(self.total_iterations):
-            print("%d============================" % (self.iteration))
-            self.check_new_missions()
-            self.drn_list = []
-            for k, drone in enumerate(self.drones):
-                if drone["alive"] == 1:
-                    self.drn_list.append(k)
-            K = len(self.drn_list)
-            if K == 0 and (len(self.missions) == self.mission_counter):
-                print("No drones in simulation. Finishing up the run.")
-                break
-            print(self.drn_list)
-            t00 = time.time()
-            if K == 0:
-                print("No drones to simulate. Skip")
-                continue
-            pool = Pool()
-            with Pool() as pool:
-                # prepare arguments
-                # items = [(k, ) for k in range(K)]
+
+        # Determine optimal number of processes - ensure it's never 0
+        if hasattr(self, 'drones') and len(self.drones) > 0:
+            max_processes = min(os.cpu_count(), len(self.drones))
+        else:
+            max_processes = os.cpu_count()  # Use all available cores when drone count is unknown/zero
+
+        # Create pool once and reuse it throughout all iterations
+        with Pool(processes=max_processes) as pool:
+            # Main loop for optimization
+            for self.iteration in range(self.total_iterations):
+                print("%d============================" % (self.iteration))
+                self.check_new_missions()
+
+                # Build list of alive drones
+                self.drn_list = []
+                for k, drone in enumerate(self.drones):
+                    if drone["alive"] == 1:
+                        self.drn_list.append(k)
+
+                K = len(self.drn_list)
+
+                # Check termination conditions
+                if K == 0 and (len(self.missions) == self.mission_counter):
+                    print("No drones in simulation. Finishing up the run.")
+                    break
+
+                print(self.drn_list)
+                t00 = time.time()
+
+                if K == 0:
+                    print("No drones to simulate. Skip")
+                    continue
+
+                # Process drones in parallel using the reused pool
                 items = [(k, ) for k in self.drn_list]
                 t02 = time.time()
-                for i, result in enumerate(pool.starmap(self.prepare_and_generate, items)):
-                    if i == 0:
-                        t03 = time.time()
-                    # report the value to show progress
-                    k = self.drn_list[i]
-                    if result == -1:
-                        self.drones[k]["alive"] = 0
-                        self.drones[k]["mission"]["status"] = "Collided or infeasible"
-                        print("Error in trajectory for drone %d" %(k))
-                    else:
-                        self.drn[k].full_traj = result
-            pool.close()
-            pool.join()
-            self.update()
-            io.log_to_json(self.drones, self.sim_run, self.sim_latest)
-            io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
 
+                try:
+                    # Use optimized prepare_and_generate function
+                    results = pool.starmap(self.prepare_and_generate, items)
 
-            t01 = time.time()
-            print("Time of iteration: %.2f" % (t01 - t00))
-            # print("T1 of iteration: %.2f" % (t03 - t02))
+                    # Process results
+                    for i, result in enumerate(results):
+                        if i == 0:
+                            t03 = time.time()
 
-        io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
-        io.log_to_pickle(self.drones, "log", self.sim_run, self.sim_latest)
-        temp = io.read_log_pickle(self.sim_latest)
-        # io.log_to_json(self.drones, self.sim_run, self.sim_latest)
+                        k = self.drn_list[i]
+                        if result == -1:
+                            self.drones[k]["alive"] = 0
+                            self.drones[k]["mission"]["status"] = "Collided or infeasible"
+                            print("Error in trajectory for drone %d" % k)
+                        else:
+                            self.drn[k].full_traj = result
 
-        t1 = time.time()
-        print("Time of execution: %.2f" % (t1 - t0))
+                except Exception as e:
+                    print(f"Error during parallel processing in iteration {self.iteration}: {e}")
+                    # Continue with next iteration instead of crashing
+                    continue
+
+                # Update and log as before
+                self.update()
+                io.log_to_json(self.drones, self.sim_run, self.sim_latest)
+                io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
+
+                t01 = time.time()
+                print("Time of iteration: %.2f" % (t01 - t00))
+                # print("T1 of iteration: %.2f" % (t03 - t02))
 
     def update(self):
         # Check for collision
@@ -327,7 +363,6 @@ class simulator(drone.drone):
 
     def random_events(self):
         N = len(self.drn_list)
-
         if self.iteration == 5500:
             print("ABORT MISSION!!!!11!!!!!! MBS IS HERE!!!!")
             rnd_drn = random.choices(self.drn_list, k=3)
@@ -338,7 +373,7 @@ class simulator(drone.drone):
                     if self.drones[drn]["mission"]["type"] != "emergency landing":
                         if self.drones[drn]["factor"] >= 0.125:
                             self.drones[drn]["mission"]["type"] = "emergency landing"
-                            pos = self.state2list(self.drones[drn]["state"])
+                            pos = state2list(self.drones[drn]["state"])
                             emergency_landing = self.ppp.closest_landing(pos)
                             el0 = self.point_to_waypoint(emergency_landing[0], 10)
                             el1 = self.point_to_waypoint(emergency_landing[1], 0)
@@ -371,7 +406,7 @@ class simulator(drone.drone):
             z_velocity = self.drones[k]["trajs"][-1][5][0]
             # Update the initial conditions for the next iteration
             state = [x_position, y_position, z_position, x_velocity, y_velocity, z_velocity]
-            self.drones[k]["state"] = self.list2state(state)
+            self.drones[k]["state"] = list2state(state)
 
     def check_collisions(self):
         # i = 0
@@ -411,7 +446,6 @@ class simulator(drone.drone):
             if drone["alive"]:
                 drn = drone["state"]
                 progress = drone["mission"]["progress"]
-
                 if drone["mission"]["status"] == "waiting": # If the drone is waiting
                     print("waiting")
                     drone["mission"]["waypoints"][progress] -= 400 # Countdown the timer
@@ -427,11 +461,8 @@ class simulator(drone.drone):
                     print("Drone %d reached destination!" %(k))
                     # drone["mission"]["progress"] += 1
                     progress = drone["mission"]["progress"]
-                    print(drone["mission"]["destination"])
-                    geom = drone["mission"]["destination"][1]["geometry"].centroid
-                    zmin = drone["mission"]["destination"][1]["zmin"]
-                    zmin = 30
-                    destination = [geom.x, geom.y, zmin]
+                    geom = drone["mission"]["destination"][1]
+                    destination = state2list(geom)
                     waypoint = [drone["mission"]["waypoints"][progress]['x'],
                                  drone["mission"]["waypoints"][progress]['y'],
                                    drone["mission"]["waypoints"][progress]['z']]
@@ -448,7 +479,7 @@ class simulator(drone.drone):
                     drone["mission"]["progress"] += 1
                 progress = drone["mission"]["progress"]
                 waypoint = drone["mission"]["waypoints"][progress]
-                if isinstance(waypoint, float):
+                if isinstance(waypoint, float) or isinstance(waypoint, int):
                     drone["mission"]["status"] = "waiting"
 
     def random_state(self, xi, xf):
@@ -462,16 +493,9 @@ class simulator(drone.drone):
         vf = (v * vec / np.linalg.norm(vec)).tolist()
         return vi, vf
 
-    def list2state(self, values):
-        keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
-        return dict(zip(keys, values))
-
-    def state2list(self, values):
-        return [values["x"], values["y"], values["z"]]
-
     def point_to_waypoint(self, p, z):
         waypoint = [p.x, p.y, z, 0, 0, 0]
-        return self.list2state(waypoint)
+        return list2state(waypoint)
 
     def dist_squared(self, xi, xi_1):
         return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
@@ -569,5 +593,6 @@ class simulator(drone.drone):
 def main():
     optimization = simulator()
     optimization.m_start_simulation()
+    # optimization.m_start_simulation_batch()
 
 main()

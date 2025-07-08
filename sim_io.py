@@ -539,14 +539,12 @@ class myio:
             e = time[k][1]
             # T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
             T = e - s # Placeholder
-            gs.append({'geometry': geom, 'start_datetime': s, 'end_datetime': e, 'length': T})
+            gs.append({'geometry': geom, 'start_datetime': s, 'end_datetime': e, 'iteration': s, 'length': T})
 
         df = pd.DataFrame(gs)
-        gdf = gp.GeoDataFrame(df, crs="EPSG:20437")
-        gdf.to_crs(crs=4326, inplace=True)
+        gdf = gp.GeoDataFrame(df, crs=4326)
 
         name = "avoid_time"
-
         gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
         gdf.to_file('plot/' + last + name + '.geojson', driver='GeoJSON')
 

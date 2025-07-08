@@ -70,8 +70,6 @@ def transform_global_meter(geom):
     gdf.to_crs(epsg=20437, inplace=True)
     return gdf.geometry
 
-
-
 def waypoints_to_traj(waypoints):
     traj = []
     for waypoint in waypoints:
@@ -93,11 +91,3 @@ def point_to_waypoint(self, p, z):
 
 def dist_squared(self, xi, xi_1):
     return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
-
-
-# def transform_coords(self):
-#     # Converting to meters projection
-#     self.houses.to_crs(epsg=20437, inplace=True)
-#     self.apts.to_crs(epsg=20437, inplace=True)
-#     self.restaurants.to_crs(epsg=20437, inplace=True)
-#     self.fire_station.to_crs(epsg=20437, inplace=True)
