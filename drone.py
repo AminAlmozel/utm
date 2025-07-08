@@ -15,7 +15,6 @@ warnings.simplefilter(action='ignore')
 class drone():
     def __init__(self):
         self.N = 40
-        self.N = 20
         self.delta_t = 0.1 # Time step
         self.N_polygon = 24 # Number of sides for the polygon approximation
         self.not_collided = True

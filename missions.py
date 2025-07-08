@@ -58,6 +58,7 @@ def generate_traffic_schedule(env, timesteps):
     security.append(mission)
 
     # Traffic zones
+    # time = random.randint(0, timesteps) # To get one random perimeter section mission
     zones = io.import_traffic_zones()
     intersection = random.randint(0, len(zones)-1)
     mission = create_traffic_monitoring_mission(time, zones, intersection)
@@ -80,6 +81,7 @@ def generate_traffic_schedule(env, timesteps):
 
     # Research
     research = []
+    time = random.randint(0, timesteps) # To get one random perimeter section mission
     sites = io.import_research()
     research_site = random.randint(0, 1)
     mission = create_research_mission(time, sites, research_site)
@@ -87,9 +89,8 @@ def generate_traffic_schedule(env, timesteps):
 
     # display = transform_meter_global(display)
     # io.write_geom(display, "missions", "white")
-    # return deliveries + firefighting
     # return security + recreational + inspection + research
-    return security
+    return recreational + inspection + research
 
 def generate_vehicle_traffic(lam, timesteps):
     """
@@ -192,6 +193,7 @@ def create_recreational_mission(time, env):
     pi = field[0]
     xi = list2state([pi.x, pi.y] + [30, 0, 0, 0])
     destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    waypoints = [xi] + waypoints + [xi]
     mission = create_mission(xi, waypoints, time, "recreational", "in progress", destinations, time)
     return mission
 
@@ -210,6 +212,7 @@ def create_inpsection_mission(time, env, inspection_site):
     pi = points[0]
     xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
     destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    waypoints = [xi] + waypoints + [xi]
     mission = create_mission(xi, waypoints, time, "inspection", "in progress", destinations, time)
     return mission
 
@@ -229,6 +232,7 @@ def create_research_mission(time, env, research_site):
     pi = env["geometry"][takeoff_point]
     xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
     destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    waypoints = [xi] + waypoints + [xi]
     mission = create_mission(xi, waypoints, time, "research", "in progress", destinations, time)
     return mission
 
@@ -251,6 +255,7 @@ def create_perimeter_patrol_mission(time, env, section):
     pi = env["geometry"][takeoff_point]
     xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
     destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    waypoints = [xi] + waypoints + [xi]
     mission = create_mission(xi, waypoints, time, "perimeter_patrol", "in progress", destinations, time)
     return mission
 
@@ -271,6 +276,7 @@ def create_traffic_monitoring_mission(time, env, intersection):
     pi = env["geometry"][takeoff_point]
     xi = list2state([pi.x, pi.y] + [z, 0, 0, 0])
     destinations = [waypoints[0], waypoints[-3], waypoints[0]]
+    waypoints = [xi] + waypoints + [xi]
     mission = create_mission(xi, waypoints, time, "traffic_monitoring", "in progress", destinations, time)
     return mission
 

@@ -31,7 +31,7 @@ class simulator(drone.drone):
     def __init__(self):
         self.N = 50 # Prediction horizon
         self.delta_t = 0.1 # Time step
-        self.total_iterations = 5000
+        self.total_iterations = 50000
 
         # Parameters
         self.n_vehicles = 10 # Starting number of vehicles
@@ -109,12 +109,16 @@ class simulator(drone.drone):
     def check_new_missions(self):
         # Checking for missions that start at the current self.iteration
         # The missions list must be sorted by time
-        condition = (self.missions[self.mission_counter]["iteration"] == self.iteration)
-        while(condition == True):
-            mission = self.missions[self.mission_counter]
-            self.create_mission(mission)
-            self.mission_counter += 1
+        if self.mission_counter < len(self.missions):
             condition = (self.missions[self.mission_counter]["iteration"] == self.iteration)
+            while(condition == True):
+                mission = self.missions[self.mission_counter]
+                self.create_mission(mission)
+                self.mission_counter += 1
+                if self.mission_counter < len(self.missions):
+                    condition = (self.missions[self.mission_counter]["iteration"] == self.iteration)
+                if self.mission_counter == len(self.missions):
+                    break
 
     def create_mission(self, mission):
         mission_type = mission["mission"]["type"]
@@ -152,12 +156,6 @@ class simulator(drone.drone):
     def create_firefighting_drone(self, mission):
         destinations = mission["mission"]["destination"]
         waypoints = mission["mission"]["waypoints"]
-        # for dest in destinations:
-        #     if isinstance(dest, float):
-        #         waypoints.append(dest)
-        #     else:
-        #         destination = [dest["geometry"].centroid.x, dest["geometry"].centroid.y] + [30, 0, 0, 0]
-        #         waypoints.append(list2state(destination))
         # Create a drone or multiple to go from the fire station to the location of the fire
         mission = self.create_drone(len(self.drn), mission["state"], waypoints, self.iteration, "firefighting", "in progress", destinations)
         # xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones, self.iteration)
@@ -448,7 +446,7 @@ class simulator(drone.drone):
                 progress = drone["mission"]["progress"]
                 if drone["mission"]["status"] == "waiting": # If the drone is waiting
                     print("waiting")
-                    drone["mission"]["waypoints"][progress] -= 400 # Countdown the timer
+                    drone["mission"]["waypoints"][progress] -= 50 # Countdown the timer
                     print(drone["mission"]["waypoints"][progress])
                     if drone["mission"]["waypoints"][progress] <= 0: # If the timer is finished
                         drone["mission"]["progress"] += 1 # Go to the next step of the mission
@@ -457,7 +455,7 @@ class simulator(drone.drone):
                 waypoint = drone["mission"]["waypoints"][progress]
 
                 dist = np.sqrt(self.dist_squared(drn, waypoint))
-                if dist < 100:
+                if dist < 5:
                     print("Drone %d reached destination!" %(k))
                     # drone["mission"]["progress"] += 1
                     progress = drone["mission"]["progress"]
@@ -593,6 +591,5 @@ class simulator(drone.drone):
 def main():
     optimization = simulator()
     optimization.m_start_simulation()
-    # optimization.m_start_simulation_batch()
 
 main()
