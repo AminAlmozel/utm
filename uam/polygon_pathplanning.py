@@ -54,10 +54,11 @@ class polygon_pp(myio.myio):
         b = 1
         path = astar.a_star(m_adj, m_heur, a, b)
         traj = path_to_traj(path, ls)
-        traj = self.transform_coords_meters(traj)
-        for i in range(len(traj)):
-            traj[i] += [30, 0, 0, 0]
-        return traj
+        points = [Point(p) for p in traj]
+        points = transform_global_meter(points)
+        z = 30
+        result = [point_to_waypoint(p, z) for p in points]
+        return result
 
     def round_trip(self, one_way):
         # Return trip
@@ -75,7 +76,7 @@ class polygon_pp(myio.myio):
         # Finding the closest landing area
         gs = gp.GeoSeries(self.sa).explode(ignore_index=True)
         # Transform global coords to meters
-        gs = self.project_global_to_meter(gs.geometry)
+        gs = transform_global_meter(gs.geometry)
         distances = gs.distance(p)
         min = 0
         for i, dist in enumerate(distances):
@@ -88,7 +89,7 @@ class polygon_pp(myio.myio):
         p_exterior = lr[min].interpolate(proj[min])
         p_center = gs[min].centroid
         geoms = [p, p_exterior, gs[min], p_center]
-        gs = self.project_meter_to_global(geoms)
+        gs = transform_meter_global(geoms)
         self.write_geom(gs, "emergency_landing", "red")
 
         return [p_exterior, p_center]
@@ -99,7 +100,7 @@ class polygon_pp(myio.myio):
         # Finding the mountains
         mt = self.avoid_terrain()
         mt = gp.GeoSeries(mt)
-        self.add_to_forbidden(mt)
+        self.add_nfz(mt, 0)
         # Removing landing spots that are within a forbidden area
         self.remove_invalid_ls()
         sa = self.construct_airspace()
@@ -269,7 +270,7 @@ class polygon_pp(myio.myio):
         p = gp.GeoSeries(s.unary_union)
         self.fa_gs = p
 
-    def add_to_forbidden(self, area):
+    def add_nfz(self, area, duration):
         gs = gp.GeoSeries([self.fa, area])
         mp = gs.unary_union
         self.fa = mp
@@ -516,20 +517,6 @@ class polygon_pp(myio.myio):
         point = Point(coords)
         dummy_gdf = gp.GeoDataFrame(geometry=[point], crs="EPSG:20437")
         dummy_gdf.to_crs(crs=4326, inplace=True)
-        p = [dummy_gdf.geometry[0].x, dummy_gdf.geometry[0].y]
-        return p
-
-    def transform_coords_meters(self, waypoints):
-        result = []
-        for coord in waypoints:
-            result.append(self.transform_coord_meters(coord))
-        return result
-
-    def transform_coord_meters(self, coords):
-        # Converting to meters projection
-        point = Point(coords)
-        dummy_gdf = gp.GeoDataFrame(geometry=[point], crs=4326)
-        dummy_gdf.to_crs(crs="EPSG:20437", inplace=True)
         p = [dummy_gdf.geometry[0].x, dummy_gdf.geometry[0].y]
         return p
 

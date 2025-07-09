@@ -3,6 +3,7 @@
 "name": "rerouting",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-
+{ "type": "Feature", "properties": { "stroke": "white", "marker-color": "white", "fill": "white" }, "geometry": { "type": "LineString", "coordinates": [ [ 39.105034639759111, 22.31638078713695 ], [ 39.114248040856538, 22.326047245504355 ], [ 39.117463568162513, 22.326373325982505 ], [ 39.114248040856538, 22.326047245504355 ], [ 39.104765315581631, 22.316130545922164 ] ] } },
+{ "type": "Feature", "properties": { "stroke": "white", "marker-color": "white", "fill": "white" }, "geometry": { "type": "LineString", "coordinates": [ [ 39.102108202909911, 22.311417176608643 ], [ 39.110881228138965, 22.320089457176618 ], [ 39.101970800022585, 22.31128949999065 ] ] } }
 ]
 }

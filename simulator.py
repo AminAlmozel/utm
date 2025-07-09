@@ -12,6 +12,7 @@ import geopandas as gp
 from shapely.geometry import box, Point
 import shapely
 import gurobipy as grb
+from numba import jit, njit
 
 import drone
 import environment
@@ -23,6 +24,7 @@ from sys import getsizeof
 sys.path.append(os.path.join(os.path.dirname(__file__), "uam"))
 
 import polygon_pathplanning
+import sampling_pathplanning
 
 
 # from uam.polygon_pathplanning import *
@@ -66,7 +68,8 @@ class simulator(drone.drone):
         self.obs.sim_run = self.sim_run
         self.obs.sim_latest = self.sim_latest
 
-        self.ppp = polygon_pathplanning.polygon_pp()
+        # self.ppp = polygon_pathplanning.polygon_pp()
+        self.ppp = sampling_pathplanning.sampling_pp()
         self.ppp.sim_run = self.sim_run
         self.ppp.sim_latest = self.sim_latest
         self.dummy_obstacles()
@@ -145,8 +148,6 @@ class simulator(drone.drone):
         pf = [xf.x, xf.y]
         waypoints = self.ppp.create_trajectory([pi, pf])
         waypoints = self.ppp.round_trip(waypoints)
-        for i in range(len(waypoints)):
-            waypoints[i] = list2state(waypoints[i])
         destination = int((len(waypoints) - 1) / 2)
         # if destination == 0:
         #     destination += 1 # To resolve an issue with firefighting drones
@@ -154,6 +155,7 @@ class simulator(drone.drone):
         self.create_drone(len(self.drn), mission["state"], waypoints, self.iteration, "delivery", "in progress", destinations)
 
     def create_firefighting_drone(self, mission):
+        duration = int(10 * 60 / self.delta_t)
         destinations = mission["mission"]["destination"]
         waypoints = mission["mission"]["waypoints"]
         # Create a drone or multiple to go from the fire station to the location of the fire
@@ -161,18 +163,19 @@ class simulator(drone.drone):
         # xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones, self.iteration)
         alert_drones, fire = self.obs.fire_response(mission, self.drones, self.iteration)
         # self.create_firefighting_drone(xi, waypoints)
-        self.ppp.add_to_forbidden(fire)
+        self.ppp.add_nfz(fire, duration)
         # Replan for the drones crossing the path and the area surrounding the location of the fire
         # Adding the fire to the no fly zones, so that other drones fly around it
 
         for drn in alert_drones:
             current_state = self.drones[drn]["state"]
-            home_state = self.drones[drn]["mission"]["destination"][0]["geometry"].centroid
-            dest_state = self.drones[drn]["mission"]["destination"][1]["geometry"].centroid
+            print(self.drones[drn]["mission"]["destination"])
+            home_state = self.drones[drn]["mission"]["destination"][0]
+            dest_state = self.drones[drn]["mission"]["destination"][1]
 
             pi = [current_state['x'], current_state['y']]
-            ph = [home_state.x, home_state.y]
-            pf = [dest_state.x, dest_state.y]
+            ph = [home_state['x'], home_state['y']]
+            pf = [dest_state['x'], dest_state['y']]
             # If the delivery is not finished yet, finish it first, then go back to base
             status = self.drones[drn]["mission"]["status"]
             print(status)
@@ -190,10 +193,18 @@ class simulator(drone.drone):
                 print("Waiting")
                 # This was ph to pf
                 new_waypoints = self.ppp.create_trajectory([pi, ph])
-            # Putting the waypoints in the proper format
-            for i in range(len(new_waypoints)):
-                new_waypoints[i] = list2state(new_waypoints[i])
+            # # Putting the waypoints in the proper format
+            # for i in range(len(new_waypoints)):
+            #     new_waypoints[i] = list2state(new_waypoints[i])
             self.drones[drn]["mission"]["waypoints"] = new_waypoints
+
+            traj = [state2list(state) for state in new_waypoints]
+            ls = traj_to_linestring(traj)
+            io.write_geom(transform_meter_global([ls]), "recalculated", "red")
+
+            # Check this
+            # Happened on iteration 573
+            # self.drones[drn]["mission"]["progress"] = 0
 
     def create_traffic_monitoring_mission(self, mission):
         self.create_general_mission(mission)
@@ -236,11 +247,12 @@ class simulator(drone.drone):
     def prepare_and_generate(self, k):
         t0 = time.time()
         self.proximity = 2 * self.N * self.delta_t * self.max_vel
+        proximity_squared = self.proximity * self.proximity
         drone_prox_list = []
         # Finding the drones in proximity
         for i in self.drn_list:
-            d = self.dist_squared(self.drones[i]["state"], self.drones[k]["state"])
-            if d < self.proximity * self.proximity and i != k:
+            d = dist_squared(self.drones[i]["state"], self.drones[k]["state"])
+            if d < proximity_squared and i != k:
                 drone_prox_list.append(i)
 
         # Finding the obstacles in proximity
@@ -263,7 +275,6 @@ class simulator(drone.drone):
         xf = self.drones[k]["mission"]["waypoints"][progress]
         # Other drones trajectories
         xi_1 = [self.drones[i]["trajs"][-1] for i in drone_prox_list]
-
         env = grb.Env()
         # Generating trajectories
         result = self.drn[k].generate_traj(env, xi, xf, xi_1, obstacles)
@@ -341,12 +352,13 @@ class simulator(drone.drone):
 
                 # Update and log as before
                 self.update()
-                io.log_to_json(self.drones, self.sim_run, self.sim_latest)
-                io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
+
+                # io.log_to_json(self.drones, self.sim_run, self.sim_latest)
+                # io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
+                io.log_to_json_dict_robust(self.drones, self.sim_run, self.sim_latest)
 
                 t01 = time.time()
                 print("Time of iteration: %.2f" % (t01 - t00))
-                # print("T1 of iteration: %.2f" % (t03 - t02))
 
     def update(self):
         # Check for collision
@@ -373,8 +385,8 @@ class simulator(drone.drone):
                             self.drones[drn]["mission"]["type"] = "emergency landing"
                             pos = state2list(self.drones[drn]["state"])
                             emergency_landing = self.ppp.closest_landing(pos)
-                            el0 = self.point_to_waypoint(emergency_landing[0], 10)
-                            el1 = self.point_to_waypoint(emergency_landing[1], 0)
+                            el0 = point_to_waypoint(emergency_landing[0], 10)
+                            el1 = point_to_waypoint(emergency_landing[1], 0)
                             el = [el0, el1]
                             self.drones[drn]["mission"]["waypoints"] += el
                             waypoints = self.drones[drn]["mission"]["waypoints"]
@@ -422,7 +434,7 @@ class simulator(drone.drone):
             for j in range(i + 1, len(self.drn_list)):
                 d1 = self.drn_list[i]
                 d2 = self.drn_list[j]
-                d = self.dist_squared(self.drones[d1]["state"], self.drones[d2]["state"])
+                d = dist_squared(self.drones[d1]["state"], self.drones[d2]["state"])
                 if d < self.collision_warning * self.collision_warning:
                     if d < self.collision * self.collision:
                         self.collide(d1, d2, d)
@@ -454,7 +466,7 @@ class simulator(drone.drone):
                     continue
                 waypoint = drone["mission"]["waypoints"][progress]
 
-                dist = np.sqrt(self.dist_squared(drn, waypoint))
+                dist = np.sqrt(dist_squared(drn, waypoint))
                 if dist < 5:
                     print("Drone %d reached destination!" %(k))
                     # drone["mission"]["progress"] += 1
@@ -490,13 +502,6 @@ class simulator(drone.drone):
         vec = x - y
         vf = (v * vec / np.linalg.norm(vec)).tolist()
         return vi, vf
-
-    def point_to_waypoint(self, p, z):
-        waypoint = [p.x, p.y, z, 0, 0, 0]
-        return list2state(waypoint)
-
-    def dist_squared(self, xi, xi_1):
-        return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2
 
     def seconds_from_today(self, iteration):
         s = iteration * self.delta_t

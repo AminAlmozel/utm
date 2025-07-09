@@ -3,6 +3,6 @@
 "name": "traj",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "stroke": "blue", "marker-color": "blue", "fill": "blue" }, "geometry": { "type": "LineString", "coordinates": [ [ 39.08834035518192, 22.292947274218019 ], [ 39.088048420657948, 22.299136231795362 ] ] } }
+{ "type": "Feature", "properties": { "stroke": "blue", "marker-color": "blue", "fill": "blue" }, "geometry": { "type": "LineString", "coordinates": [ [ 39.101970800022585, 22.31128949999065 ], [ 39.110881228138965, 22.320089457176618 ] ] } }
 ]
 }

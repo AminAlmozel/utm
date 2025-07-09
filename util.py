@@ -6,30 +6,40 @@ from shapely.geometry import box, Point, LineString
 from typing import List, Tuple, Union, Optional
 
 def make_traj(trajs):
-    t = []
-    for traj in trajs:
-        point = [traj[0][0], traj[1][0], traj[2][0]]
-        t.append(point)
-    if len(t) == 1:
+    if len(trajs) == 1:
         return 0
-    ls = traj_to_linestring(t)
-    # ls = transform_meter_global([ls])
-    return ls
+    t = [[traj[0][0], traj[1][0], traj[2][0]] for traj in trajs]
+    return traj_to_linestring(t)
+
+def path_to_traj(path, ls):
+    return [[ls[j][0], ls[j][1]] for j in path]
+
+def transform_meter_global(geom):
+    return gp.GeoDataFrame(geometry=geom, crs="EPSG:20437").to_crs(epsg=4326).geometry
+
+def transform_global_meter(geom):
+    return gp.GeoDataFrame(geometry=geom, crs="EPSG:4326").to_crs(epsg=20437).geometry
+
+def waypoints_to_traj(waypoints):
+    return [[w["x"], w["y"]] for w in waypoints if not isinstance(w, float)]
+
+def list2state(values):
+    return dict(zip(('x', 'y', 'z', 'xdot', 'ydot', 'zdot'), values))
+
+def state2list(values):
+    return [values["x"], values["y"], values["z"]]
+
+def point_to_waypoint(p, z):
+    return {'x': p.x, 'y': p.y, 'z': z, 'xdot': 0, 'ydot': 0, 'zdot': 0}
+
+def dist_squared(xi, xi_1):
+    dx = xi['x'] - xi_1['x']
+    dy = xi['y'] - xi_1['y']
+    dz = xi['z'] - xi_1['z']
+    return dx*dx + dy*dy + dz*dz
 
 def traj_to_linestring(traj: Union[List[List[float]], np.ndarray],
                       force_2d: bool = False) -> Optional[LineString]:
-    """
-    Convert a trajectory to a Shapely LineString.
-
-    Args:
-        traj: Trajectory as list of points or numpy array
-              - For 2D: [[x1, y1], [x2, y2], ...]
-              - For 3D: [[x1, y1, z1], [x2, y2, z2], ...]
-        force_2d: If True, forces 2D output even for 3D input (ignores Z coordinate)
-
-    Returns:
-        LineString object or None if trajectory has <= 1 point
-    """
     if len(traj) <= 1:
         return None
 
@@ -52,42 +62,3 @@ def traj_to_linestring(traj: Union[List[List[float]], np.ndarray],
         raise ValueError(f"Trajectory must have 2 or 3 coordinates per point, got {traj_array.shape[1]}")
 
     return LineString(points)
-
-def path_to_traj(path, ls):
-    traj = []
-    for i in range(len(path)):
-        j = path[i]
-        traj.append([ls[j][0], ls[j][1], 0])
-    return traj
-
-def transform_meter_global(geom):
-    gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:20437")
-    gdf.to_crs(epsg=4326, inplace=True)
-    return gdf.geometry
-
-def transform_global_meter(geom):
-    gdf = gp.GeoDataFrame(geometry=geom, crs="EPSG:4326")
-    gdf.to_crs(epsg=20437, inplace=True)
-    return gdf.geometry
-
-def waypoints_to_traj(waypoints):
-    traj = []
-    for waypoint in waypoints:
-        if isinstance(waypoint, float):
-            continue
-        traj.append([waypoint["x"], waypoint["y"]])
-    return traj
-
-def list2state(values):
-    keys = ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
-    return dict(zip(keys, values))
-
-def state2list(values):
-    return [values["x"], values["y"], values["z"]]
-
-def point_to_waypoint(self, p, z):
-    waypoint = [p.x, p.y, z, 0, 0, 0]
-    return self.list2state(waypoint)
-
-def dist_squared(self, xi, xi_1):
-    return (xi['x'] - xi_1['x'])**2 + (xi['y'] - xi_1['y'])**2 + (xi['z'] - xi_1['z'])**2

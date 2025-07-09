@@ -90,7 +90,7 @@ def generate_traffic_schedule(env, timesteps):
     # display = transform_meter_global(display)
     # io.write_geom(display, "missions", "white")
     # return security + recreational + inspection + research
-    return deliveries
+    return firefighting + deliveries
 
 def generate_vehicle_traffic(lam, timesteps):
     """

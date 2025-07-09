@@ -32,6 +32,7 @@ warnings.simplefilter(action='ignore', category=UserWarning)
 class sampling_pp(io):
     def __init__(self):
         self.radius = 700
+        self.project = "uam/kaust/"
         self.sim_run = ""
         self.sim_latest = ""
         self.mp_areas = []
@@ -39,19 +40,12 @@ class sampling_pp(io):
         self.adj = []
         self.heur = []
         self.nfz = []
+        self.nfz_costs = 1000000
         self.nodes = []
+        self.iteration = 0
         self.initalize()
-        self.update_graphs()
-        a = 0
-        b = 1
-        self.spp(a, b)
 
     def initalize(self):
-        self.project = "uam/kaust/"
-        self.sa = io.load_geojson_files(self.project + "landing/*.geojson", concat=True)
-        self.sa = self.sa.geometry.union_all()
-        self.fa = io.load_geojson_files(self.project + "forbidden/*.geojson", concat=True)
-
         # Get multipolygons
         kaust = io.load_geojson_files("env/kaust.geojson", concat=True)["geometry"][0]
         self.kaust = MultiPolygon([kaust])
@@ -61,8 +55,17 @@ class sampling_pp(io):
         comm = io.import_communication()
         r = 400
         comm = comm["geometry"].buffer(r).union_all()
-        self.add_area(comm, 1)
+        # self.add_area(comm, 1)
         io.write_geom(transform_meter_global([comm]), "comm", "yellow")
+
+        sa = io.load_geojson_files(self.project + "landing/*.geojson", concat=True)
+        sa = sa.geometry.union_all()
+        # self.add_area(sa, 1)
+
+        fa = io.load_geojson_files(self.project + "forbidden/*.geojson", concat=True)
+        fa = fa.geometry.union_all()
+        # self.nfz.append(fa)
+        self.add_nfz(fa)
 
         bounds = self.kaust.bounds
 
@@ -77,46 +80,126 @@ class sampling_pp(io):
         samples = [p for p in samples if p.within(self.kaust)]
         self.nodes = samples
 
-    def spp(self, a, b):
-        adj = sum(self.adj)
-        heur = sum(self.heur)
-        path = astar.a_star(adj, heur, a, b)
-        traj = [self.nodes[p] for p in path]
+    def create_trajectory(self, coords):
+
+        # Prepare the areas
+        # Adjust the costs of the noise zones
+
+        # Remove expired nfz
+        self.remove_expired_nfz()
+
+        # Calculating the graphs
+        coords = [Point(coord) for coord in coords]
+        nodes = self.add_nodes(coords)
+        adj, heur = self.update_graphs(nodes)
+        m_adj = sum(adj)
+        m_heur = sum(heur)
+
+        # Finding the optimal trajectory
+        path = astar.a_star(m_adj, m_heur, 0, 1)
+        traj = [nodes[p] for p in path]
         ls = LineString(traj)
         io.write_geom(transform_meter_global([ls]), "traj", "blue")
-        return path
+        z = 30
+        result = [point_to_waypoint(p, z) for p in traj]
+        return result
+
+    def round_trip(self, one_way):
+        # Return trip
+        return_path = one_way[::-1]
+        one_way.pop() # Remove the last element to make a full trip without duplicates
+        round_trip = one_way + return_path
+        return round_trip
 
     def add_nodes(self, new_nodes):
-        self.nodes = new_nodes + self.nodes
+        return new_nodes + self.nodes
 
-    def update_graphs(self):
+    def update_graphs(self, nodes):
         # Construct lines from samples
+        adj = []
+        heur = []
         max_distance = 1500 #km
-        lines, node_pairs = connect_points_within_distance(self.nodes, max_distance)
-
+        lines, node_pairs = connect_points_within_distance(nodes, max_distance)
         for i in range(len(self.mp_areas)):
             # Intersect lines with each of the polygons
             # lengths = line_intersection_lengths(lines, comm)
             lengths = calculate_intersection_lengths_vectorized(lines, self.mp_areas[i])
             lengths *= self.mp_costs[i]
             # Construct adjacency and heuristic matrices
-            adj, heur = create_adjacency_matrix_vectorized(lengths, node_pairs, self.nodes, return_heuristic=True)
-            self.adj.append(adj)
-            self.heur.append(heur)
+            m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
+            adj.append(m_adj)
+            heur.append(m_heur)
 
+        for i in range(len(self.nfz)):
+            # Intersect lines with each of the polygons
+            # lengths = line_intersection_lengths(lines, comm)
+            lengths = calculate_intersection_lengths_vectorized(lines, self.nfz[i]["geometry"])
+            lengths *= self.nfz_costs
+            # Construct adjacency and heuristic matrices
+            m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
+            adj.append(m_adj)
+            heur.append(m_heur)
 
-        samples = gp.GeoSeries(self.nodes).buffer(5)
-        samples = transform_meter_global(samples)
-        io.write_geom(samples, "samples", "yellow")
-        lines = transform_meter_global(lines)
-        io.write_geom(lines, "lines", "white")
+        # samples = gp.GeoSeries(nodes).buffer(5)
+        # samples = transform_meter_global(samples)
+        # io.write_geom(samples, "samples", "yellow")
+        # lines = transform_meter_global(lines)
+        # io.write_geom(lines, "lines", "white")
+        return adj, heur
 
     def add_area(self, area, cost):
-        area = self.kaust.difference(area)
+        # area = self.kaust.difference(area)
         if isinstance(area, Polygon):
             area = MultiPolygon([area])
         self.mp_areas.append(area)
         self.mp_costs.append(cost)
+
+    def add_nfz(self, nfz, duration = 100000):
+        if isinstance(nfz, Polygon):
+            nfz = MultiPolygon([nfz])
+        nfz = {"geometry": nfz, "iteration": self.iteration, "length": duration}
+        # print(nfz)
+        self.nfz.append(nfz)
+
+    def add_to_forbidden(self, area):
+        gs = gp.GeoSeries([self.fa, area])
+        mp = gs.unary_union
+        self.fa = mp
+        self.write_geom([self.fa], self.sim_run + "new_nfz", "orange")
+        self.write_geom([self.fa], self.sim_latest + "new_nfz", "orange")
+        # print("Added area to forbidden")
+        return self.fa
+
+    def remove_expired_nfz(self):
+        # Create a new list with only non-expired zones
+        self.nfz = [zone for zone in self.nfz if zone["iteration"] + zone["length"] >= self.iteration]
+
+    def closest_landing(self, coords):
+        # Ignore the height
+        coords = [coords[0], coords[1]]
+        p = Point(coords)
+
+        # If it's already within a landing spot, just glide to the center
+        # Finding the closest landing area
+        gs = gp.GeoSeries(self.sa).explode(ignore_index=True)
+        # Transform global coords to meters
+        # gs = transform_global_meter(gs.geometry)
+        distances = gs.distance(p)
+        min = 0
+        for i, dist in enumerate(distances):
+            if dist < distances[min]:
+                min = i
+
+        # Finding the closest point on that area
+        lr = gs.exterior
+        proj = lr.project(p)
+        p_exterior = lr[min].interpolate(proj[min])
+        p_center = gs[min].centroid
+        geoms = [p, p_exterior, gs[min], p_center]
+        gs = transform_meter_global(geoms)
+        self.write_geom(gs, "emergency_landing", "red")
+
+        return [p_exterior, p_center]
 
 def samples_poisson(n_points, bounds):
     r = get_radius(n_points)
@@ -466,4 +549,4 @@ def main():
     spp = sampling_pp()
     print("Done")
 
-main()
+# main()

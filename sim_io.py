@@ -5,6 +5,7 @@ import geopandas as gp
 import pandas as pd
 import numpy as np
 import pickle as pkl
+from numba import jit, njit
 
 # from data_analysis import *
 from util import *
@@ -565,3 +566,110 @@ class myio:
             concat_gdf.append(df)
         comb_gdf = pd.concat(concat_gdf, axis=0, ignore_index=True)
         comb_gdf.to_file('plot/' + output + '.geojson', driver='GeoJSON')
+
+    def log_to_json_dict_robust(drones, run, last):
+        """
+        Most robust version that handles various trajectory data formats
+        """
+        if len(drones) == 0:
+            print("No drones to log")
+            return
+
+        trajs = []
+        dt_ms = 100  # milliseconds per timestep
+
+        for drone_idx, drone in enumerate(drones):
+            if not drone.get("trajs") or len(drone["trajs"]) == 0:
+                continue
+
+            try:
+                traj_data = drone["trajs"]
+                coords = []
+
+                # Try multiple extraction methods
+                for traj_idx, traj in enumerate(traj_data):
+                    try:
+                        # Method 1: Handle [[x], [y], [z]] format
+                        if (isinstance(traj, (list, tuple)) and len(traj) >= 3 and
+                            all(hasattr(t, '__len__') and len(t) > 0 for t in traj[:3])):
+                            x = float(traj[0][0])
+                            y = float(traj[1][0])
+                            z = float(traj[2][0])
+                            coords.append([x, y, z])
+
+                        # Method 2: Handle [x, y, z] format
+                        elif (isinstance(traj, (list, tuple)) and len(traj) >= 3 and
+                            all(isinstance(t, (int, float)) for t in traj[:3])):
+                            x, y, z = float(traj[0]), float(traj[1]), float(traj[2])
+                            coords.append([x, y, z])
+
+                        # Method 3: Handle numpy array format
+                        elif hasattr(traj, 'shape') and len(traj.shape) >= 1:
+                            if traj.shape[0] >= 3:
+                                if len(traj.shape) == 1:
+                                    x, y, z = float(traj[0]), float(traj[1]), float(traj[2])
+                                else:
+                                    x, y, z = float(traj[0][0]), float(traj[1][0]), float(traj[2][0])
+                                coords.append([x, y, z])
+
+                        # Method 4: Handle dictionary format
+                        elif isinstance(traj, dict):
+                            if all(key in traj for key in ['x', 'y', 'z']):
+                                x, y, z = float(traj['x']), float(traj['y']), float(traj['z'])
+                                coords.append([x, y, z])
+
+                        else:
+                            print(f"Warning: Unknown trajectory format at drone {drone_idx}, traj {traj_idx}: {type(traj)}")
+                            continue
+
+                    except (IndexError, ValueError, TypeError, KeyError) as e:
+                        print(f"Warning: Error extracting coordinates from drone {drone_idx}, traj {traj_idx}: {e}")
+                        continue
+
+                # Skip if insufficient coordinates
+                if len(coords) <= 1:
+                    print(f"Warning: Drone {drone_idx} has insufficient trajectory points ({len(coords)})")
+                    continue
+
+                # Create LineString
+                ls = LineString(coords)
+
+                # Calculate timing
+                s = drone["birthday"]
+                flight_duration_ms = dt_ms * (len(coords) - 1)
+                T = datetime.timedelta(milliseconds=flight_duration_ms)
+                e = s + T
+
+                # Create trajectory dictionary
+                traj_dict = {
+                    'geometry': ls,
+                    'start_datetime': s,
+                    'end_datetime': e,
+                    'iteration': drone["iteration"],
+                    'length': len(coords)
+                }
+
+                trajs.append(traj_dict)
+
+            except Exception as e:
+                print(f"Error processing drone {drone_idx}: {e}")
+                # Print more debugging info
+                if "trajs" in drone:
+                    print(f"  Trajectory data type: {type(drone['trajs'])}")
+                    print(f"  Trajectory length: {len(drone['trajs'])}")
+                    if len(drone['trajs']) > 0:
+                        print(f"  First trajectory element: {drone['trajs'][0]}")
+                continue
+
+        if trajs:
+            # Create GeoDataFrame efficiently
+            gdf = gp.GeoDataFrame(trajs, crs="EPSG:20437")
+            gdf.to_crs(crs=4326, inplace=True)
+
+            # Write files
+            name = "trajs_time"
+            gdf.to_file(f'plot/{run}{name}.geojson', driver='GeoJSON')
+            gdf.to_file(f'plot/{last}{name}.geojson', driver='GeoJSON')
+
+        else:
+            print("No valid trajectories processed")

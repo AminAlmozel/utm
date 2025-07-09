@@ -193,13 +193,6 @@ class env():
         self.restaurants.to_crs(epsg=20437, inplace=True)
         self.fire_station.to_crs(epsg=20437, inplace=True)
 
-    # def write_geom(self, gdf, name, color):
-    #     s = gdf
-    #     s["stroke"] = color
-    #     s["marker-color"] = color
-    #     s["fill"] = color
-    #     s.to_file('plot/' + name + '.geojson', driver='GeoJSON')
-
     def nearby_obstacles(self, pos, range):
         position = Point(pos[0], pos[1], pos[2])
         dist = self.houses.distance(position)
