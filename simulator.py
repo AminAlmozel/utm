@@ -163,7 +163,7 @@ class simulator(drone.drone):
         # xi, waypoints, alert_drones, fire = self.obs.random_fire(self.drones, self.iteration)
         alert_drones, fire = self.obs.fire_response(mission, self.drones, self.iteration)
         # self.create_firefighting_drone(xi, waypoints)
-        self.ppp.add_nfz(fire, duration)
+        self.ppp.add_nfz(fire, mission["id"])
         # Replan for the drones crossing the path and the area surrounding the location of the fire
         # Adding the fire to the no fly zones, so that other drones fly around it
         self.ppp.iteration = self.iteration
@@ -193,11 +193,9 @@ class simulator(drone.drone):
                 print("Waiting")
                 # This was ph to pf
                 new_waypoints = self.ppp.create_trajectory([pi, ph])
-            # # Putting the waypoints in the proper format
-            # for i in range(len(new_waypoints)):
-            #     new_waypoints[i] = list2state(new_waypoints[i])
-            self.drones[drn]["mission"]["waypoints"] = new_waypoints
 
+            # TODO: Check other statuses
+            self.drones[drn]["mission"]["waypoints"] = new_waypoints
             traj = [state2list(state) for state in new_waypoints]
             ls = traj_to_linestring(traj)
             io.write_geom(transform_meter_global([ls]), "recalculated", "red")
@@ -371,6 +369,9 @@ class simulator(drone.drone):
         self.update_mission()
         # Update the trajectories
 
+    def emergency_events(self):
+        pass
+
     def random_events(self):
         N = len(self.drn_list)
         if self.iteration == 5500:
@@ -452,6 +453,7 @@ class simulator(drone.drone):
         # self.drn_list.remove(d2)
 
     def update_mission(self):
+        self.ppp.iteration = self.iteration
         for k, drone in enumerate(self.drones):
             if drone["alive"]:
                 drn = drone["state"]
@@ -481,6 +483,8 @@ class simulator(drone.drone):
                     if drone["mission"]["progress"] == len(drone["mission"]["waypoints"]) - 1: # If it completed the mission
                         drone["mission"]["status"] = "completed" # Mark it as completed
                         drone["alive"] = 0 # Mark it as dead/offline
+                        if drone["mission"]["type"] == "firefighting":
+                            self.ppp.remove_nfz(drone["id"])
                         print("MISSION COMPLETED WOOOHOOOOOO!!!1111!!!!!!11!1")
                         continue
                     # If delivered, change status to returning to base

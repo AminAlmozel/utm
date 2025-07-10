@@ -41,7 +41,7 @@ class sampling_pp(io):
         self.adj = []
         self.heur = []
         self.nfz = []
-        self.nfz_costs = 1000000
+        self.nfz_costs = 10000000
         self.nodes = []
         self.iteration = 0
         self.initalize()
@@ -70,7 +70,7 @@ class sampling_pp(io):
         bounds = self.kaust.bounds
 
         # Sample airspace
-        n_points = 3000
+        n_points = 3500
         # n_points = 500
         samples = samples_poisson(n_points, bounds)
         # samples = samples_biased(n_points, self.mp_areas, bounds, self.nfz, 0.7)
@@ -84,18 +84,17 @@ class sampling_pp(io):
         # Prepare the areas
         # Adjust the costs of the noise zones
 
-        # Remove expired nfz
-        self.remove_expired_nfz()
-
-        # Calculating the graphs
+        # # Calculating the graphs
         coords = [Point(coord) for coord in coords]
         nodes = self.add_nodes(coords)
+        nodes = self.nodes
+        # start = closest_node(coords, nodes)
+        # end = closest_node(coords, nodes)
         adj, heur = self.update_graphs(nodes)
         m_adj = sum(adj)
         m_heur = sum(heur)
 
         # Finding the optimal trajectory
-        # path = astar.a_star(m_adj, m_heur, 0, 1)
         path = dijkstra(m_adj, 0, 1)
         traj = [nodes[p] for p in path]
         ls = LineString(traj)
@@ -107,7 +106,7 @@ class sampling_pp(io):
     def add_nodes(self, new_nodes):
         return new_nodes + self.nodes
 
-    def update_graphs(self, nodes):
+    def update_graphs(self, nodes, ):
         # Construct lines from samples
         adj = []
         heur = []
@@ -123,17 +122,17 @@ class sampling_pp(io):
             m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
             adj.append(m_adj)
             heur.append(m_heur)
-            print("Time of iteration: %.2f" % (time() - t0))
 
         for i in range(len(self.nfz)):
-            # Intersect lines with each of the polygons
-            # lengths = line_intersection_lengths(lines, comm)
-            lengths = calculate_intersection_lengths_vectorized(lines, self.nfz[i]["geometry"])
-            lengths *= self.nfz_costs
-            # Construct adjacency and heuristic matrices
-            m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
-            adj.append(m_adj)
-            heur.append(m_heur)
+            if self.nfz[i]["iteration"] + self.nfz[i]["length"] > self.iteration:
+                # Intersect lines with each of the polygons
+                # lengths = line_intersection_lengths(lines, comm)
+                lengths = calculate_intersection_lengths_vectorized(lines, self.nfz[i]["geometry"])
+                lengths *= self.nfz_costs
+                # Construct adjacency and heuristic matrices
+                m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
+                adj.append(m_adj)
+                heur.append(m_heur)
 
         # samples = gp.GeoSeries(nodes).buffer(5)
         # samples = transform_meter_global(samples)
@@ -149,25 +148,17 @@ class sampling_pp(io):
         self.mp_areas.append(area)
         self.mp_costs.append(cost)
 
-    def add_nfz(self, nfz, duration = 100000):
+    def add_nfz(self, nfz, id=-1):
+        duration = 100000
         if isinstance(nfz, Polygon):
             nfz = MultiPolygon([nfz])
-        nfz = {"geometry": nfz, "iteration": self.iteration, "length": duration}
-        # print(nfz)
+        nfz = {"geometry": nfz, "id": id, "iteration": self.iteration, "length": duration}
         self.nfz.append(nfz)
 
-    def add_to_forbidden(self, area):
-        gs = gp.GeoSeries([self.fa, area])
-        mp = gs.unary_union
-        self.fa = mp
-        self.write_geom([self.fa], self.sim_run + "new_nfz", "orange")
-        self.write_geom([self.fa], self.sim_latest + "new_nfz", "orange")
-        # print("Added area to forbidden")
-        return self.fa
-
-    def remove_expired_nfz(self):
-        # Create a new list with only non-expired zones
-        self.nfz = [zone for zone in self.nfz if zone["iteration"] + zone["length"] >= self.iteration]
+    def remove_nfz(self, id):
+        for i in range(len(self.nfz)):
+            if self.nfz[i]["id"] == id:
+                self.nfz[i]["length"] = self.iteration - self.nfz[i]["iteration"]
 
     def closest_landing(self, coords):
         # Ignore the height
@@ -489,6 +480,15 @@ def _create_heuristic_matrix(node_coordinates: np.ndarray, num_nodes: int) -> np
 
     return euclidean_distances
 
+def closest_node(target_point, point_list):
+    # Convert to numpy arrays once
+    coords = np.array([(p.x, p.y) for p in point_list])
+    target_coords = np.array([target_point.x, target_point.y])
+
+    # Vectorized distance calculation
+    distances = np.sum((coords - target_coords)**2, axis=1)
+    return np.argmin(distances)
+
 def get_radius(n_points):
     data = [
     (0.01, 8313),
@@ -554,4 +554,4 @@ def main():
     spp.create_trajectory(coords)
     print("Done")
 
-main()
+# main()

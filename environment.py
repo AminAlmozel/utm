@@ -342,8 +342,8 @@ class env():
         # and the area surrounding the location of the fire
         ls = LineString([pi, pf])
         g = gp.GeoSeries([ls.buffer(30), fire_station.buffer(50), pf.buffer(100)])
-        avoid = g.unary_union
-        avoid = transform_meter_global([avoid])[0]
+        fire = g.unary_union
+        avoid = transform_meter_global([fire])[0]
         io.write_geom([avoid], self.sim_run + "avoid", "red")
         io.write_geom([avoid], self.sim_latest + "avoid", "red")
         fire_duration = 1000 # Timesteps, which is 1000 * dt seconds
@@ -372,7 +372,7 @@ class env():
         trajs = gp.GeoSeries(trajs)
         result = trajs.intersects(avoid)
         indices = np.where(result)[0]
-        return indices, avoid
+        return indices, fire
 
     def waypoints_to_traj(self, waypoints):
         traj = []

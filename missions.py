@@ -295,8 +295,52 @@ def create_mission(xi, waypoints, n, type, status, destinations, time):
                     "progress": 0,
                     "waypoints": waypoints, # Deliver to the final destination, then come back to the original place
                     "status":status
+                },
+                "emergency": {
+                    "type": "",
+                    "time": -1,
+                    "status": "inactive",
+                    "severity": "none"
                 }}
     return d
+
+def generate_emergencies(traffic, timesteps):
+    # Randomly select a group of drones
+    base_percentage = 10
+    variation_percentage = 5
+    indices = select_random_drones(len(traffic), base_percentage, variation_percentage)
+
+    # Randomly match a group of emergencies
+    emergency_probabilities = {'gps_loss': 0.3, 'communication_loss': 0.2, 'low_battery': 0.1, 'motor_failure': 0.4}
+    # mission error, thermal alert, obstacle detected
+    emergencies_incides = assign_emergencies(len(indices), emergency_probabilities)
+    emergencies = list(emergency_probabilities.keys())
+    assigned_emergencies = [emergencies[e] for e in emergencies_incides]
+
+    for i, idx in enumerate(indices):
+        # Randomly choose a time fitting of the emergency
+        min_time = traffic[idx]["iteration"]
+        mean_time = 1000
+
+        # GPS
+        if assigned_emergencies[i] == "gps_loss":
+            severity = "medium"
+
+        # Communication
+        if assigned_emergencies[i] == "communication_loss":
+            severity = "medium"
+
+        # Battery
+        if assigned_emergencies[i] == "low_battery":
+            severity = "low"
+
+        # Power
+        if assigned_emergencies[i] == "motor_failure":
+            severity = "high"
+            iteration = generate_emergency_time_exponential(mean_time, min_time, max_time=None)
+
+        emergency = {"type": assigned_emergencies[i], "time":iteration, "status":"inactive", "severity":severity}
+        traffic[idx]["emergency"] = emergency
 
 def sort_traffic(traffic):
     missions_sorted = sorted(traffic, key=lambda mission: mission["iteration"])
@@ -485,6 +529,60 @@ def display_mission(mission):
         points.append(wp)
     ls = traj_to_linestring(points)
     return ls
+
+def select_random_drones(num_drones, base_percentage, variation_percentage=0):
+    """
+    Select a random percentage of drones with optional variation.
+
+    Args:
+        num_drones: Total number of drones
+        base_percentage: Base percentage to select (0-100)
+        variation_percentage: +/- variation around base percentage (0-100)
+
+    Returns:
+        List of randomly selected drone indices
+    """
+    # Calculate actual percentage with variation
+    if variation_percentage > 0:
+        min_pct = max(0, base_percentage - variation_percentage)
+        max_pct = min(100, base_percentage + variation_percentage)
+        actual_percentage = random.uniform(min_pct, max_pct)
+    else:
+        actual_percentage = base_percentage
+
+    # Calculate number of drones to select
+    num_to_select = int(num_drones * actual_percentage / 100)
+    num_to_select = max(1, min(num_to_select, num_drones))  # Ensure at least 1, at most all
+
+    # Return random indices
+    return random.sample(range(num_drones), num_to_select)
+
+def assign_emergencies(num_drones, emergency_probabilities):
+    """
+    Assign emergencies to drones based on probabilities.
+
+    Args:
+        num_drones: Number of drones
+        emergency_probabilities: Dict with emergency names as keys and probabilities as values
+                                Example: {'fire': 0.3, 'search_rescue': 0.2, 'medical': 0.1, 'none': 0.4}
+
+    Returns:
+        List of emergency assignments for each drone
+    """
+    emergencies = list(emergency_probabilities.keys())
+    probabilities = list(emergency_probabilities.values())
+
+    return random.choices(emergencies, weights=probabilities, k=num_drones)
+
+def generate_emergency_time_exponential(mean_time, min_time=0, max_time=None):
+    """
+    Generate emergency time using exponential distribution (more realistic).
+    Emergencies are more likely to happen sooner rather than later.
+    """
+    time = np.random.exponential(mean_time) + min_time
+    if max_time is not None:
+        time = min(time, max_time)
+    return int(time)
 
 # Run the main function
 main()
