@@ -166,7 +166,7 @@ class simulator(drone.drone):
         self.ppp.add_nfz(fire, duration)
         # Replan for the drones crossing the path and the area surrounding the location of the fire
         # Adding the fire to the no fly zones, so that other drones fly around it
-
+        self.ppp.iteration = self.iteration
         for drn in alert_drones:
             current_state = self.drones[drn]["state"]
             print(self.drones[drn]["mission"]["destination"])

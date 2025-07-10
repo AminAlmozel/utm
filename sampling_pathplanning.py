@@ -15,6 +15,7 @@ import glob
 from math import radians, cos, sin, asin, atan2, sqrt, pi, ceil, exp, log
 
 import uam.astar_uam as astar
+from dijkstra import *
 # import exploration
 # import terrain
 from sim_io import myio as io
@@ -55,23 +56,22 @@ class sampling_pp(io):
         comm = io.import_communication()
         r = 400
         comm = comm["geometry"].buffer(r).union_all()
-        # self.add_area(comm, 1)
-        io.write_geom(transform_meter_global([comm]), "comm", "yellow")
+        # self.add_area(comm, -0.1)
+        # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
 
         sa = io.load_geojson_files(self.project + "landing/*.geojson", concat=True)
         sa = sa.geometry.union_all()
-        # self.add_area(sa, 1)
+        self.add_area(sa, -0.3)
 
         fa = io.load_geojson_files(self.project + "forbidden/*.geojson", concat=True)
         fa = fa.geometry.union_all()
-        # self.nfz.append(fa)
         self.add_nfz(fa)
 
         bounds = self.kaust.bounds
 
         # Sample airspace
-        n_points = 1500
-        n_points = 500
+        n_points = 3000
+        # n_points = 500
         samples = samples_poisson(n_points, bounds)
         # samples = samples_biased(n_points, self.mp_areas, bounds, self.nfz, 0.7)
         # samples = samples_uniform(n_points, self.mp_areas, bounds, self.nfz)
@@ -81,7 +81,6 @@ class sampling_pp(io):
         self.nodes = samples
 
     def create_trajectory(self, coords):
-
         # Prepare the areas
         # Adjust the costs of the noise zones
 
@@ -96,20 +95,14 @@ class sampling_pp(io):
         m_heur = sum(heur)
 
         # Finding the optimal trajectory
-        path = astar.a_star(m_adj, m_heur, 0, 1)
+        # path = astar.a_star(m_adj, m_heur, 0, 1)
+        path = dijkstra(m_adj, 0, 1)
         traj = [nodes[p] for p in path]
         ls = LineString(traj)
         io.write_geom(transform_meter_global([ls]), "traj", "blue")
         z = 30
         result = [point_to_waypoint(p, z) for p in traj]
         return result
-
-    def round_trip(self, one_way):
-        # Return trip
-        return_path = one_way[::-1]
-        one_way.pop() # Remove the last element to make a full trip without duplicates
-        round_trip = one_way + return_path
-        return round_trip
 
     def add_nodes(self, new_nodes):
         return new_nodes + self.nodes
@@ -118,9 +111,10 @@ class sampling_pp(io):
         # Construct lines from samples
         adj = []
         heur = []
-        max_distance = 1500 #km
+        max_distance = 500 #km
         lines, node_pairs = connect_points_within_distance(nodes, max_distance)
         for i in range(len(self.mp_areas)):
+            t0 = time()
             # Intersect lines with each of the polygons
             # lengths = line_intersection_lengths(lines, comm)
             lengths = calculate_intersection_lengths_vectorized(lines, self.mp_areas[i])
@@ -129,6 +123,7 @@ class sampling_pp(io):
             m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
             adj.append(m_adj)
             heur.append(m_heur)
+            print("Time of iteration: %.2f" % (time() - t0))
 
         for i in range(len(self.nfz)):
             # Intersect lines with each of the polygons
@@ -200,6 +195,13 @@ class sampling_pp(io):
         self.write_geom(gs, "emergency_landing", "red")
 
         return [p_exterior, p_center]
+
+    def round_trip(self, one_way):
+        # Return trip
+        return_path = one_way[::-1]
+        one_way.pop() # Remove the last element to make a full trip without duplicates
+        round_trip = one_way + return_path
+        return round_trip
 
 def samples_poisson(n_points, bounds):
     r = get_radius(n_points)
@@ -547,6 +549,9 @@ def get_radius(n_points):
 
 def main():
     spp = sampling_pp()
+
+    coords = [[510783.21359357954, 2467813.5549285114], [512190.1320467823, 2468948.2965289974]]
+    spp.create_trajectory(coords)
     print("Done")
 
-# main()
+main()
