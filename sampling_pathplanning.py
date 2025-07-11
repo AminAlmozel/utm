@@ -33,7 +33,6 @@ warnings.simplefilter(action='ignore', category=UserWarning)
 class sampling_pp(io):
     def __init__(self):
         self.radius = 700
-        self.project = "uam/kaust/"
         self.sim_run = ""
         self.sim_latest = ""
         self.mp_areas = []
@@ -45,6 +44,9 @@ class sampling_pp(io):
         self.nodes = []
         self.iteration = 0
         self.initalize()
+        # p = Point([511083.21359357954, 2467813.5549285114])
+        # boundary, inward, _ = self.closest_landing(p)
+        # io.write_geom(transform_meter_global([boundary, inward, p]), "closest", "blue")
 
     def initalize(self):
         # Get multipolygons
@@ -53,17 +55,20 @@ class sampling_pp(io):
         self.mp_areas.append(self.kaust)
         self.mp_costs.append(1)
 
+        # Safe landing spots
+        sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
+        sa = sa.geometry.union_all()
+        self.add_area(sa, -0.3)
+
+        # Communication/GPS constraints
         comm = io.import_communication()
         r = 400
         comm = comm["geometry"].buffer(r).union_all()
         # self.add_area(comm, -0.1)
         # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
 
-        sa = io.load_geojson_files(self.project + "landing/*.geojson", concat=True)
-        sa = sa.geometry.union_all()
-        self.add_area(sa, -0.3)
-
-        fa = io.load_geojson_files(self.project + "forbidden/*.geojson", concat=True)
+        # NFZs
+        fa = io.load_geojson_files("env/forbidden/*.geojson", concat=True)
         fa = fa.geometry.union_all()
         self.add_nfz(fa)
 
@@ -87,12 +92,12 @@ class sampling_pp(io):
         # # Calculating the graphs
         coords = [Point(coord) for coord in coords]
         nodes = self.add_nodes(coords)
-        nodes = self.nodes
+        # nodes = self.nodes
         # start = closest_node(coords, nodes)
         # end = closest_node(coords, nodes)
-        adj, heur = self.update_graphs(nodes)
+        adj = self.update_graphs(nodes)
         m_adj = sum(adj)
-        m_heur = sum(heur)
+        # m_heur = sum(heur)
 
         # Finding the optimal trajectory
         path = dijkstra(m_adj, 0, 1)
@@ -106,7 +111,7 @@ class sampling_pp(io):
     def add_nodes(self, new_nodes):
         return new_nodes + self.nodes
 
-    def update_graphs(self, nodes, ):
+    def update_graphs(self, nodes):
         # Construct lines from samples
         adj = []
         heur = []
@@ -119,9 +124,9 @@ class sampling_pp(io):
             lengths = calculate_intersection_lengths_vectorized(lines, self.mp_areas[i])
             lengths *= self.mp_costs[i]
             # Construct adjacency and heuristic matrices
-            m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
+            m_adj = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes)
             adj.append(m_adj)
-            heur.append(m_heur)
+            # heur.append(m_heur)
 
         for i in range(len(self.nfz)):
             if self.nfz[i]["iteration"] + self.nfz[i]["length"] > self.iteration:
@@ -130,16 +135,16 @@ class sampling_pp(io):
                 lengths = calculate_intersection_lengths_vectorized(lines, self.nfz[i]["geometry"])
                 lengths *= self.nfz_costs
                 # Construct adjacency and heuristic matrices
-                m_adj, m_heur = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes, return_heuristic=True)
+                m_adj = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes)
                 adj.append(m_adj)
-                heur.append(m_heur)
+                # heur.append(m_heur)
 
         # samples = gp.GeoSeries(nodes).buffer(5)
         # samples = transform_meter_global(samples)
         # io.write_geom(samples, "samples", "yellow")
         # lines = transform_meter_global(lines)
         # io.write_geom(lines, "lines", "white")
-        return adj, heur
+        return adj#, heur
 
     def add_area(self, area, cost):
         # area = self.kaust.difference(area)
@@ -160,32 +165,46 @@ class sampling_pp(io):
             if self.nfz[i]["id"] == id:
                 self.nfz[i]["length"] = self.iteration - self.nfz[i]["iteration"]
 
-    def closest_landing(self, coords):
-        # Ignore the height
-        coords = [coords[0], coords[1]]
-        p = Point(coords)
+    def closest_landing(self, target_point, inward_distance=10.0):
+        """
+        Optimized version that pre-filters multipolygons by distance.
+        """
+        # Pre-filter multipolygons by rough distance check
+        multipolygons = self.mp_areas
+        candidates = []
 
-        # If it's already within a landing spot, just glide to the center
-        # Finding the closest landing area
-        gs = gp.GeoSeries(self.sa).explode(ignore_index=True)
-        # Transform global coords to meters
-        # gs = transform_global_meter(gs.geometry)
-        distances = gs.distance(p)
-        min = 0
-        for i, dist in enumerate(distances):
-            if dist < distances[min]:
-                min = i
+        for idx, mp in enumerate(multipolygons):
+            # Quick distance check using bounds
+            bounds_distance = target_point.distance(Point(mp.bounds[0], mp.bounds[1]))
+            candidates.append((bounds_distance, idx, mp))
 
-        # Finding the closest point on that area
-        lr = gs.exterior
-        proj = lr.project(p)
-        p_exterior = lr[min].interpolate(proj[min])
-        p_center = gs[min].centroid
-        geoms = [p, p_exterior, gs[min], p_center]
-        gs = transform_meter_global(geoms)
-        self.write_geom(gs, "emergency_landing", "red")
+        # Sort by distance and check closest ones first
+        candidates.sort()
 
-        return [p_exterior, p_center]
+        min_distance = float('inf')
+        best_closest_point = None
+        best_inward_point = None
+        best_multipolygon_idx = None
+
+        for bounds_dist, mp_idx, multipolygon in candidates:
+            # Skip if bounds distance is already larger than best found
+            if bounds_dist > min_distance:
+                break
+
+            # Get actual closest point
+            closest_point = nearest_points(target_point, multipolygon.boundary)[1]
+            distance = target_point.distance(closest_point)
+
+            if distance < min_distance:
+                inward_point = find_inward_point(closest_point, multipolygon, inward_distance)
+
+                if inward_point is not None:
+                    min_distance = distance
+                    best_closest_point = closest_point
+                    best_inward_point = inward_point
+                    best_multipolygon_idx = mp_idx
+
+        return best_closest_point, best_inward_point, best_multipolygon_idx
 
     def round_trip(self, one_way):
         # Return trip
@@ -234,6 +253,77 @@ def sample_uniform(bounds, no_fly_polygons):
         p = Point(x, y)
         if not any(poly.contains(p) for poly in no_fly_polygons):
             return p
+
+def find_inward_point(boundary_point, multipolygon, inward_distance):
+    """
+    Find a point inward from the boundary point.
+
+    Args:
+        boundary_point: Point on the multipolygon boundary
+        multipolygon: The multipolygon containing the boundary point
+        inward_distance: Distance to move inward
+
+    Returns:
+        Point: Inward point, or None if not found
+    """
+    # Method 1: Use negative buffer to find inward direction
+    try:
+        # Create a small buffer around the boundary point
+        point_buffer = boundary_point.buffer(0.1)
+
+        # Find the intersection with the multipolygon interior
+        interior_intersection = multipolygon.intersection(point_buffer)
+
+        if not interior_intersection.is_empty:
+            # Get the centroid of the intersection as reference for inward direction
+            interior_centroid = interior_intersection.centroid
+
+            # Calculate direction vector from boundary to interior
+            dx = interior_centroid.x - boundary_point.x
+            dy = interior_centroid.y - boundary_point.y
+
+            # Normalize and scale by inward_distance
+            length = np.sqrt(dx*dx + dy*dy)
+            if length > 0:
+                dx_norm = dx / length * inward_distance
+                dy_norm = dy / length * inward_distance
+
+                # Create inward point
+                inward_point = Point(boundary_point.x + dx_norm, boundary_point.y + dy_norm)
+
+                # Verify point is inside multipolygon
+                if multipolygon.contains(inward_point):
+                    return inward_point
+    except:
+        pass
+
+    # Method 2: Sample points in multiple directions and pick the best one
+    return find_inward_point_sampling(boundary_point, multipolygon, inward_distance)
+
+def find_inward_point_sampling(boundary_point, multipolygon, inward_distance):
+    """
+    Find inward point by sampling multiple directions.
+    """
+    best_point = None
+    max_distance_from_boundary = 0
+
+    # Try 8 directions around the boundary point
+    for angle in np.linspace(0, 2*np.pi, 8, endpoint=False):
+        dx = np.cos(angle) * inward_distance
+        dy = np.sin(angle) * inward_distance
+
+        candidate_point = Point(boundary_point.x + dx, boundary_point.y + dy)
+
+        # Check if point is inside multipolygon
+        if multipolygon.contains(candidate_point):
+            # Measure distance from boundary (higher is more inward)
+            distance_from_boundary = candidate_point.distance(multipolygon.boundary)
+
+            if distance_from_boundary > max_distance_from_boundary:
+                max_distance_from_boundary = distance_from_boundary
+                best_point = candidate_point
+
+    return best_point
 
 def transpose_points(points, bounds):
     """
@@ -551,7 +641,7 @@ def main():
     spp = sampling_pp()
 
     coords = [[510783.21359357954, 2467813.5549285114], [512190.1320467823, 2468948.2965289974]]
-    spp.create_trajectory(coords)
+    # spp.create_trajectory(coords)
     print("Done")
 
 # main()

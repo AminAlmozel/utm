@@ -2,7 +2,7 @@
   "type": "FeatureCollection",
   "generator": "overpass-turbo",
   "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
-  "timestamp": "2024-07-21T12:23:15Z",
+  "timestamp": "2025-07-11T20:26:01Z",
   "features": [
     {
       "type": "Feature",
@@ -127,8 +127,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          39.1013392,
-          22.3111443
+          39.1004165,
+          22.3095512
         ]
       },
       "id": "node/480162594"
@@ -455,70 +455,22 @@
     {
       "type": "Feature",
       "properties": {
-        "@id": "node/3783643249",
-        "addr:city": "Thuwal",
-        "addr:postcode": "23955-6900",
-        "amenity": "fast_food",
-        "cuisine": "juice",
-        "diet:halal": "yes",
-        "level": "3",
-        "name": "Smiley Fruits",
-        "shop": "juice"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.1013184,
-          22.3116117
-        ]
-      },
-      "id": "node/3783643249"
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "@id": "node/4709537689",
-        "amenity": "fast_food",
+        "amenity": "restaurant",
         "email": "tgabcatering@gmail.com",
+        "name": "The Great American Bagel and Bakery",
         "name:en": "The Great American Bagel Bakery",
-        "phone": "+966566105519"
+        "phone": "+966566105519",
+        "shop": "bakery"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          39.1035238,
-          22.3098407
+          39.1037513,
+          22.3096608
         ]
       },
       "id": "node/4709537689"
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "@id": "node/9844799174",
-        "addr:city": "Thuwal",
-        "addr:postcode": "23955-6900",
-        "addr:street": "Harbor Library",
-        "amenity": "fast_food",
-        "brand": "كرسبي كريم",
-        "brand:ar": "كرسبي كريم",
-        "brand:en": "Krispy Krem",
-        "brand:wikidata": "Q1192805",
-        "cuisine": "donut",
-        "name": "كرسبي كريم",
-        "name:ar": "كرسبي كريم",
-        "name:en": "Krispy Krem",
-        "opening_hours": "Mo-Su 12:00-21:00",
-        "takeaway": "yes"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.1001778,
-          22.3100515
-        ]
-      },
-      "id": "node/9844799174"
     },
     {
       "type": "Feature",
@@ -545,6 +497,59 @@
         ]
       },
       "id": "node/9844799175"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12994727584",
+        "amenity": "restaurant",
+        "cuisine": "chinese",
+        "name": "Beytoti",
+        "website": "https://hungrycampus.com/showmenu.php?id=36"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1013237,
+          22.3112054
+        ]
+      },
+      "id": "node/12994727584"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12994727585",
+        "amenity": "restaurant",
+        "cuisine": "chinese",
+        "name": "Maki House",
+        "website": "https://hungrycampus.com/showmenu.php?id=36"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1013585,
+          22.3111632
+        ]
+      },
+      "id": "node/12994727585"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12994727586",
+        "amenity": "restaurant",
+        "cuisine": "mexican",
+        "name": "Ed's Tacos"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1005059,
+          22.3091656
+        ]
+      },
+      "id": "node/12994727586"
     }
   ]
 }

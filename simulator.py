@@ -23,8 +23,8 @@ import os, sys
 from sys import getsizeof
 sys.path.append(os.path.join(os.path.dirname(__file__), "uam"))
 
-import polygon_pathplanning
-import sampling_pathplanning
+import polygon_pathplanning as ppp
+import sampling_pathplanning as spp
 
 
 # from uam.polygon_pathplanning import *
@@ -40,9 +40,10 @@ class simulator(drone.drone):
         self.K = 0 # Number of vehicles
 
         # Parameters for collision avoidance between vehicles
-        self.d_x = 3  # Minimum horizontal distance
-        self.d_y = 3  # Minimum vertical distance
-        self.d_z = 3  # Minimum vertical distance
+        d_min = 5
+        self.d_x = d_min  # Minimum horizontal distance
+        self.d_y = d_min  # Minimum vertical distance
+        self.d_z = d_min  # Minimum vertical distance
 
         self.collision = 3
         self.collision_warning = 5
@@ -69,7 +70,7 @@ class simulator(drone.drone):
         self.obs.sim_latest = self.sim_latest
 
         # self.ppp = polygon_pathplanning.polygon_pp()
-        self.ppp = sampling_pathplanning.sampling_pp()
+        self.ppp = spp.sampling_pp()
         self.ppp.sim_run = self.sim_run
         self.ppp.sim_latest = self.sim_latest
         self.dummy_obstacles()
@@ -169,7 +170,7 @@ class simulator(drone.drone):
         self.ppp.iteration = self.iteration
         for drn in alert_drones:
             current_state = self.drones[drn]["state"]
-            print(self.drones[drn]["mission"]["destination"])
+            # print(self.drones[drn]["mission"]["destination"])
             home_state = self.drones[drn]["mission"]["destination"][0]
             dest_state = self.drones[drn]["mission"]["destination"][1]
 
@@ -226,6 +227,7 @@ class simulator(drone.drone):
                  "alive": 1, # Alive, 0 is dead
                  "state": xi,
                  "factor": 0,
+                 "battery": 100,
                  "mission": {
                      "type": type,
                      "destination": destinations,
@@ -354,6 +356,8 @@ class simulator(drone.drone):
                 # io.log_to_json(self.drones, self.sim_run, self.sim_latest)
                 # io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
                 io.log_to_json_dict_robust(self.drones, self.sim_run, self.sim_latest)
+                if self.iteration % 100 == 0:
+                    io.log_dictionary(self.ppp.nfz, self.sim_run, self.sim_latest)
 
                 t01 = time.time()
                 print("Time of iteration: %.2f" % (t01 - t00))
@@ -370,7 +374,31 @@ class simulator(drone.drone):
         # Update the trajectories
 
     def emergency_events(self):
-        pass
+        # Add global events such as severe weather
+        for k, drone in enumerate(self.drones):
+            if drone["alive"]:
+                drn_emergency = drone["emergency"]
+                if drn_emergency == "none":
+                    continue
+                state = drone["state"]
+                closest, inward, _ = self.ppp.closest_landing(Point(state['x'], state['y']))
+                emergency_landing = [point_to_waypoint(closest, 30), point_to_waypoint(inward, 30)]
+                home = drone["mission"]["destination"][0]
+                if drn_emergency == "gps_loss":
+                    # Land, Switch to alternative navigation
+                    pass
+
+                if drn_emergency == "communication_loss":
+                    # Return or loiter depending on battery
+                    pass
+
+                if drn_emergency == "low_battery":
+                    # Return or land
+                    pass
+
+                if drn_emergency == "motor_failure":
+                    # Land
+                    pass
 
     def random_events(self):
         N = len(self.drn_list)
@@ -449,6 +477,7 @@ class simulator(drone.drone):
     def collide(self, d1, d2, d):
         # What to do when drones collide
         print("Collision between drone %d and %d, distance: %f" % (d1, d2, np.sqrt(d)))
+        print(a)
         # self.drn_list.remove(d1)
         # self.drn_list.remove(d2)
 

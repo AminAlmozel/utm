@@ -572,6 +572,5 @@ class polygon_pp(myio.myio):
 
 def main():
     a = polygon_pp()
-    print("Hello world")
 
-main()
+# main()

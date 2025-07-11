@@ -2,26 +2,8 @@
   "type": "FeatureCollection",
   "generator": "overpass-turbo",
   "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
-  "timestamp": "2024-07-21T12:29:16Z",
+  "timestamp": "2025-07-11T20:27:01Z",
   "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "@id": "node/510013066",
-        "address": "Main Campus Spine, Building 2",
-        "amenity": "cafe",
-        "cuisine": "american",
-        "name": "House of Donuts"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.1056561,
-          22.3072035
-        ]
-      },
-      "id": "node/510013066"
-    },
     {
       "type": "Feature",
       "properties": {
@@ -43,40 +25,11 @@
     {
       "type": "Feature",
       "properties": {
-        "@id": "node/538152672",
-        "addr:city": "Thuwal",
-        "addr:postcode": "23955-6900",
-        "addr:street": "Discovery Square",
-        "address": "Discoery Square",
-        "amenity": "cafe",
-        "brand": "The Coffee Bean & Tea Leaf",
-        "brand:wikidata": "Q1141384",
-        "cuisine": "coffee_shop",
-        "internet_access": "wlan",
-        "name": "The Coffee Bean & Tea Leaf",
-        "opening_hours": "Mo-Su 08:00-22:00",
-        "phone": "+966128024065",
-        "takeaway": "yes",
-        "url": "http://coffeebean.com/",
-        "wlan:eduroam": "yes"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          39.1018834,
-          22.3113609
-        ]
-      },
-      "id": "node/538152672"
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "@id": "node/633286374",
         "address": "Main Campus Spine, Building 2",
         "amenity": "cafe",
         "internet_access": "wlan",
-        "name": "The Sandwich Gallery",
+        "name": "ZED",
         "opening_hours": "Sa-Th 08:00-17:00"
       },
       "geometry": {
@@ -93,7 +46,8 @@
       "properties": {
         "@id": "node/801885642",
         "amenity": "cafe",
-        "name": "Coffee Republic"
+        "name": "Dia's Cafe",
+        "outdoor_seating": "yes"
       },
       "geometry": {
         "type": "Point",
@@ -160,6 +114,22 @@
         ]
       },
       "id": "node/4417211056"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12994727587",
+        "amenity": "cafe",
+        "name": "Baitak Coffee Shop"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.0998918,
+          22.3097484
+        ]
+      },
+      "id": "node/12994727587"
     }
   ]
 }

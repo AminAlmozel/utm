@@ -25,8 +25,8 @@ class drone():
 
         # Parameters for polygon approximation
         self.V_min = 0  # Minimum velocity
-        self.V_max = 40 # Maximum velocity (for bounding purposes) / was 20 m/s
-        self.A_max = 10  # Maximum acceleration (already defined) / was 3 m/s^2
+        self.V_max = 10 # Maximum velocity (for bounding purposes) / was 10 m/s
+        self.A_max = 2  # Maximum acceleration (already defined) / was 3 m/s^2
         self.theta = [2 * np.pi * k / self.N_polygon for k in range(1, self.N_polygon+1)]  # Polygon vertex angles
 
         # Bounds for states and controls
@@ -42,7 +42,8 @@ class drone():
         self.po = [100] * 6  # Terminal state weights
 
         # Parameters for collision avoidance between vehicles
-        d_min = 3
+        d_min = 5
+        self.collision_penality = 10000
         self.d_x = d_min  # Minimum horizontal distance
         self.d_y = d_min  # Minimum vertical distance
         self.d_z = d_min  # Minimum vertical distance
@@ -125,7 +126,8 @@ class drone():
             'w': self.m.addVars(self.N, 6, name=f"w_{p}"),
             'v': self.m.addVars(self.N, 3, name=f"v_{p}"),
             't': [self.m.addVars(self.N, self.max_edges + 2, vtype=GRB.BINARY, name=f"t_{p}_obstacle_{c}") for c in range(len(self.obstacles))],
-            'tc': self.m.addVars(self.N, self.N_polygon, vtype=GRB.BINARY, name=f"tc_{p}_accel")
+            'tc': self.m.addVars(self.N, self.N_polygon, vtype=GRB.BINARY, name=f"tc_{p}_accel"),
+            's_c': self.m.addVars(self.N, lb=[0] * self.N, ub=[self.d_x] * self.N)
         }
         self.vehicles.append(vehicle)
 
@@ -143,7 +145,7 @@ class drone():
         # self.obstacle_avoidance_constraints()
         self.general_obstacle_avoidance_constraints()
         # self.vehicle_collision_avoidance_constraints()
-        # self.fixed_vehicle_collision_avoidance_constraints()
+        self.fixed_vehicle_collision_avoidance_constraints()
         # print("done setup constraints")
 
     def state_constraints(self):
@@ -302,14 +304,24 @@ class drone():
             q = 0
             N = min(len(vehicle[0]), self.N - 1) # The smaller of the prediction horizon and the given trajectories
             for n in range(1, N + 1):  # i = 1 to N
-                self.m.addLConstr(vehicle[0][n - 1] - self.vehicles[q]['s'][n, 0] >= self.d_x - self.M * self.b_vars[p][n, 0], f"Collision_x_{p}_{q}_{n}")
-                self.m.addLConstr(self.vehicles[q]['s'][n, 0] - vehicle[0][n - 1] >= self.d_x - self.M * self.b_vars[p][n, 1], f"Collision_Neg_x_{p}_{q}_{n}")
-                self.m.addLConstr(vehicle[1][n - 1] - self.vehicles[q]['s'][n, 1] >= self.d_y - self.M * self.b_vars[p][n, 2], f"Collision_y_{p}_{q}_{n}")
-                self.m.addLConstr(self.vehicles[q]['s'][n, 1] - vehicle[1][n - 1] >= self.d_y - self.M * self.b_vars[p][n, 3], f"Collision_Neg_y_{p}_{q}_{n}")
-                self.m.addLConstr(vehicle[2][n - 1] - self.vehicles[q]['s'][n, 2] >= self.d_z - self.M * self.b_vars[p][n, 4],
+                # self.m.addLConstr(vehicle[0][n - 1] - self.vehicles[q]['s'][n, 0] >= self.d_x - self.M * self.b_vars[p][n, 0], f"Collision_x_{p}_{q}_{n}")
+                # self.m.addLConstr(self.vehicles[q]['s'][n, 0] - vehicle[0][n - 1] >= self.d_x - self.M * self.b_vars[p][n, 1], f"Collision_Neg_x_{p}_{q}_{n}")
+                # self.m.addLConstr(vehicle[1][n - 1] - self.vehicles[q]['s'][n, 1] >= self.d_y - self.M * self.b_vars[p][n, 2], f"Collision_y_{p}_{q}_{n}")
+                # self.m.addLConstr(self.vehicles[q]['s'][n, 1] - vehicle[1][n - 1] >= self.d_y - self.M * self.b_vars[p][n, 3], f"Collision_Neg_y_{p}_{q}_{n}")
+                # self.m.addLConstr(vehicle[2][n - 1] - self.vehicles[q]['s'][n, 2] >= self.d_z - self.M * self.b_vars[p][n, 4],
+                #                 f"Collision_z_{p}_{q}_{n}")
+                # self.m.addLConstr(self.vehicles[q]['s'][n, 2] - vehicle[2][n - 1] >= self.d_z - self.M * self.b_vars[p][n, 5],
+                #                 f"Collision_Neg_z_{p}_{q}_{n}")
+
+                self.m.addLConstr(vehicle[0][n - 1] - self.vehicles[q]['s'][n, 0] + self.vehicles[q]['s_c'][n] >= self.d_x - self.M * self.b_vars[p][n, 0], f"Collision_x_{p}_{q}_{n}")
+                self.m.addLConstr(self.vehicles[q]['s'][n, 0] - vehicle[0][n - 1] + self.vehicles[q]['s_c'][n] >= self.d_x - self.M * self.b_vars[p][n, 1], f"Collision_Neg_x_{p}_{q}_{n}")
+                self.m.addLConstr(vehicle[1][n - 1] - self.vehicles[q]['s'][n, 1] + self.vehicles[q]['s_c'][n] >= self.d_y - self.M * self.b_vars[p][n, 2], f"Collision_y_{p}_{q}_{n}")
+                self.m.addLConstr(self.vehicles[q]['s'][n, 1] - vehicle[1][n - 1] + self.vehicles[q]['s_c'][n] >= self.d_y - self.M * self.b_vars[p][n, 3], f"Collision_Neg_y_{p}_{q}_{n}")
+                self.m.addLConstr(vehicle[2][n - 1] - self.vehicles[q]['s'][n, 2] + self.vehicles[q]['s_c'][n] >= self.d_z - self.M * self.b_vars[p][n, 4],
                                 f"Collision_z_{p}_{q}_{n}")
-                self.m.addLConstr(self.vehicles[q]['s'][n, 2] - vehicle[2][n - 1] >= self.d_z - self.M * self.b_vars[p][n, 5],
+                self.m.addLConstr(self.vehicles[q]['s'][n, 2] - vehicle[2][n - 1] + self.vehicles[q]['s_c'][n] >= self.d_z - self.M * self.b_vars[p][n, 5],
                                 f"Collision_Neg_z_{p}_{q}_{n}")
+
                 self.m.addLConstr(self.b_vars[p][n, 0] + self.b_vars[p][n, 1] + self.b_vars[p][n, 2] + self.b_vars[p][n, 3] + self.b_vars[p][n, 4]+ self.b_vars[p][n, 5] <= 5, f"Collision_Sum_{p}_{q}_{n}")
 
     def setup_objective(self):
@@ -318,7 +330,7 @@ class drone():
 
         # Add constraints and objective components for each vehicle
         for p, vehicle in enumerate(self.vehicles):
-            s, u, w, v_vars, t_vars, tc_vars = vehicle['s'], vehicle['u'], vehicle['w'], vehicle['v'], vehicle['t'], vehicle['tc']
+            s, u, w, v_vars, s_c = vehicle['s'], vehicle['u'], vehicle['w'], vehicle['v'], vehicle['s_c']
 
             # Add state deviation costs to the objective
             for i in range(1, self.N-1):  # i = 1 to N - 1
@@ -333,6 +345,9 @@ class drone():
             # Add terminal state costs to the objective
             for j in range(6):
                 self.obj.add(self.po[j] * w[self.N-1, j])
+
+            for i in range(self.N):
+                self.obj.add(self.collision_penality * s_c[i])
         # print("done setup objective")
 
     def optimize(self):

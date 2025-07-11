@@ -31,7 +31,7 @@ def generate_traffic_schedule(env, timesteps):
     deliveries = []
     # Deliveries
     for index, restaurant in env.restaurants.iterrows():
-        lam = restaurant["freq"] * 2
+        lam = restaurant["freq"] * 1.5
         traffic = generate_vehicle_traffic(lam, timesteps)
         for i, time in enumerate(traffic):
             mission = create_delivery_mission(time, env, restaurant)
@@ -39,7 +39,7 @@ def generate_traffic_schedule(env, timesteps):
     # Firefighting
     firefighting = []
     # lam = 0.00002
-    lam = 0.001
+    lam = 0.0001 # Approx. 3-5 per hour
     traffic = generate_vehicle_traffic(lam, timesteps)
     for i, time in enumerate(traffic):
         mission = create_firefighting_mission(time, env)
@@ -51,18 +51,25 @@ def generate_traffic_schedule(env, timesteps):
     # mission = create_parkinglot_monitoring(time, env, lot)
 
     # Perimeter patrol
-    time = random.randint(0, timesteps) # To get one random perimeter section mission
+     # To get one random perimeter section mission
     perimeter = io.import_perimeter()
-    section = random.randint(0, len(perimeter)/2-1)
-    mission = create_perimeter_patrol_mission(time, perimeter, section)
-    security.append(mission)
+    n_sections = int(len(perimeter)/2-1)
+    n_missions = min(n_sections, 2)
+    sections = random.sample(range(n_sections), n_missions)
+    for section in sections:
+        time = random.randint(0, timesteps)
+        mission = create_perimeter_patrol_mission(time, perimeter, section)
+        security.append(mission)
 
     # Traffic zones
-    # time = random.randint(0, timesteps) # To get one random perimeter section mission
     zones = io.import_traffic_zones()
     intersection = random.randint(0, len(zones)-1)
-    mission = create_traffic_monitoring_mission(time, zones, intersection)
-    security.append(mission)
+    n_missions = min(len(zones) - 1, 3)
+    intersections = random.sample(range(len(zones) - 1), n_missions)
+    for intersection in intersections:
+        time = random.randint(0, timesteps)
+        mission = create_traffic_monitoring_mission(time, zones, intersection)
+        security.append(mission)
 
     # Recreational
     recreational = []
@@ -89,8 +96,8 @@ def generate_traffic_schedule(env, timesteps):
 
     # display = transform_meter_global(display)
     # io.write_geom(display, "missions", "white")
-    # return security + recreational + inspection + research
-    return firefighting + deliveries
+    # return firefighting + security + recreational + inspection + research
+    return firefighting + deliveries + security + recreational + inspection + research
 
 def generate_vehicle_traffic(lam, timesteps):
     """
@@ -289,6 +296,7 @@ def create_mission(xi, waypoints, n, type, status, destinations, time):
                 "alive": 1, # Alive, 0 is dead
                 "state": xi,
                 "factor": 0,
+                "battery": 100,
                 "mission": {
                     "type": type,
                     "destination": destinations, # Contains the destinations and waiting times
@@ -297,7 +305,7 @@ def create_mission(xi, waypoints, n, type, status, destinations, time):
                     "status":status
                 },
                 "emergency": {
-                    "type": "",
+                    "type": "none",
                     "time": -1,
                     "status": "inactive",
                     "severity": "none"
@@ -346,17 +354,20 @@ def sort_traffic(traffic):
     missions_sorted = sorted(traffic, key=lambda mission: mission["iteration"])
     for mission in missions_sorted:
         time = mission["iteration"]
-        if mission["mission"]["type"] == "delivery":
+        m_type = mission["mission"]["type"]
+        if m_type == "delivery":
             restaurant = mission["mission"]["destination"][0]["data"]
             delivery_location = mission["mission"]["destination"][1]["data"]
             print(restaurant["name"], "\tto\t" + delivery_location["name"] + "\tat\t", end="")
             # print("%.1f" % (time * dt))
-            milliseconds_to_hours(time * 100)
-        if mission["mission"]["type"] == "firefighting":
+        elif m_type == "firefighting":
             house = mission["mission"]["destination"][1]["data"]
             print("Fire at\t" + house["name"] + "\tat\t", end="")
             dt = 0.1
-            milliseconds_to_hours(time * 100)
+
+        else:
+            print(m_type + "\tat\t", end="")
+        milliseconds_to_hours(time * 100)
     return missions_sorted
 
 def traffic_stats(traffic):

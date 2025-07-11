@@ -549,6 +549,14 @@ class myio:
         gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
         gdf.to_file('plot/' + last + name + '.geojson', driver='GeoJSON')
 
+    def log_dictionary(dictionary, run, last):
+        df = pd.DataFrame(dictionary)
+        gdf = gp.GeoDataFrame(df, crs="EPSG:20437").to_crs(epsg=4326)
+
+        name = "avoid_time"
+        gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
+        gdf.to_file('plot/' + last + name + '.geojson', driver='GeoJSON')
+
     def write_pickle(filename, traffic):
         with open(filename, 'wb') as fp:
             pkl.dump(traffic, fp, protocol=pkl.HIGHEST_PROTOCOL)
