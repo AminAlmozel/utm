@@ -43,7 +43,7 @@ class drone():
 
         # Parameters for collision avoidance between vehicles
         d_min = 5
-        self.collision_penality = 10000
+        self.collision_penality = 1000
         self.d_x = d_min  # Minimum horizontal distance
         self.d_y = d_min  # Minimum vertical distance
         self.d_z = d_min  # Minimum vertical distance
@@ -65,6 +65,12 @@ class drone():
         # with gp.Env() as self.env:
         env.setParam(GRB.Param.OutputFlag, 0)
         env.setParam(GRB.Param.LogToConsole, 0)
+        env.setParam(GRB.Param.MIPFocus, 1)  # Focus on finding good feasible solutions
+        env.setParam(GRB.Param.Heuristics, 0.2)  # Increase heuristic time
+        env.setParam(GRB.Param.Cuts, 2)  # Aggressive cuts
+        env.setParam(GRB.Param.Presolve, 2)  # Aggressive presolve
+        env.setParam(GRB.Param.MIPGap, 0.01)  # Allow 1% optimality gap
+        env.setParam(GRB.Param.TimeLimit, 30)  # Set time limit
         # self.m = gp.Model(env=self.env)
         with gp.Model(env=env) as self.m:
             # import obstacles and position of other drones
@@ -154,7 +160,7 @@ class drone():
             s, u, w, v_vars, t_vars, tc_vars = vehicle['s'], vehicle['u'], vehicle['w'], vehicle['v'], vehicle['t'], vehicle['tc']
 
             # State and velocity constraints with slack variables
-            for i in range(1, self.N):  # i = 1 to N
+            for i in range(1, self.N, 2):  # i = 1 to N
                 for j in range(6):  # Position and velocity deviation constraints
                     self.m.addLConstr(
                         s[i, j] - self.final_conditions[p][['x', 'y', 'z', 'xdot', 'ydot', 'zdot'][j]] <= w[i, j],
@@ -175,8 +181,8 @@ class drone():
 
                     self.m.addLConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] <= self.V_max,
                                     f"Velocity_Poly_{k}_{p}_{i}")
-                    self.m.addLConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] >= self.V_min- self.M * tc_vars[i, k],
-                                    f"Min_Vel_{k}_{p}_{i}")
+                    # self.m.addLConstr(np.sin(angle) * s[i, 3] + np.cos(angle) * s[i, 4] >= self.V_min- self.M * tc_vars[i, k],
+                    #                 f"Min_Vel_{k}_{p}_{i}")
                 # Binary Variable of V_min
                 # self.m.addLConstr(sum(tc_vars[i, k] for k in range(self.N_polygon)) <= self.N_polygon - 1,
                 #                 f"Min_Velocity_Constraint_{p}_{i}")
@@ -220,9 +226,9 @@ class drone():
 
             # Dynamics constraints
             for i in range(0, self.N-1):# 0 to N-1
-                self.m.addLConstr(s[i + 1, 0] == s[i, 0] + self.delta_t * s[i, 3] + ((self.delta_t ** 2)/2)*u[i, 0], f"Dynamics_x_{p}_{i}")
-                self.m.addLConstr(s[i + 1, 1] == s[i, 1] + self.delta_t * s[i, 4] + ((self.delta_t ** 2)/2)*u[i, 1], f"Dynamics_y_{p}_{i}")
-                self.m.addLConstr(s[i + 1, 2] == s[i, 2] + self.delta_t * s[i, 5] + ((self.delta_t ** 2)/2)*u[i, 2], f"Dynamics_z_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 0] == s[i, 0] + self.delta_t * s[i, 3], f"Dynamics_x_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 1] == s[i, 1] + self.delta_t * s[i, 4], f"Dynamics_y_{p}_{i}")
+                self.m.addLConstr(s[i + 1, 2] == s[i, 2] + self.delta_t * s[i, 5], f"Dynamics_z_{p}_{i}")
                 self.m.addLConstr(s[i + 1, 3] == s[i, 3] + self.delta_t * u[i, 0], f"Dynamics_xdot_{p}_{i}")
                 self.m.addLConstr(s[i + 1, 4] == s[i, 4] + self.delta_t * u[i, 1], f"Dynamics_ydot_{p}_{i}")
                 self.m.addLConstr(s[i + 1, 5] == s[i, 5] + self.delta_t * u[i, 2], f"Dynamics_ydot_{p}_{i}")
@@ -355,7 +361,9 @@ class drone():
         self.m.setObjective(self.obj, GRB.MINIMIZE)
         self.m.setParam(GRB.Param.OutputFlag, 0)
         # self.m.setParam('Threads', 0)
+
         self.m.update()
+        # self.provide_warm_start()
         # Optimize the model
         self.m.optimize()
 
@@ -364,7 +372,6 @@ class drone():
         # print("Total Computational Time(s):", total_computational_time, "seconds")
         # for plotting purpose
 
-        tory = 0
         # if self.m.status == GRB.OPTIMAL:
         #     # print("find the optimal")
 
@@ -392,6 +399,37 @@ class drone():
             print("Model is infeasible")
             self.not_collided = False
             self.full_traj = -1
+
+    def provide_warm_start(self):
+        """Provide a warm start with straight-line trajectory"""
+        try:
+            for p, vehicle in enumerate(self.vehicles):
+                s = vehicle['s']
+
+                # Linear interpolation between initial and final positions
+                x_init = np.array([self.initial_conditions[p]['x'],
+                                 self.initial_conditions[p]['y'],
+                                 self.initial_conditions[p]['z']])
+                x_final = np.array([self.final_conditions[p]['x'],
+                                  self.final_conditions[p]['y'],
+                                  self.final_conditions[p]['z']])
+
+                for i in range(self.N):
+                    alpha = i / (self.N - 1)
+                    pos = x_init + alpha * (x_final - x_init)
+
+                    s[i, 0].Start = pos[0]
+                    s[i, 1].Start = pos[1]
+                    s[i, 2].Start = pos[2]
+
+                    # Simple velocity estimate
+                    if i < self.N - 1:
+                        vel = (x_final - x_init) / (self.N * self.delta_t)
+                        s[i, 3].Start = vel[0]
+                        s[i, 4].Start = vel[1]
+                        s[i, 5].Start = vel[2]
+        except:
+            pass  # If warm start fails, continue without it
 
     def get_drone_status(self):
         return self.not_collided

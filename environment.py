@@ -349,7 +349,7 @@ class env():
         fire_duration = 1000 # Timesteps, which is 1000 * dt seconds
         start = iteration
         end = iteration + fire_duration
-        io.log_timed_geom([avoid], [[start, end]], self.sim_run, self.sim_latest)
+        # io.log_timed_geom([avoid], [[start, end]], self.sim_run, self.sim_latest)
         # Reconstruct the trajectories of all the other drones
         trajs = []
         for drn in vehicles:

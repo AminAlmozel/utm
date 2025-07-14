@@ -4,6 +4,7 @@ import time
 import datetime
 import random
 from multiprocessing import Pool
+import threading
 from queue import Queue
 # import threading
 # Importing other libraries
@@ -28,7 +29,36 @@ import polygon_pathplanning as ppp
 import sampling_pathplanning as spp
 
 
-# from uam.polygon_pathplanning import *
+# Global variable to store the Gurobi environment per process
+worker_env = None
+env_lock = threading.Lock()
+env_creation_count = 0
+MAX_ENV_USES = 100  # Recreate environment after this many uses
+
+def init_worker():
+    """Initialize worker process with a Gurobi environment"""
+    global worker_env
+    import gurobipy as grb
+    try:
+        worker_env = grb.Env()
+        # Configure environment settings if needed
+        worker_env.setParam('OutputFlag', 0)  # Suppress Gurobi output
+        worker_env.setParam('LogToConsole', 0)  # Disable console logging
+        # Add other parameters as needed
+        print(f"Worker process {os.getpid()} initialized with Gurobi environment")
+    except Exception as e:
+        print(f"Failed to initialize Gurobi environment in worker {os.getpid()}: {e}")
+        worker_env = None
+
+def cleanup_worker():
+    """Clean up worker process resources"""
+    global worker_env
+    if worker_env is not None:
+        try:
+            worker_env.close()
+            print(f"Worker process {os.getpid()} cleaned up Gurobi environment")
+        except Exception as e:
+            print(f"Error cleaning up Gurobi environment in worker {os.getpid()}: {e}")
 
 class simulator(drone.drone):
     def __init__(self):
@@ -196,8 +226,6 @@ class simulator(drone.drone):
                 print("Waiting")
                 # This was ph to pf
                 new_waypoints = self.ppp.create_trajectory([pi, ph])
-            if status == "completed" or status == "collided":
-                continue
 
             # TODO: Check other statuses
             self.drones[drn]["mission"]["waypoints"] = new_waypoints
@@ -227,8 +255,7 @@ class simulator(drone.drone):
         d = {"id": id,
                  "birthday": birthday,
                  "iteration": n,
-                 "traj": [],
-                 "xi_1": [],
+                 "trajs": [],
                  "alive": 1, # Alive, 0 is dead
                  "state": xi,
                  "factor": 0,
@@ -242,7 +269,7 @@ class simulator(drone.drone):
                  }}
         self.drones.append(d)
         traj_0 = self.make_full_traj(xi)
-        self.drones[-1]["xi_1"] = traj_0
+        self.drones[-1]["trajs"].append(traj_0)
         # Drone object
         self.drn.append(drone.drone())
         self.drn_list.append(len(self.drn) - 1)
@@ -250,10 +277,14 @@ class simulator(drone.drone):
         return d
 
     def prepare_and_generate(self, k):
+        """Modified to use global worker environment"""
+        global worker_env
+
         t0 = time.time()
         self.proximity = 2 * self.N * self.delta_t * self.max_vel
         proximity_squared = self.proximity * self.proximity
         drone_prox_list = []
+
         # Finding the drones in proximity
         for i in self.drn_list:
             d = dist_squared(self.drones[i]["state"], self.drones[k]["state"])
@@ -263,27 +294,30 @@ class simulator(drone.drone):
         # Finding the obstacles in proximity
         state = self.drones[k]["state"]
         pos = [state['x'], state['y'], state['z']]
-        # Temp solution
         obstacles = self.obs.nearby_obstacles(pos, self.proximity)
-        # print(obstacles)
         obstacles = self.obstacles
 
         # Constructing the lists to be used as input to the function
-        # Initial state
         xi = self.drones[k]["state"]
-        # Final state
 
         progress = self.drones[k]["mission"]["progress"]
-        # print("Drone %d, waypoint: %d, alive: %d" %(k, waypoint, self.drones[k]["alive"]))
-        if self.drones[k]["mission"]["status"] == "waiting": # If the drone is waiting, stay at the last waypoint
+        if self.drones[k]["mission"]["status"] == "waiting":
             progress -= 1
         xf = self.drones[k]["mission"]["waypoints"][progress]
-        # Other drones trajectories
-        xi_1 = [self.drones[i]["xi_1"] for i in drone_prox_list]
-        env = grb.Env()
-        # Generating trajectories
-        result = self.drn[k].generate_traj(env, xi, xf, xi_1, obstacles)
-        env.close()
+
+        xi_1 = [self.drones[i]["trajs"][-1] for i in drone_prox_list]
+
+        # Use the worker's persistent environment instead of creating new one
+        if worker_env is None:
+            print(f"Warning: No Gurobi environment available in worker {os.getpid()}")
+            return -1
+
+        try:
+            # Generate trajectories using the persistent environment
+            result = self.drn[k].generate_traj(worker_env, xi, xf, xi_1, obstacles)
+        except Exception as e:
+            print(f"Error generating trajectory for drone {k}: {e}")
+            return -1
 
         t1 = time.time()
         print("T1 of drone: %.2f" % (t1 - t0))
@@ -291,19 +325,22 @@ class simulator(drone.drone):
         return result
 
     def m_start_simulation(self):
-        """Optimized simulation function with Pool reuse and better resource management"""
+        """Optimized simulation function with process initializer"""
         print("Starting Simulation")
         t0 = time.time()
         self.mission_counter = 0
 
-        # Determine optimal number of processes - ensure it's never 0
+        # Determine optimal number of processes
         if hasattr(self, 'drones') and len(self.drones) > 0:
             max_processes = min(os.cpu_count(), len(self.drones))
         else:
-            max_processes = os.cpu_count()  # Use all available cores when drone count is unknown/zero
+            max_processes = os.cpu_count()
 
-        # Create pool once and reuse it throughout all iterations
-        with Pool(processes=max_processes, maxtasksperchild=200) as pool:
+        # Create pool with initializer and finalizer
+        with Pool(processes=max_processes,
+                  initializer=init_worker,
+                  maxtasksperchild=200) as pool:
+
             # Main loop for optimization
             for self.iteration in range(self.total_iterations):
                 print("%d============================" % (self.iteration))
@@ -334,7 +371,7 @@ class simulator(drone.drone):
                 t02 = time.time()
 
                 try:
-                    # Use optimized prepare_and_generate function
+                    # Use the pool with persistent environments
                     results = pool.starmap(self.prepare_and_generate, items)
 
                     # Process results
@@ -352,7 +389,6 @@ class simulator(drone.drone):
 
                 except Exception as e:
                     print(f"Error during parallel processing in iteration {self.iteration}: {e}")
-                    # Continue with next iteration instead of crashing
                     continue
 
                 # Update and log as before
@@ -446,20 +482,28 @@ class simulator(drone.drone):
 
     def update_vehicle_state(self):
         for k in self.drn_list:
-            self.drones[k]["xi_1"] = self.drn[k].full_traj
+            self.drones[k]["trajs"].append(self.drn[k].full_traj)
             # Extract positions and velocities from the model's solution
-            x_position = self.drones[k]["xi_1"][0][0]
-            y_position = self.drones[k]["xi_1"][1][0]
-            z_position = self.drones[k]["xi_1"][2][0]
-            x_velocity = self.drones[k]["xi_1"][3][0]
-            y_velocity = self.drones[k]["xi_1"][4][0]
-            z_velocity = self.drones[k]["xi_1"][5][0]
+            x_position = self.drones[k]["trajs"][-1][0][0]
+            y_position = self.drones[k]["trajs"][-1][1][0]
+            z_position = self.drones[k]["trajs"][-1][2][0]
+            x_velocity = self.drones[k]["trajs"][-1][3][0]
+            y_velocity = self.drones[k]["trajs"][-1][4][0]
+            z_velocity = self.drones[k]["trajs"][-1][5][0]
             # Update the initial conditions for the next iteration
             state = [x_position, y_position, z_position, x_velocity, y_velocity, z_velocity]
-            self.drones[k]["traj"].append(state)
             self.drones[k]["state"] = list2state(state)
 
     def check_collisions(self):
+        # i = 0
+        # while i < len(self.drn_list):
+        #     k = self.drn_list[i]
+        #     if self.drn[k].get_drone_status() == False: # Drone collided
+        #     if self.drn[k].get_drone_status() == False: # Drone collided
+        #         self.drn_list.remove(k)
+        #         print("Removed drone %d" % (k))
+        #         i -= 1
+        #     i += 1
         # Finding the drones in proximity
         collided_drones = set() # Set of collided drones
         for i in range(len(self.drn_list)):
@@ -473,12 +517,16 @@ class simulator(drone.drone):
                         collided_drones.add(d1)
                         collided_drones.add(d2)
 
+        for drone in collided_drones:
+            # self.drn_list.remove(drone)
+            pass
+
     def collide(self, d1, d2, d):
         # What to do when drones collide
         print("Collision between drone %d and %d, distance: %f" % (d1, d2, np.sqrt(d)))
-        self.drones[d1]["alive"] = 0
-        self.drones[d2]["alive"] = 0
-        self.drones[d1]["mission"]["status"] = "collided"
+        print(a)
+        # self.drn_list.remove(d1)
+        # self.drn_list.remove(d2)
 
     def update_mission(self):
         self.ppp.iteration = self.iteration

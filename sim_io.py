@@ -476,8 +476,8 @@ class myio:
         trajs = []
         for drone in drones:
             t = []
-            for traj in drone["trajs"]:
-                point = [traj[0][0], traj[1][0], traj[2][0]]
+            for state in drone.traj:
+                point = [state[0], state[1], state[2]]
                 t.append(point)
             if len(t) == 1:
                 continue
@@ -497,18 +497,16 @@ class myio:
         dt = 0.1
         for drone in drones:
             t = []
-            for traj in drone["trajs"]:
-                # point = Point(traj[0][0], traj[1][0], traj[2][0])
-                point = [traj[0][0], traj[1][0], traj[2][0]]
+            for state in drone.traj:
+                point = [state[0], state[1], state[2]]
                 t.append(point)
             ls = traj_to_linestring(t)
-            # trajs.append(ls)
-            s = drone["birthday"]
+            s = drone.birthday
             # 100 milliseconds for each timestep
             T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
             e = s + T
             # [safe_dist, outside, unsafe] = measure_safe_distance(traj, safe, nfz)
-            trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'iteration': drone["iteration"], 'length': len(t)})
+            trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'iteration': drone.iteration, 'length': len(t)})
 
         df = pd.DataFrame(trajs)
         gdf = gp.GeoDataFrame(df, crs="EPSG:20437")
@@ -587,50 +585,23 @@ class myio:
         dt_ms = 100  # milliseconds per timestep
 
         for drone_idx, drone in enumerate(drones):
-            if not drone.get("trajs") or len(drone["trajs"]) == 0:
+            if not hasattr(drone, 'xi_1') or len(drone.xi_1) == 0:
                 continue
 
             try:
-                traj_data = drone["trajs"]
+                traj_data = drone.xi_1
                 coords = []
 
                 # Try multiple extraction methods
-                for traj_idx, traj in enumerate(traj_data):
+                for traj_idx, traj in enumerate(zip(*traj_data[:3])):  # Take x, y, z components
                     try:
-                        # Method 1: Handle [[x], [y], [z]] format
-                        if (isinstance(traj, (list, tuple)) and len(traj) >= 3 and
-                            all(hasattr(t, '__len__') and len(t) > 0 for t in traj[:3])):
-                            x = float(traj[0][0])
-                            y = float(traj[1][0])
-                            z = float(traj[2][0])
-                            coords.append([x, y, z])
+                        # Method 1: Handle array of coordinates format
+                        x = float(traj[0])
+                        y = float(traj[1])
+                        z = float(traj[2])
+                        coords.append([x, y, z])
 
-                        # Method 2: Handle [x, y, z] format
-                        elif (isinstance(traj, (list, tuple)) and len(traj) >= 3 and
-                            all(isinstance(t, (int, float)) for t in traj[:3])):
-                            x, y, z = float(traj[0]), float(traj[1]), float(traj[2])
-                            coords.append([x, y, z])
-
-                        # Method 3: Handle numpy array format
-                        elif hasattr(traj, 'shape') and len(traj.shape) >= 1:
-                            if traj.shape[0] >= 3:
-                                if len(traj.shape) == 1:
-                                    x, y, z = float(traj[0]), float(traj[1]), float(traj[2])
-                                else:
-                                    x, y, z = float(traj[0][0]), float(traj[1][0]), float(traj[2][0])
-                                coords.append([x, y, z])
-
-                        # Method 4: Handle dictionary format
-                        elif isinstance(traj, dict):
-                            if all(key in traj for key in ['x', 'y', 'z']):
-                                x, y, z = float(traj['x']), float(traj['y']), float(traj['z'])
-                                coords.append([x, y, z])
-
-                        else:
-                            print(f"Warning: Unknown trajectory format at drone {drone_idx}, traj {traj_idx}: {type(traj)}")
-                            continue
-
-                    except (IndexError, ValueError, TypeError, KeyError) as e:
+                    except (IndexError, ValueError, TypeError) as e:
                         print(f"Warning: Error extracting coordinates from drone {drone_idx}, traj {traj_idx}: {e}")
                         continue
 
@@ -643,7 +614,7 @@ class myio:
                 ls = LineString(coords)
 
                 # Calculate timing
-                s = drone["birthday"]
+                s = drone.birthday
                 flight_duration_ms = dt_ms * (len(coords) - 1)
                 T = datetime.timedelta(milliseconds=flight_duration_ms)
                 e = s + T
@@ -653,7 +624,7 @@ class myio:
                     'geometry': ls,
                     'start_datetime': s,
                     'end_datetime': e,
-                    'iteration': drone["iteration"],
+                    'iteration': drone.iteration,
                     'length': len(coords)
                 }
 
