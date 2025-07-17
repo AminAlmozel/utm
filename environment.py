@@ -335,8 +335,8 @@ class env():
 
     def fire_response(self, mission, vehicles, iteration):
         # Make a buffered line going from the fire station to that house
-        fire_station = mission["mission"]["destination"][0]["geometry"]
-        house = mission["mission"]["destination"][1]["geometry"]
+        fire_station = mission.mission_destination[0]["geometry"]
+        house = mission.mission_destination[1]["geometry"]
         pi = fire_station.centroid
         pf = house.centroid
         # and the area surrounding the location of the fire
@@ -352,19 +352,21 @@ class env():
         # io.log_timed_geom([avoid], [[start, end]], self.sim_run, self.sim_latest)
         # Reconstruct the trajectories of all the other drones
         trajs = []
-        for drn in vehicles:
-            if drn["id"] == mission["id"]: # If the drone is the current firefighting drone
+        drone_indices = []
+        for i, drn in enumerate(vehicles):
+            if drn.id == mission.id: # If the drone is the current firefighting drone
                 continue
-            if drn["mission"]["type"] == "firefighting": # Don't change the trajectory of other firefighting drones
+            if drn.mission_type == "firefighting": # Don't change the trajectory of other firefighting drones
                 continue
-            if drn["alive"]:
-                progress = drn["mission"]["progress"]
-                waypoints = drn["mission"]["waypoints"][progress:]
-                state = [[drn["state"]["x"], drn["state"]["y"]]]
+            if drn.alive:
+                progress = drn.mission_progress
+                waypoints = drn.mission_waypoints[progress:]
+                state = [[drn.state["x"], drn.state["y"]]]
                 traj = self.waypoints_to_traj(waypoints)
                 traj = state + traj
                 ls = traj_to_linestring(traj)
                 trajs.append(ls)
+                drone_indices.append(i)
         trajs = transform_meter_global(trajs)
         io.write_geom(trajs, "rerouting", "white")
 
@@ -372,12 +374,13 @@ class env():
         trajs = gp.GeoSeries(trajs)
         result = trajs.intersects(avoid)
         indices = np.where(result)[0]
-        return indices, fire
+        alert_drones = [drone_indices[i] for i in indices]
+        return alert_drones, fire
 
     def waypoints_to_traj(self, waypoints):
         traj = []
         for waypoint in waypoints:
-            if isinstance(waypoint, float):
+            if isinstance(waypoint, float) or isinstance(waypoint, int):
                 continue
             traj.append([waypoint["x"], waypoint["y"]])
         return traj

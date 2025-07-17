@@ -24,11 +24,25 @@ from util import *
 from time import time
 import random
 from multiprocessing import Pool
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
+
+class areas:
+    __slots__ = ['id', 'geometry', 'type', 'cost', 'iteration', 'length', 'm_adj']
+
+    def __init__(self, id, geometry, type, cost, iteration, length,
+                 m_adj):
+        self.id = id
+        self.geometry = geometry
+        self.type = type
+        self.cost = cost
+        self.iteration = iteration
+        self.length = length
+        self.m_adj = m_adj
+
 
 class sampling_pp(io):
     def __init__(self):
@@ -43,40 +57,19 @@ class sampling_pp(io):
         self.nfz_costs = 10000000
         self.nodes = []
         self.iteration = 0
+        self.areas = []
         self.initalize()
+
         # p = Point([511083.21359357954, 2467813.5549285114])
         # boundary, inward, _ = self.closest_landing(p)
         # io.write_geom(transform_meter_global([boundary, inward, p]), "closest", "blue")
 
     def initalize(self):
-        # Get multipolygons
         kaust = io.load_geojson_files("env/kaust.geojson", concat=True)["geometry"][0]
-        self.kaust = MultiPolygon([kaust])
-        self.mp_areas.append(self.kaust)
-        self.mp_costs.append(1)
-
-        # Safe landing spots
-        sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
-        sa = sa.geometry.union_all()
-        self.add_area(sa, -0.3)
-
-        # Communication/GPS constraints
-        comm = io.import_communication()
-        r = 400
-        comm = comm["geometry"].buffer(r).union_all()
-        # self.add_area(comm, -0.1)
-        # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
-
-        # NFZs
-        fa = io.load_geojson_files("env/forbidden/*.geojson", concat=True)
-        fa = fa.geometry.union_all()
-        self.add_nfz(fa)
-
-        bounds = self.kaust.bounds
-
+        self.kaust = make_mp(kaust)
         # Sample airspace
         n_points = 3500
-        # n_points = 500
+        bounds = self.kaust.bounds
         samples = samples_poisson(n_points, bounds)
         # samples = samples_biased(n_points, self.mp_areas, bounds, self.nfz, 0.7)
         # samples = samples_uniform(n_points, self.mp_areas, bounds, self.nfz)
@@ -84,6 +77,49 @@ class sampling_pp(io):
         # Remove extra points outside of kaust airspace
         samples = [p for p in samples if p.within(self.kaust)]
         self.nodes = samples
+        # Get multipolygons
+        t0 = time()
+        self.add_area(id=-1, geometry=self.kaust, type=1, cost=1,
+                      iteration=0, length=1000000, m_adj=None)
+
+        # Safe landing spots
+        sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
+        sa = make_mp(sa.geometry.union_all())
+        self.add_area(id=-1, geometry=sa, type=1, cost=-0.3, iteration=0,
+                      length=1000000, m_adj=None)
+
+        # Communication/GPS constraints
+        comm = io.import_communication()
+        r = 400
+        comm = make_mp(comm["geometry"].buffer(r).union_all())
+        # self.add_area(id=-1, geometry=comm, type=1, cost=-0.1,
+        #               iteration=0, length=1000000, m_adj=None)
+        # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
+
+        # NFZs
+        fa = io.load_geojson_files("env/forbidden/*.geojson", concat=True)
+        fa = make_mp(fa.geometry.union_all())
+        self.add_area(id=-1, geometry=fa, type=0, cost=self.nfz_costs,
+                      iteration=0, length=1000000, m_adj=None)
+        t1 = time()
+        print(f"Created adjacency matrices in {t1 - t0:.2f} seconds")
+
+    def process_area(self, index = -1):
+        """
+        Process the areas and create adjacency matrices.
+        This is called after adding new nodes or areas.
+        """
+        # Create adjacency matrices for all areas
+        max_distance = 500  # m
+        nodes = self.nodes
+        lines, node_pairs = connect_points_within_distance(nodes, max_distance)
+        # Intersect lines with each of the polygons
+        lengths = calculate_intersection_lengths_vectorized(lines, self.areas[index].geometry)
+        lengths *= self.areas[index].cost
+        # Construct adjacency lists
+        m_adj = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes)
+        self.areas[index].m_adj = m_adj
+        return m_adj
 
     def create_trajectory(self, coords):
         # Prepare the areas
@@ -92,18 +128,15 @@ class sampling_pp(io):
         # # Calculating the graphs
         coords = [Point(coord) for coord in coords]
         nodes = self.add_nodes(coords)
-        # nodes = self.nodes
-        # start = closest_node(coords, nodes)
-        # end = closest_node(coords, nodes)
-        adj = self.update_graphs(nodes)
+        # Incrementally update adjacency matrices
+        adj = self.update_adj_matrices(coords)
         m_adj = sum(adj)
-        # m_heur = sum(heur)
 
         # Finding the optimal trajectory
         path = dijkstra(m_adj, 0, 1)
         traj = [nodes[p] for p in path]
-        ls = LineString(traj)
-        io.write_geom(transform_meter_global([ls]), "traj", "blue")
+        # ls = LineString(traj)
+        # io.write_geom(transform_meter_global([ls]), "traj", "blue")
         z = 30
         result = [point_to_waypoint(p, z) for p in traj]
         return result
@@ -111,59 +144,124 @@ class sampling_pp(io):
     def add_nodes(self, new_nodes):
         return new_nodes + self.nodes
 
-    def update_graphs(self, nodes):
-        # Construct lines from samples
-        adj = []
-        heur = []
-        max_distance = 500 #km
+    def create_adj_matrices(self):
+        max_distance = 500  # m
+        nodes = self.nodes
         lines, node_pairs = connect_points_within_distance(nodes, max_distance)
-        for i in range(len(self.mp_areas)):
-            t0 = time()
-            # Intersect lines with each of the polygons
-            # lengths = line_intersection_lengths(lines, comm)
-            lengths = calculate_intersection_lengths_vectorized(lines, self.mp_areas[i])
-            lengths *= self.mp_costs[i]
-            # Construct adjacency and heuristic matrices
-            m_adj = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes)
-            adj.append(m_adj)
-            # heur.append(m_heur)
-
-        for i in range(len(self.nfz)):
-            if self.nfz[i]["iteration"] + self.nfz[i]["length"] > self.iteration:
+        adj = []
+        for area in self.areas:
+            if area.iteration + area.length > self.iteration:
                 # Intersect lines with each of the polygons
-                # lengths = line_intersection_lengths(lines, comm)
-                lengths = calculate_intersection_lengths_vectorized(lines, self.nfz[i]["geometry"])
-                lengths *= self.nfz_costs
-                # Construct adjacency and heuristic matrices
+                lengths = calculate_intersection_lengths_vectorized(lines, area.geometry)
+                lengths *= area.cost
+                # Construct adjacency lists
                 m_adj = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes)
+                area.m_adj = m_adj
                 adj.append(m_adj)
-                # heur.append(m_heur)
 
         # samples = gp.GeoSeries(nodes).buffer(5)
         # samples = transform_meter_global(samples)
         # io.write_geom(samples, "samples", "yellow")
         # lines = transform_meter_global(lines)
         # io.write_geom(lines, "lines", "white")
-        return adj#, heur
+        return adj
 
-    def add_area(self, area, cost):
-        # area = self.kaust.difference(area)
-        if isinstance(area, Polygon):
-            area = MultiPolygon([area])
-        self.mp_areas.append(area)
-        self.mp_costs.append(cost)
+    def update_adj_matrices(self, new_nodes):
+        """
+        Incrementally update existing adjacency matrices by adding new nodes.
+        Only calculates lengths for new connections involving new nodes.
+        New nodes are inserted at the beginning of the matrix.
+        """
+        max_distance = 500  # m
+
+        # Combined node list - NEW NODES FIRST
+        all_nodes = new_nodes + self.nodes
+        num_new_nodes = len(new_nodes)
+        num_existing_nodes = len(self.nodes)
+        total_nodes = len(all_nodes)
+
+        # Get only NEW connections (involving at least one new node)
+        new_lines, new_node_pairs = connect_multiple_points_to_network(self.nodes, new_nodes, max_distance)
+
+        adj = []
+        for area in self.areas:
+            if area.iteration + area.length > self.iteration:
+                # Get existing matrix
+                old_matrix = area.m_adj
+
+                # Create expanded matrix with new nodes at the beginning
+                new_matrix = np.full((total_nodes, total_nodes), np.inf, dtype=np.float64)
+                np.fill_diagonal(new_matrix, 0)
+
+                # Copy existing connections to the bottom-right corner
+                new_matrix[num_new_nodes:, num_new_nodes:] = old_matrix
+
+                # Calculate lengths only for new connections
+                new_lengths = calculate_intersection_lengths_vectorized(new_lines, area.geometry)
+                new_lengths *= area.cost
+
+                # Add new connections to the matrix
+                for (i, j), length in zip(new_node_pairs, new_lengths):
+                    # Map indices to new matrix layout
+                    if i < len(self.nodes):  # existing node
+                        matrix_i = i + num_new_nodes
+                    else:  # new node
+                        matrix_i = i - len(self.nodes)
+
+                    if j < len(self.nodes):  # existing node
+                        matrix_j = j + num_new_nodes
+                    else:  # new node
+                        matrix_j = j - len(self.nodes)
+
+                    new_matrix[matrix_i, matrix_j] = length
+                    new_matrix[matrix_j, matrix_i] = length  # assuming symmetric
+
+                # Update the stored matrix and add to results
+                # area.m_adj = new_matrix
+                adj.append(new_matrix)
+
+        return adj
+
+    def add_area(self, id, geometry, type, cost, iteration, length, m_adj=None):
+        self.areas.append(areas(
+            id=id,
+            geometry=geometry,
+            type=type,  # 0: No-fly zone, 1: Safe area
+            cost=cost,
+            iteration=iteration,
+            length=length,
+            m_adj=[],
+        ))
+        self.process_area()
 
     def add_nfz(self, nfz, id=-1):
         duration = 100000
-        if isinstance(nfz, Polygon):
-            nfz = MultiPolygon([nfz])
-        nfz = {"geometry": nfz, "id": id, "iteration": self.iteration, "length": duration}
-        self.nfz.append(nfz)
+        nfz = make_mp(nfz)
+        self.areas.append(areas(
+            id=id,
+            geometry=nfz,
+            type=0,  # 0: No-fly zone, 1: Safe area
+            cost=self.nfz_costs,
+            iteration=self.iteration,
+            length=duration,
+            m_adj=[],
+        ))
+        self.process_area()
 
     def remove_nfz(self, id):
-        for i in range(len(self.nfz)):
-            if self.nfz[i]["id"] == id:
-                self.nfz[i]["length"] = self.iteration - self.nfz[i]["iteration"]
+        for area in self.areas:
+            if area.id == id:
+                area.length = self.iteration - area.iteration
+
+    def get_nfz(self):
+        """
+        Get all no-fly zones as a MultiPolygon.
+        """
+        nfz = []
+        for area in self.areas:
+            if area.type == 0:
+                nfz.append({"geometry": area.geometry, "iteration:": area.iteration, "length": area.length})
+        return nfz
 
     def closest_landing(self, target_point, inward_distance=10.0):
         """
@@ -385,6 +483,56 @@ def connect_points_within_distance(points: List[Point], max_distance: float) -> 
 
     return lines, indices
 
+def connect_multiple_points_to_network(existing_points: List[Point],
+                                     new_points: List[Point],
+                                     max_distance: float,
+                                     start_index: int = None) -> Tuple[List[LineString], List[Tuple[int, int]]]:
+    """
+    Connect multiple new points to existing points within max_distance.
+    Does not connect new points to each other.
+
+    Args:
+        existing_points: List of existing Shapely Point objects
+        new_points: List of new Shapely Point objects to connect to the network
+        max_distance: Maximum distance for connecting points
+        start_index: Starting index for new points. If None, uses len(existing_points)
+
+    Returns:
+        Tuple containing:
+        - List of LineString objects connecting new points to existing points within distance
+        - List of tuples containing indices of connected points (existing_index, new_index)
+    """
+    if len(existing_points) == 0 or len(new_points) == 0:
+        return [], []
+
+    # Assign starting index for new points if not provided
+    if start_index is None:
+        start_index = len(existing_points)
+
+    # Extract coordinates for vectorized distance calculations
+    existing_coords = np.array([[point.x, point.y] for point in existing_points])
+    new_coords = np.array([[point.x, point.y] for point in new_points])
+
+    # Calculate distances from all new points to all existing points
+    distances = cdist(new_coords, existing_coords, metric='euclidean')
+
+    # Create LineStrings for valid connections
+    lines = []
+    indices = []
+
+    for new_idx, new_point_distances in enumerate(distances):
+        new_point_index = start_index + new_idx
+
+        # Get indices of existing points within max_distance for this new point
+        valid_existing_indices = np.where(new_point_distances <= max_distance)[0]
+
+        for existing_idx in valid_existing_indices:
+            line = LineString([existing_coords[existing_idx], new_coords[new_idx]])
+            lines.append(line)
+            indices.append((int(existing_idx), new_point_index))
+
+    return lines, indices
+
 def line_intersection_lengths(lines, multipolygon):
     """
     For each line, compute the length of the segment that intersects the MultiPolygon.
@@ -570,6 +718,97 @@ def _create_heuristic_matrix(node_coordinates: np.ndarray, num_nodes: int) -> np
 
     return euclidean_distances
 
+def create_adjacency_list_vectorized(lengths: np.ndarray,
+                                     node_pairs: np.ndarray,
+                                     node_coordinates: Union[np.ndarray, List[Point]] = None,
+                                     num_nodes: int = None,
+                                     symmetric: bool = True,
+                                     return_heuristic: bool = False) -> Union[Dict[int, List[Tuple[int, float]]], Tuple[Dict[int, List[Tuple[int, float]]], np.ndarray]]:
+    """
+    Vectorized version for better performance with large datasets.
+    Creates an adjacency list representation of the graph.
+
+    Args:
+        lengths: NumPy array of line lengths
+        node_pairs: NumPy array of shape (n_connections, 2) containing node pairs
+        node_coordinates: Either:
+                         - NumPy array of shape (num_nodes, 2) containing (x, y) coordinates
+                         - List of Shapely Point objects
+                         Required if return_heuristic=True
+        num_nodes: Total number of nodes. If None, inferred from max node index + 1
+        symmetric: If True, creates symmetric adjacency list (undirected graph)
+        return_heuristic: If True, also returns heuristic matrix with Euclidean distances
+
+    Returns:
+        If return_heuristic=False: Dict[int, List[Tuple[int, float]]] (adjacency list)
+            - Keys are node indices
+            - Values are lists of (neighbor_node, edge_weight) tuples
+        If return_heuristic=True: Tuple[Dict[int, List[Tuple[int, float]]], numpy.ndarray]
+            - (adjacency list, heuristic matrix)
+    """
+    if len(lengths) != len(node_pairs):
+        raise ValueError("lengths and node_pairs must have the same length")
+
+    if return_heuristic and node_coordinates is None:
+        raise ValueError("node_coordinates must be provided when return_heuristic=True")
+
+    # Convert to numpy arrays if not already
+    lengths = np.asarray(lengths, dtype=np.float64)
+    node_pairs = np.asarray(node_pairs, dtype=np.int32)
+
+    if return_heuristic:
+        # Convert Shapely Points to NumPy array if needed
+        if isinstance(node_coordinates, list) and len(node_coordinates) > 0 and isinstance(node_coordinates[0], Point):
+            node_coordinates = np.array([[point.x, point.y] for point in node_coordinates])
+        else:
+            node_coordinates = np.asarray(node_coordinates, dtype=np.float64)
+
+        if node_coordinates.shape[1] != 2:
+            raise ValueError("node_coordinates must have shape (num_nodes, 2) or be a list of Shapely Points")
+
+    if lengths.size == 0:
+        if num_nodes is None:
+            raise ValueError("num_nodes must be specified when no connections are provided")
+
+        # Create empty adjacency list for all nodes
+        adj_list = {i: [] for i in range(num_nodes)}
+
+        if return_heuristic:
+            heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
+            return adj_list, heuristic_matrix
+        return adj_list
+
+    # Determine number of nodes if not specified
+    if num_nodes is None:
+        num_nodes = np.max(node_pairs) + 1
+
+    # Validate node indices
+    if np.max(node_pairs) >= num_nodes:
+        raise ValueError(f"Node index {np.max(node_pairs)} exceeds num_nodes-1 ({num_nodes-1})")
+
+    if return_heuristic and len(node_coordinates) != num_nodes:
+        raise ValueError(f"node_coordinates length ({len(node_coordinates)}) must match num_nodes ({num_nodes})")
+
+    # Initialize adjacency list - create empty list for each node
+    adj_list = {i: [] for i in range(num_nodes)}
+
+    # Extract i, j indices
+    i_indices = node_pairs[:, 0]
+    j_indices = node_pairs[:, 1]
+
+    # Build adjacency list using vectorized operations
+    for i, j, length in zip(i_indices, j_indices, lengths):
+        adj_list[i].append((j, length))
+
+        if symmetric:
+            adj_list[j].append((i, length))
+
+    if return_heuristic:
+        heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
+        return adj_list, heuristic_matrix
+
+    return adj_list
+
 def closest_node(target_point, point_list):
     # Convert to numpy arrays once
     coords = np.array([(p.x, p.y) for p in point_list])
@@ -636,6 +875,47 @@ def get_radius(n_points):
             return prev_point[0]
         prev_point = point
     return 0.5
+
+def adjacency_list_to_matrix(adj_list: Dict[int, List[Tuple[int, float]]], num_nodes: int = None) -> np.ndarray:
+    """
+    Convert adjacency list back to adjacency matrix.
+
+    Args:
+        adj_list: Adjacency list representation
+        num_nodes: Number of nodes. If None, inferred from max key + 1
+
+    Returns:
+        numpy.ndarray: Adjacency matrix with inf for no connections
+    """
+    if num_nodes is None:
+        # Get maximum node index from both keys and values
+        max_key = max(adj_list.keys()) if adj_list else 0
+        max_val = 0
+        for neighbors in adj_list.values():
+            if neighbors:
+                max_val = max(max_val, max(neighbor[0] for neighbor in neighbors))
+        num_nodes = max(max_key, max_val) + 1
+
+    # Initialize matrix with infinity
+    matrix = np.full((num_nodes, num_nodes), np.inf, dtype=np.float64)
+
+    # Set diagonal to 0
+    np.fill_diagonal(matrix, 0)
+
+    # Fill in connections
+    for i, neighbors in adj_list.items():
+        for j, weight in neighbors:
+            matrix[i, j] = weight
+
+    return matrix
+
+def make_mp(polygon):
+    """
+    Create a MultiPolygon from a Polygon and assign an ID.
+    """
+    if isinstance(polygon, Polygon):
+        polygon = MultiPolygon([polygon])
+    return polygon
 
 def main():
     spp = sampling_pp()
