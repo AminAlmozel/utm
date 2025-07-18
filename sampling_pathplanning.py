@@ -60,10 +60,6 @@ class sampling_pp(io):
         self.areas = []
         self.initalize()
 
-        # p = Point([511083.21359357954, 2467813.5549285114])
-        # boundary, inward, _ = self.closest_landing(p)
-        # io.write_geom(transform_meter_global([boundary, inward, p]), "closest", "blue")
-
     def initalize(self):
         kaust = io.load_geojson_files("env/kaust.geojson", concat=True)["geometry"][0]
         self.kaust = make_mp(kaust)
@@ -76,6 +72,7 @@ class sampling_pp(io):
 
         # Remove extra points outside of kaust airspace
         samples = [p for p in samples if p.within(self.kaust)]
+        print(min_distance_brute_force(samples))
         self.nodes = samples
         # Get multipolygons
         t0 = time()
@@ -85,7 +82,7 @@ class sampling_pp(io):
         # Safe landing spots
         sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
         sa = make_mp(sa.geometry.union_all())
-        self.add_area(id=-1, geometry=sa, type=1, cost=-0.3, iteration=0,
+        self.add_area(id=-1, geometry=sa, type=1, cost=-0.7, iteration=0,
                       length=1000000, m_adj=None)
 
         # Communication/GPS constraints
@@ -908,6 +905,19 @@ def adjacency_list_to_matrix(adj_list: Dict[int, List[Tuple[int, float]]], num_n
             matrix[i, j] = weight
 
     return matrix
+
+def min_distance_brute_force(points):
+    """Calculate minimum distance between any two points"""
+    min_dist = float('inf')
+    closest_pair = None
+
+    for p1, p2 in combinations(points, 2):
+        dist = p1.distance(p2)
+        if dist < min_dist:
+            min_dist = dist
+            closest_pair = (p1, p2)
+
+    return min_dist
 
 def make_mp(polygon):
     """

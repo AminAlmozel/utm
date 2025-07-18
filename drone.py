@@ -436,14 +436,16 @@ class drone():
         self.m.setObjective(self.obj, GRB.MINIMIZE)
         self.m.setParam(GRB.Param.OutputFlag, 0)
         # self.m.setParam('Threads', 0)
+        self.m.setParam('TimeLimit', 5)
 
         self.m.update()
         # self.provide_warm_start()
         # Optimize the model
+        print("Starting optimization...")
         self.m.optimize()
 
         total_computational_time = self.m.Runtime
-        # print("Total Computational Time(s):", total_computational_time, "seconds")
+        print("Total Computational Time(s):", total_computational_time, "seconds")
 
         # if self.m.status == GRB.OPTIMAL:
         #     # print("find the optimal")

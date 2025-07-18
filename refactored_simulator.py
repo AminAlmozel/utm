@@ -1,9 +1,8 @@
 # Importing standard libraries
 import time
-# from datetime import datetime
 import datetime
 import random
-from multiprocessing import Pool
+import concurrent.futures
 from queue import Queue
 # import threading
 # Importing other libraries
@@ -61,7 +60,7 @@ def process_drone_trajectory(drone_data):
         # Clean up
         env.close()
         t1 = time.time()
-        # print(f"Processed drone {drone_id} in {t1 - t0:.2f} seconds")
+        print(f"Processed drone {drone_id} in {t1 - t0:.2f} seconds")
         return result
 
     except Exception as e:
@@ -205,12 +204,12 @@ class simulator(drone.drone):
 
         # Determine optimal number of processes - ensure it's never 0
         if hasattr(self, 'drones') and len(self.drones) > 0:
-            max_processes = min(os.cpu_count(), len(self.drones))
+            max_workers = min(os.cpu_count(), len(self.drones))
         else:
-            max_processes = os.cpu_count()  # Use all available cores when drone count is unknown/zero
+            max_workers = os.cpu_count()  # Use all available cores when drone count is unknown/zero
 
-        # Create pool once and reuse it throughout all iterations
-        with Pool(processes=max_processes, maxtasksperchild=200) as pool:
+        # Create executor pool once and reuse it throughout all iterations
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
             # Main loop for optimization
             for self.iteration in range(self.total_iterations):
                 print("%d============================" % (self.iteration))
@@ -238,6 +237,7 @@ class simulator(drone.drone):
 
                 # Prepare data for all drones
                 drone_data_list = []
+                future_to_drone = {}
                 for k in self.drn_list:
                     drone_data = self.prepare_drone_data(k)
                     drone_data_list.append(drone_data)
@@ -245,21 +245,30 @@ class simulator(drone.drone):
                 t02 = time.time()
 
                 try:
-                    # Process drones in parallel using the external function
-                    results = pool.map(process_drone_trajectory, drone_data_list)
+                    # Submit all drone trajectory calculations to the executor
+                    future_to_drone = {executor.submit(process_drone_trajectory, data): i
+                                     for i, data in enumerate(drone_data_list)}
 
-                    # Process results
-                    for i, result in enumerate(results):
-                        if i == 0:
-                            t03 = time.time()
-
+                    # Process results as they complete
+                    for future in concurrent.futures.as_completed(future_to_drone):
+                        i = future_to_drone[future]
                         k = self.drn_list[i]
-                        if result == -1:
+
+                        try:
+                            result = future.result()
+                            if i == 0:
+                                t03 = time.time()
+
+                            if result == -1:
+                                self.drones[k].alive = 0
+                                self.drones[k].mission_status = "Collided or infeasible"
+                                print("Error in trajectory for drone %d" % k)
+                            else:
+                                self.drn[k].full_traj = result
+                        except Exception as exc:
+                            print(f"Drone {k} generated an exception: {exc}")
                             self.drones[k].alive = 0
-                            self.drones[k].mission_status = "Collided or infeasible"
-                            print("Error in trajectory for drone %d" % k)
-                        else:
-                            self.drn[k].full_traj = result
+                            self.drones[k].mission_status = "Execution error"
 
                 except Exception as e:
                     print(f"Error during parallel processing in iteration {self.iteration}: {e}")
@@ -283,7 +292,8 @@ class simulator(drone.drone):
                 print("Time of iteration: %.2f" % (t01 - t00))
         io.log_to_pickle(self.drones, "missions", self.sim_run, self.sim_latest)
         io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
-        io.log_dictionary(self.ppp.nfz, self.sim_run, self.sim_latest)
+        nfz = self.ppp.get_nfz()
+        io.log_dictionary(nfz, self.sim_run, self.sim_latest)
 
     def check_new_missions(self):
         # Checking for missions that start at the current self.iteration
