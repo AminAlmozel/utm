@@ -82,15 +82,15 @@ class sampling_pp(io):
         # Safe landing spots
         sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
         sa = make_mp(sa.geometry.union_all())
-        self.add_area(id=-1, geometry=sa, type=1, cost=-0.7, iteration=0,
+        self.add_area(id=-1, geometry=sa, type=1, cost=-0.3, iteration=0,
                       length=1000000, m_adj=None)
 
         # Communication/GPS constraints
         comm = io.import_communication()
         r = 400
         comm = make_mp(comm["geometry"].buffer(r).union_all())
-        # self.add_area(id=-1, geometry=comm, type=1, cost=-0.1,
-        #               iteration=0, length=1000000, m_adj=None)
+        self.add_area(id=-1, geometry=comm, type=1, cost=-0.1,
+                      iteration=0, length=1000000, m_adj=None)
         # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
 
         # NFZs

@@ -1,1 +1,0 @@
-Safe aras = 0.5

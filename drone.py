@@ -441,11 +441,11 @@ class drone():
         self.m.update()
         # self.provide_warm_start()
         # Optimize the model
-        print("Starting optimization...")
+        # print("Starting optimization...")
         self.m.optimize()
 
         total_computational_time = self.m.Runtime
-        print("Total Computational Time(s):", total_computational_time, "seconds")
+        # print("Total Computational Time(s):", total_computational_time, "seconds")
 
         # if self.m.status == GRB.OPTIMAL:
         #     # print("find the optimal")

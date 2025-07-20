@@ -18,7 +18,7 @@ def main():
     timesteps = int(1 * 60 * 60 / dt)
     traffic = generate_traffic_schedule(env, timesteps)
     traffic = sort_traffic(traffic)
-    # traffic = generate_vehicle_traffic(lam)        # Generate traffic data
+    traffic = generate_vehicle_traffic(lam)        # Generate traffic data
     filename = "traffic"
     io.write_pickle("missions/" + filename + '.pkl', traffic) # Write the generated traffic into a pickle file (.pkl)
     traffic = io.read_pickle("missions/" + filename + '.pkl') # Load the traffic data from file
@@ -31,11 +31,14 @@ def generate_traffic_schedule(env, timesteps):
     deliveries = []
     # Deliveries
     for index, restaurant in env.restaurants.iterrows():
-        lam = restaurant["freq"] * 1.5
+        lam = restaurant["freq"] * 2.4
         traffic = generate_vehicle_traffic(lam, timesteps)
+        time_separation = int(60 / 0.1) # 60 seconds in timesteps
+        traffic = separate_drone_traffic(traffic, time_separation)
         for i, time in enumerate(traffic):
             mission = create_delivery_mission(time, env, restaurant)
             deliveries.append(mission)
+    print("Number of deliveries: ", len(deliveries))
     # Firefighting
     firefighting = []
     # lam = 0.00002
@@ -362,10 +365,12 @@ def sort_traffic(traffic):
             # print("%.1f" % (time * dt))
         elif m_type == "firefighting":
             house = mission["mission"]["destination"][1]["data"]
+            print("=====================================================")
             print("Fire at\t" + house["name"] + "\tat\t", end="")
             dt = 0.1
 
         else:
+            print("=====================================================")
             print(m_type + "\tat\t", end="")
         milliseconds_to_hours(time * 100)
     return missions_sorted
@@ -390,6 +395,35 @@ def traffic_stats(traffic):
     print("Mean:    \t%.1fs" % (diff.mean() * dt))
     print("Median:  \t%.1fs" % (np.median(diff) * dt))
     print("Std Dev: \t%.1f" % (diff.std() * dt))
+
+def separate_drone_traffic(traffic, min_separation):
+    """
+    Ensures minimum time separation between drone takeoffs by delaying takeoff times.
+
+    Args:
+        traffic (list): List of original takeoff times (sorted or unsorted)
+        min_separation (int/float): Minimum time units between consecutive takeoffs
+
+    Returns:
+        list: Adjusted takeoff times with minimum separation enforced
+    """
+    if not traffic:
+        return traffic
+
+    # Sort the traffic times to process them in chronological order
+    sorted_traffic = sorted(traffic)
+    adjusted_traffic = [sorted_traffic[0]]  # First takeoff remains unchanged
+
+    # Adjust subsequent takeoffs to maintain minimum separation
+    for i in range(1, len(sorted_traffic)):
+        # Calculate the earliest allowed takeoff time based on the previous adjusted takeoff
+        earliest_allowed = adjusted_traffic[-1] + min_separation
+
+        # Use the later of the original time or the earliest allowed time
+        adjusted_time = max(sorted_traffic[i], earliest_allowed)
+        adjusted_traffic.append(adjusted_time)
+
+    return adjusted_traffic
 
 def filter_traffic(arrivals, min_delta):
     dt = 0.1
