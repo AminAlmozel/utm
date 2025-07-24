@@ -5,10 +5,10 @@ import shapely
 from shapely.geometry import box, Point, LineString
 from typing import List, Tuple, Union, Optional
 
-def make_traj(trajs):
-    if len(trajs) == 1:
+def make_traj(traj):
+    if len(traj) == 1:
         return 0
-    t = [[traj[0][0], traj[1][0], traj[2][0]] for traj in trajs]
+    t = [[state[0], state[1], state[2]] for state in traj]
     return traj_to_linestring(t)
 
 def path_to_traj(path, ls):

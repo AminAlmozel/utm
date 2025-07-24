@@ -2,6 +2,7 @@
 import time
 import datetime
 import random
+import math
 import concurrent.futures
 from queue import Queue
 # import threading
@@ -20,7 +21,6 @@ from util import *
 
 import os, sys
 from sys import getsizeof
-import psutil
 import gc
 sys.path.append(os.path.join(os.path.dirname(__file__), "uam"))
 
@@ -67,7 +67,6 @@ def process_drone_trajectory(drone_data):
         print(f"Error processing drone {drone_data.get('drone_id', 'unknown')}: {e}")
         return -1
 
-
 class DroneData:
     __slots__ = ['id', 'birthday', 'iteration', 'traj', 'xi_1', 'alive', 'state',
                  'factor', 'battery', 'mission_type', 'mission_destination',
@@ -96,6 +95,8 @@ class simulator(drone.drone):
         self.delta_t = 0.1 # Time step
         self.total_iterations = 50000
 
+        self.emergency_landing = 20000
+
         # Parameters
         self.n_vehicles = 10 # Starting number of vehicles
         self.K = 0 # Number of vehicles
@@ -116,6 +117,7 @@ class simulator(drone.drone):
 
         self.vehicles = []
         self.full_traj = []
+        print("Loading enviornment")
         self.obs = environment.env()
 
         today = datetime.date.today()
@@ -131,13 +133,16 @@ class simulator(drone.drone):
         self.obs.sim_latest = self.sim_latest
 
         # self.ppp = polygon_pathplanning.polygon_pp()
+        print("Loading path planning")
         self.ppp = spp.sampling_pp()
         self.ppp.sim_run = self.sim_run
         self.ppp.sim_latest = self.sim_latest
         self.dummy_obstacles()
+        print("Loading missions")
         self.missions = io.import_missions()
 
         self.max_vel = drone.drone().V_max # Max velocity
+        self.max_acc = drone.drone().A_max # Max acceleration
 
     def prepare_drone_data(self, k):
         """
@@ -199,6 +204,7 @@ class simulator(drone.drone):
     def m_start_simulation(self):
         """Optimized simulation function with external multiprocessing"""
         print("Starting Simulation")
+
         t0 = time.time()
         self.mission_counter = 0
 
@@ -213,7 +219,8 @@ class simulator(drone.drone):
             # Main loop for optimization
             for self.iteration in range(self.total_iterations):
                 print("%d============================" % (self.iteration))
-                self.check_new_missions()
+                if self.iteration < self.emergency_landing:
+                    self.check_new_missions()
 
                 # Build list of alive drones
                 self.drn_list = []
@@ -224,7 +231,8 @@ class simulator(drone.drone):
                 K = len(self.drn_list)
 
                 # Check termination conditions
-                if K == 0 and (len(self.missions) == self.mission_counter):
+                # if K == 0 and (len(self.missions) == self.mission_counter):
+                if K == 0 and (self.iteration > self.emergency_landing):
                     print("No drones in simulation. Finishing up the run.")
                     break
 
@@ -238,11 +246,13 @@ class simulator(drone.drone):
                 # Prepare data for all drones
                 drone_data_list = []
                 future_to_drone = {}
+                t02 = time.time()
                 for k in self.drn_list:
                     drone_data = self.prepare_drone_data(k)
                     drone_data_list.append(drone_data)
 
-                t02 = time.time()
+                t03 = time.time()
+                print("Prepared data for %d drones in %.2f seconds" % (len(drone_data_list), t03 - t02))
 
                 try:
                     # Submit all drone trajectory calculations to the executor
@@ -294,6 +304,7 @@ class simulator(drone.drone):
         io.log_to_json_dict(self.drones, self.sim_run, self.sim_latest)
         nfz = self.ppp.get_nfz()
         io.log_dictionary(nfz, self.sim_run, self.sim_latest)
+        self.ppp.write_area_costs()
 
     def check_new_missions(self):
         # Checking for missions that start at the current self.iteration
@@ -424,7 +435,7 @@ class simulator(drone.drone):
         # Update trajectories and the current state
         self.update_vehicle_state()
         # Apply random events
-        # self.random_events()
+        self.random_events()
         # Check the mission progress
         self.update_mission()
         # Update the trajectories
@@ -503,25 +514,20 @@ class simulator(drone.drone):
 
     def random_events(self):
         N = len(self.drn_list)
-        if self.iteration == 5500:
+        if self.iteration == self.emergency_landing:
             print("ABORT MISSION!!!!11!!!!!! MBS IS HERE!!!!")
-            rnd_drn = random.choices(self.drn_list, k=3)
-            print(rnd_drn)
+            print(self.drn_list)
             for drn in self.drn_list:
-                self.drones[drn].factor += 0.25
-                if self.drones[drn].mission_type != "firefighting":
-                    if self.drones[drn].mission_type != "emergency landing":
-                        if self.drones[drn].factor >= 0.125:
-                            self.drones[drn].mission_type = "emergency landing"
-                            pos = state2list(self.drones[drn].state)
-                            emergency_landing = self.ppp.closest_landing(pos)
-                            el0 = point_to_waypoint(emergency_landing[0], 10)
-                            el1 = point_to_waypoint(emergency_landing[1], 0)
-                            el = [el0, el1]
-                            self.drones[drn].mission_waypoints += el
-                            waypoints = self.drones[drn].mission_waypoints
-                            len(waypoints) - 2
-                            self.drones[drn].mission_progress = len(waypoints) - 2
+                self.drones[drn].mission_status = "emergency landing"
+                # pos = state2list(self.drones[drn].state)
+                pos = calculate_stopping_point(self.drones[drn].state, self.max_acc)
+                emergency_landing = self.ppp.closest_landing(pos)
+                print("Emergency landing for drone %d at %s" % (drn, emergency_landing))
+                el0 = point_to_waypoint(emergency_landing[0], 10)
+                el1 = point_to_waypoint(emergency_landing[1], 0)
+                el = [el0, el1]
+                progress = self.drones[drn].mission_progress
+                self.drones[drn].mission_waypoints = self.drones[drn].mission_waypoints[:progress] + el
 
     def update_vehicle_state(self):
         for k in self.drn_list:
@@ -626,6 +632,60 @@ class simulator(drone.drone):
             edges = len(p.exterior.coords) - 1
             temp_dict.append({'geom': p, 'height': [obs["zmin"], obs["zmax"]], 'freq': 1, 'edges': edges})
         self.obstacles = temp_dict
+
+def calculate_stopping_point(drone_state, max_acc):
+        """
+        Calculate the stopping point of a drone using maximum deceleration.
+
+        Parameters:
+        -----------
+        drone_state : dict
+            Dictionary with keys ['x', 'y', 'z', 'xdot', 'ydot', 'zdot']
+            representing position and velocity in each axis
+        max_acc : float
+            Maximum acceleration/deceleration magnitude (positive value)
+
+        Returns:
+        --------
+        dict
+            Dictionary with keys ['x', 'y', 'z'] representing the stopping point
+        """
+
+        # Extract current position and velocity
+        x, y, z = drone_state['x'], drone_state['y'], drone_state['z']
+        vx, vy, vz = drone_state['xdot'], drone_state['ydot'], drone_state['zdot']
+
+        # Calculate current speed (magnitude of velocity vector)
+        current_speed = math.sqrt(vx**2 + vy**2 + vz**2)
+
+        # If drone is already stopped, return current position
+        if current_speed == 0:
+            return {'x': x, 'y': y, 'z': z}
+
+        # Calculate time to stop using: t = v / a
+        time_to_stop = current_speed / max_acc
+
+        # Calculate stopping distance in each direction
+        # Using kinematic equation: s = v*t - 0.5*a*t^2
+        # Since we're decelerating opposite to velocity direction:
+        # s = v*t - 0.5*a*t^2 where a = max_acc in direction of velocity
+
+        # Unit velocity vector (direction of motion)
+        vx_unit = vx / current_speed
+        vy_unit = vy / current_speed
+        vz_unit = vz / current_speed
+
+        # Distance traveled during deceleration
+        stopping_distance = current_speed * time_to_stop - 0.5 * max_acc * time_to_stop**2
+        # This simplifies to: stopping_distance = current_speed^2 / (2 * max_acc)
+        stopping_distance = current_speed**2 / (2 * max_acc)
+
+        # Calculate stopping point
+        stop_x = x + vx_unit * stopping_distance
+        stop_y = y + vy_unit * stopping_distance
+        stop_z = z + vz_unit * stopping_distance
+
+        return Point(stop_x, stop_y, stop_z)
 
 def pause():
     programPause = input("Press the <ENTER> key to continue...")

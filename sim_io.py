@@ -16,8 +16,27 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 
-# 'EPSG:2154' for France
-# epsg=4326  for equal area
+class DroneData:
+    __slots__ = ['id', 'birthday', 'iteration', 'traj', 'xi_1', 'alive', 'state',
+                 'factor', 'battery', 'mission_type', 'mission_destination',
+                 'mission_progress', 'mission_waypoints', 'mission_status']
+
+    def __init__(self, id, birthday, iteration, state, mission_type, mission_status,
+                 mission_destination, mission_waypoints):
+        self.id = id
+        self.birthday = birthday
+        self.iteration = iteration
+        self.traj = []
+        self.xi_1 = []
+        self.alive = 1  # Alive, 0 is dead
+        self.state = state
+        self.factor = 0
+        self.battery = 100
+        self.mission_type = mission_type
+        self.mission_destination = mission_destination
+        self.mission_progress = 0
+        self.mission_waypoints = mission_waypoints
+        self.mission_status = mission_status
 
 class myio:
     def import_hospitals(self):
@@ -506,7 +525,7 @@ class myio:
             T = datetime.timedelta(milliseconds=100*(len(t)-1)) # Duration of the flight in seconds
             e = s + T
             # [safe_dist, outside, unsafe] = measure_safe_distance(traj, safe, nfz)
-            trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'iteration': drone.iteration, 'length': len(t)})
+            trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'iteration': drone.iteration, 'length': len(t), 'type': drone.mission_type})
 
         df = pd.DataFrame(trajs)
         gdf = gp.GeoDataFrame(df, crs="EPSG:20437")
@@ -559,10 +578,34 @@ class myio:
         with open(filename, 'wb') as fp:
             pkl.dump(traffic, fp, protocol=pkl.HIGHEST_PROTOCOL)
 
-    def read_pickle(filename):
+    def read_pickle2(filename):
         with open(filename, 'rb') as pickle_file:
             data = pkl.load(pickle_file)
         return data
+
+    def read_pickle(filename):
+        """
+        Reads a pickle file containing DroneData objects.
+
+        Args:
+            filename (str): Path to the pickle file
+
+        Returns:
+            data: Unpickled data containing DroneData objects
+        """
+        # Register the DroneData class in the same module namespace as the pickle
+        import sys
+        current_module = sys.modules[__name__]
+        setattr(current_module, 'DroneData', DroneData)
+
+        try:
+            with open(filename, 'rb') as pickle_file:
+                data = pkl.load(pickle_file)
+            return data
+        except (AttributeError, ImportError) as e:
+            print(f"Error loading pickle file: {e}")
+            print("Make sure the DroneData class definition matches the one used to create the pickle file")
+            return None
 
     def combine_json_files(list, output):
         concat_gdf = []

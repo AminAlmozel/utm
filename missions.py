@@ -18,7 +18,6 @@ def main():
     timesteps = int(1 * 60 * 60 / dt)
     traffic = generate_traffic_schedule(env, timesteps)
     traffic = sort_traffic(traffic)
-    traffic = generate_vehicle_traffic(lam)        # Generate traffic data
     filename = "traffic"
     io.write_pickle("missions/" + filename + '.pkl', traffic) # Write the generated traffic into a pickle file (.pkl)
     traffic = io.read_pickle("missions/" + filename + '.pkl') # Load the traffic data from file
@@ -31,7 +30,7 @@ def generate_traffic_schedule(env, timesteps):
     deliveries = []
     # Deliveries
     for index, restaurant in env.restaurants.iterrows():
-        lam = restaurant["freq"] * 2.4
+        lam = restaurant["freq"] * 2.7
         traffic = generate_vehicle_traffic(lam, timesteps)
         time_separation = int(60 / 0.1) # 60 seconds in timesteps
         traffic = separate_drone_traffic(traffic, time_separation)
@@ -100,7 +99,9 @@ def generate_traffic_schedule(env, timesteps):
     # display = transform_meter_global(display)
     # io.write_geom(display, "missions", "white")
     # return firefighting + security + recreational + inspection + research
-    return firefighting + deliveries + security + recreational + inspection + research
+    # return firefighting + deliveries + security + recreational + inspection + research
+
+    return deliveries + security + recreational + inspection + research
 
 def generate_vehicle_traffic(lam, timesteps):
     """

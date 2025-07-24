@@ -1,4 +1,5 @@
 # TODO:
+import os
 import pandas as pd
 import geopandas as gp
 import numpy as np
@@ -49,11 +50,8 @@ class sampling_pp(io):
         self.radius = 700
         self.sim_run = ""
         self.sim_latest = ""
-        self.mp_areas = []
-        self.mp_costs = []
         self.adj = []
         self.heur = []
-        self.nfz = []
         self.nfz_costs = 10000000
         self.nodes = []
         self.iteration = 0
@@ -72,7 +70,7 @@ class sampling_pp(io):
 
         # Remove extra points outside of kaust airspace
         samples = [p for p in samples if p.within(self.kaust)]
-        print(min_distance_brute_force(samples))
+        # print(min_distance_brute_force(samples))
         self.nodes = samples
         # Get multipolygons
         t0 = time()
@@ -82,23 +80,25 @@ class sampling_pp(io):
         # Safe landing spots
         sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
         sa = make_mp(sa.geometry.union_all())
-        self.add_area(id=-1, geometry=sa, type=1, cost=-0.3, iteration=0,
+        self.add_area(id=-1, geometry=sa, type=1, cost=-0.9, iteration=0,
                       length=1000000, m_adj=None)
 
         # Communication/GPS constraints
         comm = io.import_communication()
-        r = 400
-        comm = make_mp(comm["geometry"].buffer(r).union_all())
-        self.add_area(id=-1, geometry=comm, type=1, cost=-0.1,
-                      iteration=0, length=1000000, m_adj=None)
+        r = 900
+        comm = construct_3way_intersection(comm["geometry"].buffer(r))
+        # comm = comm["geometry"].buffer(r).union_all()
+        comm = make_mp(comm)
+        # self.add_area(id=-1, geometry=comm, type=1, cost=-0.1,
+        #               iteration=0, length=1000000, m_adj=None)
         # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
-
         # NFZs
         fa = io.load_geojson_files("env/forbidden/*.geojson", concat=True)
         fa = make_mp(fa.geometry.union_all())
         self.add_area(id=-1, geometry=fa, type=0, cost=self.nfz_costs,
                       iteration=0, length=1000000, m_adj=None)
         t1 = time()
+        self.write_area_costs()
         print(f"Created adjacency matrices in {t1 - t0:.2f} seconds")
 
     def process_area(self, index = -1):
@@ -260,14 +260,110 @@ class sampling_pp(io):
                 nfz.append({"geometry": area.geometry, "iteration:": area.iteration, "length": area.length})
         return nfz
 
+    # def closest_landing(self, target_point, inward_distance=10.0):
+    #     """
+    #     Optimized version that pre-filters multipolygons by distance.
+    #     """
+    #     # Pre-filter multipolygons by rough distance check
+    #     multipolygons = [self.areas[1].geometry]  # Assuming the second area is the safe landing spots
+    #     candidates = []
+
+    #     for idx, mp in enumerate(multipolygons):
+    #         # Quick distance check using bounds
+    #         bounds_distance = target_point.distance(Point(mp.bounds[0], mp.bounds[1]))
+    #         candidates.append((bounds_distance, idx, mp))
+
+    #     # Sort by distance and check closest ones first
+    #     candidates.sort()
+
+    #     min_distance = float('inf')
+    #     best_closest_point = None
+    #     best_inward_point = None
+    #     best_multipolygon_idx = None
+
+    #     for bounds_dist, mp_idx, multipolygon in candidates:
+    #         # Skip if bounds distance is already larger than best found
+    #         if bounds_dist > min_distance:
+    #             break
+
+    #         # Get actual closest point
+    #         closest_point = nearest_points(target_point, multipolygon.boundary)[1]
+    #         distance = target_point.distance(closest_point)
+
+    #         if distance < min_distance:
+    #             inward_point = find_inward_point(closest_point, multipolygon, inward_distance)
+
+    #             if inward_point is not None:
+    #                 min_distance = distance
+    #                 best_closest_point = closest_point
+    #                 best_inward_point = inward_point
+    #                 best_multipolygon_idx = mp_idx
+
+    #     return best_closest_point, best_inward_point, best_multipolygon_idx
+
     def closest_landing(self, target_point, inward_distance=10.0):
         """
         Optimized version that pre-filters multipolygons by distance.
+        If target_point is inside a multipolygon, returns both points inside that multipolygon.
         """
         # Pre-filter multipolygons by rough distance check
-        multipolygons = self.mp_areas
+        print(target_point)
+        multipolygons = [self.areas[1].geometry]  # Assuming the second area is the safe landing spots
         candidates = []
 
+        # First check if target point is inside any multipolygon
+        for idx, mp in enumerate(multipolygons):
+            if mp.contains(target_point):
+                # Target is inside this multipolygon
+                print(f"Target point is inside multipolygon {idx}")
+
+                # Find a point that's inward_distance away from the target
+                # We'll try to move inward from the nearest boundary
+                closest_boundary_point = nearest_points(target_point, mp.boundary)[1]
+
+                # Calculate direction from boundary to target (inward direction)
+                inward_direction_x = target_point.x - closest_boundary_point.x
+                inward_direction_y = target_point.y - closest_boundary_point.y
+
+                # Normalize the direction
+                direction_length = (inward_direction_x**2 + inward_direction_y**2)**0.5
+                if direction_length > 0:
+                    unit_x = inward_direction_x / direction_length
+                    unit_y = inward_direction_y / direction_length
+
+                    # Create a point that's inward_distance away from target in the inward direction
+                    inward_point_x = target_point.x + unit_x * inward_distance
+                    inward_point_y = target_point.y + unit_y * inward_distance
+                    inward_point = Point(inward_point_x, inward_point_y)
+
+                    # Check if the inward point is still inside the multipolygon
+                    if mp.contains(inward_point):
+                        return target_point, inward_point, idx
+                    else:
+                        # If inward point is outside, try moving in the opposite direction
+                        inward_point_x = target_point.x - unit_x * inward_distance
+                        inward_point_y = target_point.y - unit_y * inward_distance
+                        inward_point = Point(inward_point_x, inward_point_y)
+
+                        if mp.contains(inward_point):
+                            return target_point, inward_point, idx
+                        else:
+                            # If both directions fail, find the centroid or use target as both points
+                            centroid = mp.centroid
+                            if mp.contains(centroid):
+                                return target_point, centroid, idx
+                            else:
+                                # Last resort: return target point for both
+                                return target_point, target_point, idx
+                else:
+                    # If target is exactly on boundary, use centroid
+                    centroid = mp.centroid
+                    if mp.contains(centroid):
+                        return target_point, centroid, idx
+                    else:
+                        return target_point, target_point, idx
+
+        # If target is not inside any multipolygon, proceed with original logic
         for idx, mp in enumerate(multipolygons):
             # Quick distance check using bounds
             bounds_distance = target_point.distance(Point(mp.bounds[0], mp.bounds[1]))
@@ -307,6 +403,31 @@ class sampling_pp(io):
         one_way.pop() # Remove the last element to make a full trip without duplicates
         round_trip = one_way + return_path
         return round_trip
+
+    def write_area_costs(self, filepath=None):
+        """
+        Write the costs of all areas into a text file.
+
+        Args:
+            filepath (str, optional): The path to the text file where costs will be written.
+                                    If None, will use sim_run path with 'area_costs.txt'
+        """
+        if filepath is None:
+            filepath = os.path.join("plot/" + self.sim_run, 'params.txt')
+            print(filepath)
+
+        with open(filepath, 'w') as f:
+            # Write header
+            f.write("area_id,area_type,cost,iteration,length,area_size\n")
+
+            # Write data for each area
+            for area in self.areas:
+                # Calculate area size in square meters
+                area_size = area.geometry.area
+                line = f"{area.id},{area.type},{area.cost},{area.iteration},{area.length},{area_size:.2f}\n"
+                f.write(line)
+
+        print(f"Area costs written to {filepath}")
 
 def samples_poisson(n_points, bounds):
     r = get_radius(n_points)
@@ -926,6 +1047,30 @@ def make_mp(polygon):
     if isinstance(polygon, Polygon):
         polygon = MultiPolygon([polygon])
     return polygon
+
+def construct_comm_intersection(points):
+    # Collect all non-empty intersections
+    all_intersections = []
+    for i in range(len(points)):
+        for j in range(i+1, len(points)):
+            intersection = points.iloc[i].intersection(points.iloc[j])
+            if not intersection.is_empty:
+                all_intersections.append(intersection)
+    # Union all intersections
+    return shapely.unary_union(all_intersections)
+
+def construct_3way_intersection(geoseries):
+    # Get all 3-way intersections
+    intersections = []
+    for i, j, k in combinations(range(len(geoseries)), 3):
+        intersection = (geoseries.iloc[i]
+                    .intersection(geoseries.iloc[j])
+                    .intersection(geoseries.iloc[k]))
+        if not intersection.is_empty:
+            intersections.append(intersection)
+
+    # Union all 3-way intersections
+    return shapely.unary_union(intersections)
 
 def main():
     spp = sampling_pp()
