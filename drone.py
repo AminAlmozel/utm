@@ -1,9 +1,6 @@
 import gurobipy as gp
 import numpy as np
 from gurobipy import GRB
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-# from mayavi import mlab
 import time
 import warnings
 from math import copysign
@@ -27,7 +24,7 @@ class DroneVehicle:
 
 class drone():
     def __init__(self):
-        self.N = 40
+        self.N = 50
         self.delta_t = 0.1 # Time step
         self.N_polygon = 24 # Number of sides for the polygon approximation
         self.not_collided = True
@@ -73,9 +70,6 @@ class drone():
 
     def generate_traj(self, env, xi, xf, xi_1, obstacles):
         # Clear the model from previously setup constraints
-        # self.env = gp.Env()
-        # self.env.resetParams()
-        # with gp.Env() as self.env:
 
         env.setParam(GRB.Param.OutputFlag, 0)
         env.setParam(GRB.Param.LogToConsole, 0)
@@ -167,8 +161,7 @@ class drone():
         self.control_constraints_compact()
         self.state_transition_constraints()
         self.initial_final_condition_constraints()
-        # self.obstacle_avoidance_constraints()
-        # self.general_obstacle_avoidance_constraints()
+        self.general_obstacle_avoidance_constraints()
         self.fixed_vehicle_collision_avoidance_constraints()
 
     def state_constraints(self):
@@ -347,10 +340,9 @@ class drone():
             # Obstacle avoidance constraints for each vehicle 'p'
             for c, obs in enumerate(self.obstacles):
                 t = t_vars[c]
-                p = obs["geom"]
+                vertices = obs["geom"]
                 # height = [0, obs["height"]]
                 height = obs["height"]
-                vertices = list(zip(*p.exterior.coords.xy))
                 for n in range (1, self.N):
                     binary_sum = 0
                     # print(vertices)
@@ -361,12 +353,14 @@ class drone():
                         self.m.addLConstr(sign * (a * s[n, 1] + b * s[n, 0] + c) <= self.M * t[n, i])
                         binary_sum += t[n, i]
 
-                    i = self.max_edges + 2
-                    self.m.addLConstr(-s[n, 2] <= -height[0] - self.min_dist + self.M * t[n, i - 2])
-                    self.m.addLConstr(s[n, 2] <= height[1] - self.min_dist + self.M * t[n, i - 1])
-                    binary_sum += t[n, i - 2] + t[n, i - 1]
                     total_sum = len(vertices) - 1 # -1 Because shapley rings double count a vertex
-                    total_sum += 2 # for the top and bottom constraints (height)
+                    if height[1] != -1:  # If there is a height limit
+                        i = self.max_edges + 2
+                        self.m.addLConstr(-s[n, 2] <= -height[0] - self.min_dist + self.M * t[n, i - 2])
+                        self.m.addLConstr(s[n, 2] <= height[1] - self.min_dist + self.M * t[n, i - 1])
+                        binary_sum += t[n, i - 2] + t[n, i - 1]
+                        total_sum += 2 # for the top and bottom constraints (height)
+
                     # Total sum has to be less than the number of half-plane constraints by one
                     self.m.addLConstr(binary_sum  <= total_sum - 1)
 

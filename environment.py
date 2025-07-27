@@ -30,9 +30,6 @@ class env():
         self.mission_progress = 0
         self.repeat = 1
 
-        nearby = self.nearby_obstacles([4, 5, 8], 10)
-        # print(nearby)
-
     def read_houses(self):
         # Reading the file
         filename = "env/houses.geojson"
@@ -194,8 +191,7 @@ class env():
         self.fire_station.to_crs(epsg=20437, inplace=True)
 
     def nearby_obstacles(self, pos, range):
-        position = Point(pos[0], pos[1], pos[2])
-        dist = self.houses.distance(position)
+        dist = self.houses.distance(pos)
         return self.houses[dist<=range]
 
     def random_mission(self, tod):

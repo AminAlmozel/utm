@@ -260,6 +260,27 @@ class sampling_pp(io):
                 nfz.append({"geometry": area.geometry, "iteration:": area.iteration, "length": area.length})
         return nfz
 
+    def nearby_nfz(self, point, radius=1000):
+        """
+        Get nearby no-fly zone polygons within a certain radius.
+        Returns a list of Polygons that are within the radius of the point.
+
+        Args:
+            point (Point): The reference point
+            radius (float): Search radius in meters
+
+        Returns:
+            list: List of Polygons that are within the radius of the point
+        """
+        nearby = []
+        for area in self.areas:
+            if area.type == 0:  # No-fly zone
+                # For each polygon in the MultiPolygon
+                for polygon in area.geometry.geoms:
+                    if polygon.distance(point) < radius:
+                        nearby.append(polygon)
+        return nearby
+
     # def closest_landing(self, target_point, inward_distance=10.0):
     #     """
     #     Optimized version that pre-filters multipolygons by distance.

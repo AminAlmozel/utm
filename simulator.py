@@ -167,11 +167,19 @@ class simulator(drone.drone):
 
         # Finding the obstacles in proximity
         state = self.drones[k].state
-        pos = [state['x'], state['y'], state['z']]
+        pos = Point(state['x'], state['y'], state['z'])
         # Temp solution
-        obstacles = self.obs.nearby_obstacles(pos, self.proximity)
-        # print(obstacles)
-        obstacles = self.obstacles
+        # obstacles = self.obs.nearby_obstacles(pos, self.proximity)
+
+        nfz = []
+        if self.drones[k].mission_type == "delivery":
+            obstacles = self.ppp.nearby_nfz(pos, self.proximity)
+            if len(obstacles) != 0:
+                for obs in obstacles:
+                    vertices = list(zip(*obs.exterior.coords.xy))
+                    height = -1 # No height limit
+                    nfz.append({'geom':vertices, 'height': [0, height], 'edges': len(vertices) - 1})
+        obstacles = nfz
 
         # Initial state
         xi = self.drones[k].state
@@ -252,7 +260,7 @@ class simulator(drone.drone):
                     drone_data_list.append(drone_data)
 
                 t03 = time.time()
-                print("Prepared data for %d drones in %.2f seconds" % (len(drone_data_list), t03 - t02))
+                # print("Prepared data for %d drones in %.2f seconds" % (len(drone_data_list), t03 - t02))
 
                 try:
                     # Submit all drone trajectory calculations to the executor
@@ -287,7 +295,6 @@ class simulator(drone.drone):
 
                 # Update and log as before
                 self.update()
-
                 if self.iteration % 1000 == 0:
                     print("Writing")
                     io.log_to_pickle(self.drones, "missions", self.sim_run, self.sim_latest)
@@ -435,7 +442,7 @@ class simulator(drone.drone):
         # Update trajectories and the current state
         self.update_vehicle_state()
         # Apply random events
-        self.random_events()
+        # self.random_events()
         # Check the mission progress
         self.update_mission()
         # Update the trajectories
