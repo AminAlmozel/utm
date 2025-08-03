@@ -10,9 +10,9 @@ warnings.simplefilter(action='ignore')
 
 
 class DroneVehicle:
-    __slots__ = ['s', 'u', 'w', 'v', 't', 'tc', 's_c']
+    __slots__ = ['s', 'u', 'w', 'v', 't', 'tc', 's_c', 's_nfz']
 
-    def __init__(self, s, u, w, v, t, tc, s_c):
+    def __init__(self, s, u, w, v, t, tc, s_c, s_nfz):
         self.s = s
         self.u = u
         self.w = w
@@ -20,6 +20,7 @@ class DroneVehicle:
         self.t = t
         self.tc = tc
         self.s_c = s_c
+        self.s_nfz = s_nfz
 
 
 class drone():
@@ -69,8 +70,9 @@ class drone():
         # # self.m = gp.Model(env=env)
 
     def generate_traj(self, env, xi, xf, xi_1, obstacles):
+        rotation_matrix = calculate_rotation_matrix(xi, xf)
+        xi, xf, xi_1, obstacles = apply_rotation(rotation_matrix, xi, xf, xi_1, obstacles)
         # Clear the model from previously setup constraints
-
         env.setParam(GRB.Param.OutputFlag, 0)
         env.setParam(GRB.Param.LogToConsole, 0)
         env.setParam(GRB.Param.MIPFocus, 1)  # Focus on finding good feasible solutions
@@ -103,8 +105,9 @@ class drone():
         # Clearing and freeing things up
         self.m.close()
         # self.env.close()
-        env.close()
-
+        # env.close()
+        inverse_matrix = rotation_matrix.T
+        self.full_traj = apply_rotation_to_trajectory(self.full_traj, inverse_matrix)
         return self.full_traj
 
     def set_initial_condition(self, xi):
@@ -144,7 +147,8 @@ class drone():
             v=self.m.addVars(self.N, 3, name=f"v_{p}"),
             t=[self.m.addVars(self.N, self.max_edges + 2, vtype=GRB.BINARY, name=f"t_{p}_obstacle_{c}") for c in range(len(self.obstacles))],
             tc=self.m.addVars(self.N, self.N_polygon, vtype=GRB.BINARY, name=f"tc_{p}_accel"),
-            s_c=self.m.addVars(self.N, lb=[0] * self.N, ub=[self.d_x] * self.N)
+            s_c=self.m.addVars(self.N, lb=[0] * self.N, ub=[self.d_x] * self.N),
+            s_nfz=self.m.addVars(self.N, lb=[0] * self.N, ub=[30] * self.N)
         )
         self.vehicles.append(vehicle)
 
@@ -162,7 +166,7 @@ class drone():
         self.state_transition_constraints()
         self.initial_final_condition_constraints()
         self.general_obstacle_avoidance_constraints()
-        self.fixed_vehicle_collision_avoidance_constraints()
+        # self.fixed_vehicle_collision_avoidance_constraints()
 
     def state_constraints(self):
         # Add constraints and objective components for each vehicle
@@ -336,7 +340,7 @@ class drone():
     def general_obstacle_avoidance_constraints(self):
          # Add constraints and objective components for each vehicle
         for p, vehicle in enumerate(self.vehicles):
-            s, u, w, v_vars, t_vars, tc_vars = vehicle.s, vehicle.u, vehicle.w, vehicle.v, vehicle.t, vehicle.tc
+            s, t_vars, s_nfz = vehicle.s, vehicle.t, vehicle.s_nfz
             # Obstacle avoidance constraints for each vehicle 'p'
             for c, obs in enumerate(self.obstacles):
                 t = t_vars[c]
@@ -345,12 +349,13 @@ class drone():
                 height = obs["height"]
                 for n in range (1, self.N):
                     binary_sum = 0
-                    # print(vertices)
                     for i in range(len(vertices) - 1):
                         p1 = [vertices[i][0], vertices[i][1]]
                         p2 = [vertices[i + 1][0], vertices[i + 1][1]]
                         a, b, c, sign = self.get_line_coeff(p1, p2)
-                        self.m.addLConstr(sign * (a * s[n, 1] + b * s[n, 0] + c) <= self.M * t[n, i])
+                        self.m.addLConstr(sign * (a * s[n, 1] + b * s[n, 0] + c) - s_nfz[n] <= self.M * t[n, i])
+
+                        # self.m.addLConstr(sign * (a * s[n, 1] + b * s[n, 0] + c) <= self.M * t[n, i])
                         binary_sum += t[n, i]
 
                     total_sum = len(vertices) - 1 # -1 Because shapley rings double count a vertex
@@ -405,7 +410,7 @@ class drone():
 
         # Add constraints and objective components for each vehicle
         for p, vehicle in enumerate(self.vehicles):
-            s, u, w, v_vars, s_c = vehicle.s, vehicle.u, vehicle.w, vehicle.v, vehicle.s_c
+            s, u, w, v_vars, s_c, s_nfz = vehicle.s, vehicle.u, vehicle.w, vehicle.v, vehicle.s_c, vehicle.s_nfz
 
             # Add state deviation costs to the objective
             for i in range(1, self.N-1):  # i = 1 to N - 1
@@ -423,6 +428,9 @@ class drone():
 
             for i in range(self.N):
                 self.obj.add(self.collision_penality * s_c[i])
+
+            for i in range(self.N):
+                self.obj.add(self.collision_penality * s_nfz[i])
         # print("done setup objective")
 
     def optimize(self):
@@ -439,8 +447,7 @@ class drone():
         self.m.optimize()
 
         total_computational_time = self.m.Runtime
-        # print("Total Computational Time(s):", total_computational_time, "seconds")
-
+        # print(f"Total Computational Time(s): {total_computational_time:.2f} seconds")
         # if self.m.status == GRB.OPTIMAL:
         #     # print("find the optimal")
 
@@ -755,3 +762,187 @@ class drone():
             return A, b, x_vars, GRB.LESS_EQUAL
 
         return None, None, None, None
+
+def calculate_rotation_matrix(xi, xf):
+    """
+    Calculate the rotation matrix that aligns the vector from initial to final position with the x-axis.
+
+    Args:
+        xi: Initial state dictionary with x, y coordinates
+        xf: Final state dictionary with x, y coordinates
+
+    Returns:
+        2x2 numpy array representing the rotation matrix
+    """
+    # Calculate the vector from initial to final position
+    vec = np.array([xf['x'] - xi['x'], xf['y'] - xi['y']])
+
+    # Calculate the angle between the vector and x-axis
+    angle = np.arctan2(vec[1], vec[0])
+
+    # Create rotation matrix for counter-clockwise rotation by -angle
+    rotation_matrix = np.array([
+        [np.cos(-angle), -np.sin(-angle)],
+        [np.sin(-angle), np.cos(-angle)]
+    ])
+
+    return rotation_matrix
+
+def apply_rotation(rotation_matrix, xi, xf, xi_1, obstacles):
+    """
+    Apply the rotation matrix to transform all input arguments.
+
+    Args:
+        rotation_matrix: 2x2 numpy array representing the rotation matrix
+        xi: Initial state dictionary with x, y, z, xdot, ydot, zdot
+        xf: Final state dictionary with x, y, z, xdot, ydot, zdot
+        xi_1: List of trajectories from other drones [[x positions], [y positions], [z positions], ...]
+        obstacles: List of obstacle dictionaries with geometry and height information
+
+    Returns:
+        Tuple of transformed (xi, xf, xi_1, obstacles)
+    """
+    # Transform initial state
+    xi_pos = np.array([xi['x'], xi['y']])
+    xi_vel = np.array([xi['xdot'], xi['ydot']])
+    xi_pos_rotated = rotation_matrix @ xi_pos
+    xi_vel_rotated = rotation_matrix @ xi_vel
+
+    xi_transformed = {
+        'x': xi_pos_rotated[0],
+        'y': xi_pos_rotated[1],
+        'z': xi['z'],
+        'xdot': xi_vel_rotated[0],
+        'ydot': xi_vel_rotated[1],
+        'zdot': xi['zdot']
+    }
+
+    # Transform final state
+    xf_pos = np.array([xf['x'], xf['y']])
+    xf_vel = np.array([xf['xdot'], xf['ydot']])
+    xf_pos_rotated = rotation_matrix @ xf_pos
+    xf_vel_rotated = rotation_matrix @ xf_vel
+
+    xf_transformed = {
+        'x': xf_pos_rotated[0],
+        'y': xf_pos_rotated[1],
+        'z': xf['z'],
+        'xdot': xf_vel_rotated[0],
+        'ydot': xf_vel_rotated[1],
+        'zdot': xf['zdot']
+    }
+
+    # Transform other drone trajectories
+    xi_1_transformed = []
+    for traj in xi_1:
+        # Extract x and y positions
+        xy_positions = np.vstack((traj[0], traj[1]))
+        # Rotate positions
+        rotated_positions = rotation_matrix @ xy_positions
+
+        # Extract x and y velocities
+        xy_velocities = np.vstack((traj[3], traj[4]))
+        # Rotate velocities
+        rotated_velocities = rotation_matrix @ xy_velocities
+
+        # Create transformed trajectory
+        transformed_traj = [
+            rotated_positions[0].tolist(),  # x positions
+            rotated_positions[1].tolist(),  # y positions
+            traj[2],                        # z positions (unchanged)
+            rotated_velocities[0].tolist(), # x velocities
+            rotated_velocities[1].tolist(), # y velocities
+            traj[5]                         # z velocities (unchanged)
+        ]
+        xi_1_transformed.append(transformed_traj)
+
+    # Transform obstacles
+    obstacles_transformed = []
+    for obs in obstacles:
+        vertices = obs["geom"]
+        transformed_vertices = []
+
+        # Transform each vertex of the obstacle
+        for vertex in vertices:
+            point = np.array([vertex[0], vertex[1]])
+            rotated_point = rotation_matrix @ point
+            transformed_vertices.append((rotated_point[0], rotated_point[1]))
+
+        # Create transformed obstacle
+        transformed_obs = {
+            "geom": transformed_vertices,
+            "height": obs["height"],
+            "edges": obs["edges"]
+        }
+        obstacles_transformed.append(transformed_obs)
+
+    return xi_transformed, xf_transformed, xi_1_transformed, obstacles_transformed
+
+def inverse_rotation(rotation_matrix, xi, xf, xi_1, obstacles):
+    """
+    Apply the inverse rotation to transform back to the original coordinate system.
+
+    Args:
+        rotation_matrix: 2x2 numpy array representing the original rotation matrix
+        xi: Initial state dictionary with x, y, z, xdot, ydot, zdot in transformed coordinates
+        xf: Final state dictionary with x, y, z, xdot, ydot, zdot in transformed coordinates
+        xi_1: List of trajectories from other drones in transformed coordinates
+        obstacles: List of obstacle dictionaries with geometry in transformed coordinates
+
+    Returns:
+        Tuple of inverse transformed (xi, xf, xi_1, obstacles) in original coordinates
+    """
+    # For a rotation matrix, its inverse is its transpose
+    inverse_matrix = rotation_matrix.T
+    return apply_rotation(inverse_matrix, xi, xf, xi_1, obstacles)
+
+def apply_rotation_to_trajectory(full_traj, rotation_matrix):
+    """
+    Apply rotation matrix to full_traj.
+
+    Args:
+        rotation_matrix: 2x2 numpy array representing the rotation matrix
+
+    Returns:
+        Transformed trajectory in the same format as full_traj
+    """
+    if isinstance(full_traj, int) and full_traj == -1:
+        return -1
+
+    # Extract positions and velocities
+    xy_positions = np.vstack((full_traj[0], full_traj[1]))
+    xy_velocities = np.vstack((full_traj[3], full_traj[4]))
+
+    # Apply rotation
+    rotated_positions = rotation_matrix @ xy_positions
+    rotated_velocities = rotation_matrix @ xy_velocities
+
+    # Create transformed trajectory
+    transformed_traj = [
+        rotated_positions[0].tolist(),  # x positions
+        rotated_positions[1].tolist(),  # y positions
+        full_traj[2],             # z positions (unchanged)
+        rotated_velocities[0].tolist(), # x velocities
+        rotated_velocities[1].tolist(), # y velocities
+        full_traj[5]              # z velocities (unchanged)
+    ]
+
+    return transformed_traj
+
+def transform_everything(xi, xf, xi_1, obstacles):
+    """
+    Transforms the coordinate system to align the vector from initial to final position with the x-axis.
+
+    Args:
+        xi: Initial state dictionary with x, y, z, xdot, ydot, zdot
+        xf: Final state dictionary with x, y, z, xdot, ydot, zdot
+        xi_1: List of trajectories from other drones [[x positions], [y positions], [z positions], ...]
+        obstacles: List of obstacle dictionaries with geometry and height information
+
+    Returns:
+        Tuple of (transformed_xi, transformed_xf, transformed_xi_1, transformed_obstacles, rotation_matrix)
+        The rotation_matrix is returned so it can be used later for inverse transformation
+    """
+    rotation_matrix = calculate_rotation_matrix(xi, xf)
+    transformed = apply_rotation(rotation_matrix, xi, xf, xi_1, obstacles)
+    return transformed + (rotation_matrix,)

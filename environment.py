@@ -338,7 +338,7 @@ class env():
         # and the area surrounding the location of the fire
         ls = LineString([pi, pf])
         g = gp.GeoSeries([ls.buffer(30), fire_station.buffer(50), pf.buffer(100)])
-        fire = g.unary_union
+        fire = g.union_all()
         avoid = transform_meter_global([fire])[0]
         io.write_geom([avoid], self.sim_run + "avoid", "red")
         io.write_geom([avoid], self.sim_latest + "avoid", "red")

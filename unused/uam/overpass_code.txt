@@ -1,0 +1,31 @@
+/*
+This is an example Overpass query.
+Try it out by pressing the Run button above!
+You can find more examples with the Load tool.
+*/
+
+
+[out:json][timeout:25];
+// gather results
+(
+ 
+  // query part for: “aeroway=aerodrome and icao~LOWW”
+  area["name"="Toulouse"]->.boundaryarea;
+  node[amenity=hospital](area.boundaryarea);
+  way[amenity=hospital](area.boundaryarea);
+  relation[amenity=hospital](area.boundaryarea);
+);
+// print results
+out body;
+>;
+out skel qt;
+
+out;
+/*
+node [aeroway=aerodrome](area.boundaryarea);
+node [amenity=hospital](area.boundaryarea);
+node [Tag:aeroway=aerodrome](area.boundaryarea);
+  node["aeroway"="aerodrome"]({{bbox}});
+  way["aeroway"="aerodrome"]({{bbox}});
+  relation["aeroway"="aerodrome"]({{bbox}});
+*/

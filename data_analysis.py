@@ -41,16 +41,21 @@ class DroneData:
         self.mission_status = mission_status
 
 def main():
-    mission_folder = "full_runs/mission3/*/"
+    mission_folder = "full_runs/emergency_landing2/*/"
     filename = mission_folder + "/*.pkl"
     list_of_files = glob.glob(filename)
     print(list_of_files)
     longest_flight = 0
+    collided = []
+    e_landing = []
     for pickle_file in list_of_files:
+        collisons = 0
+        landing = 0
         temp = io.read_pickle(pickle_file)
         print("Number of drones: ", len(temp))
         safe = io.load_geojson_files("env/landing/everything.geojson", concat=True)["geometry"].union_all()
         nfz = io.load_geojson_files("env/forbidden/kaustforbidden.geojson", concat=True)["geometry"].union_all()
+        comm = io.load_geojson_files("plot/comm.geojson", concat=True)["geometry"].union_all()
         # nfz = prep(nfz)
         safe = safe.difference(nfz)
         # safe = prep(safe)
@@ -59,6 +64,9 @@ def main():
         output = []
 
         for drone in temp:
+            if drone.mission_status == "collided":
+                collisons += 1
+                continue
             traj = drone.traj  # Changed from ['trajs'] to .traj
             traj = make_traj(traj)  # Ensure traj is a LineString
             if isinstance(traj, int) or traj is None:
@@ -69,7 +77,10 @@ def main():
             if l == 0:
                 continue
             l_safe, l_unsafe, l_outside = measure_safe_distance(traj, safe, nfz)
-            # response = measure_emergency_landing_response(traj, drone.birthday, ground_stop)  # Changed from ['born'] to .birthday
+            l_comm, l_outside_comm = measure_communication_distance(traj, comm)
+            response = measure_emergency_landing_response(traj, drone.iteration, ground_stop)
+            if response > 0:
+                landing += 1
             if l > longest_flight:
                 longest_flight = l
             print()
@@ -83,14 +94,22 @@ def main():
             print("Safe: \t\t\t%.2fm (%.2f%%)" %(l_safe, l_safe * 100 / l))
             print("Unsafe: \t\t%.2fm (%.2f%%)" %(l_unsafe, l_unsafe * 100 / l))
             print("Outside: \t\t%.2fm (%.2f%%)" %(l_outside, l_outside * 100 / l))
-            # print("Response time: \t\t%.2fs" %(response))
+            print("Response time: \t\t%.2fs" %(response))
 
-            output.append([drone.id, l, t, l_safe, l_unsafe, l_outside])  # Changed from ["id"] to .id
+            output.append([drone.id, l, t, l_safe, l_unsafe, l_outside, response])
+            # output.append([drone.id, l, t, l_comm, l_outside_comm])
 
         df = pd.DataFrame(output)
         current_folder = os.path.dirname(pickle_file)
         df.to_csv(current_folder + "/stats.csv", index=False, header=False)
+        collided.append(collisons)
+        e_landing.append(landing)
     print("Longest flight: %.2fm" %(longest_flight))
+    print("Collisions: ")
+    print(collided)
+    print("Emergency landings: ")
+    print(e_landing)
+
 def measure_traj_length(traj):
     return traj.length
 
@@ -121,6 +140,12 @@ def measure_safe_distance(traj, safe, nfz):
     outside = traj.difference(combined_area).length
     return safe_dist, unsafe, outside
 
+def measure_communication_distance(traj, comm):
+    l = traj.length
+    comm_dist = traj.intersection(comm).length
+    outside = traj.difference(comm).length
+    return comm_dist, outside
+
 def measure_geofence_breaches(trajs):
     pass
 
@@ -128,12 +153,14 @@ def measure_link_loss(trajs):
     pass
 
 def measure_emergency_landing_response(traj, born, ground_stop):
-    T = timedelta(seconds = measure_total_time(traj))
+    dt = 0.1
+    T = len(traj.coords)
     landed = born + T
+    print(landed)
     if ground_stop > landed:
         return 0
     else:
-        return (landed - ground_stop).total_seconds()
+        return (landed - ground_stop) * dt
 
 def measure_mid_air_collisions(trajs):
     pass

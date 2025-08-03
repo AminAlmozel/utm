@@ -4,7 +4,7 @@ clc
 format compact
 format shortG
 base_dir = pwd;
-path = "/full_runs/mission3/run_25-07-21-155232/stats.csv";
+path = "/full_runs/mission5/0run_25-07-30-131509/stats.csv";
 m = importdata(fullfile(base_dir, path));
 distance = m(:, 2);
 time = m(:, 3);

@@ -80,8 +80,8 @@ class sampling_pp(io):
         # Safe landing spots
         sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
         sa = make_mp(sa.geometry.union_all())
-        self.add_area(id=-1, geometry=sa, type=1, cost=-0.9, iteration=0,
-                      length=1000000, m_adj=None)
+        # self.add_area(id=-1, geometry=sa, type=1, cost=-0.3, iteration=0,
+        #               length=1000000, m_adj=None)
 
         # Communication/GPS constraints
         comm = io.import_communication()
@@ -89,7 +89,7 @@ class sampling_pp(io):
         comm = construct_3way_intersection(comm["geometry"].buffer(r))
         # comm = comm["geometry"].buffer(r).union_all()
         comm = make_mp(comm)
-        # self.add_area(id=-1, geometry=comm, type=1, cost=-0.1,
+        # self.add_area(id=-1, geometry=comm, type=1, cost=-0.3,
         #               iteration=0, length=1000000, m_adj=None)
         # io.write_geom(transform_meter_global([comm]), "comm", "yellow")
         # NFZs
@@ -149,7 +149,10 @@ class sampling_pp(io):
         for area in self.areas:
             if area.iteration + area.length > self.iteration:
                 # Intersect lines with each of the polygons
-                lengths = calculate_intersection_lengths_vectorized(lines, area.geometry)
+                geom = area.geometry
+                # if area.type == 0:  # No-fly zone
+                #     geom = area.geometry.buffer(5)  # Small buffer to avoid precision issues
+                lengths = calculate_intersection_lengths_vectorized(lines, geom)
                 lengths *= area.cost
                 # Construct adjacency lists
                 m_adj = create_adjacency_matrix_vectorized(lengths, node_pairs, nodes)
@@ -194,7 +197,11 @@ class sampling_pp(io):
                 new_matrix[num_new_nodes:, num_new_nodes:] = old_matrix
 
                 # Calculate lengths only for new connections
-                new_lengths = calculate_intersection_lengths_vectorized(new_lines, area.geometry)
+                # new_lengths = calculate_intersection_lengths_vectorized(new_lines, area.geometry)
+                geom = area.geometry
+                # if area.type == 0:  # No-fly zone
+                #     geom = area.geometry.buffer(5)  # Small buffer to avoid precision issues
+                new_lengths = calculate_intersection_lengths_vectorized(new_lines, geom)
                 new_lengths *= area.cost
 
                 # Add new connections to the matrix
@@ -272,6 +279,7 @@ class sampling_pp(io):
         Returns:
             list: List of Polygons that are within the radius of the point
         """
+        inside = 0
         nearby = []
         for area in self.areas:
             if area.type == 0:  # No-fly zone
@@ -279,48 +287,10 @@ class sampling_pp(io):
                 for polygon in area.geometry.geoms:
                     if polygon.distance(point) < radius:
                         nearby.append(polygon)
-        return nearby
+                        if polygon.contains(point):
+                            inside = 1
 
-    # def closest_landing(self, target_point, inward_distance=10.0):
-    #     """
-    #     Optimized version that pre-filters multipolygons by distance.
-    #     """
-    #     # Pre-filter multipolygons by rough distance check
-    #     multipolygons = [self.areas[1].geometry]  # Assuming the second area is the safe landing spots
-    #     candidates = []
-
-    #     for idx, mp in enumerate(multipolygons):
-    #         # Quick distance check using bounds
-    #         bounds_distance = target_point.distance(Point(mp.bounds[0], mp.bounds[1]))
-    #         candidates.append((bounds_distance, idx, mp))
-
-    #     # Sort by distance and check closest ones first
-    #     candidates.sort()
-
-    #     min_distance = float('inf')
-    #     best_closest_point = None
-    #     best_inward_point = None
-    #     best_multipolygon_idx = None
-
-    #     for bounds_dist, mp_idx, multipolygon in candidates:
-    #         # Skip if bounds distance is already larger than best found
-    #         if bounds_dist > min_distance:
-    #             break
-
-    #         # Get actual closest point
-    #         closest_point = nearest_points(target_point, multipolygon.boundary)[1]
-    #         distance = target_point.distance(closest_point)
-
-    #         if distance < min_distance:
-    #             inward_point = find_inward_point(closest_point, multipolygon, inward_distance)
-
-    #             if inward_point is not None:
-    #                 min_distance = distance
-    #                 best_closest_point = closest_point
-    #                 best_inward_point = inward_point
-    #                 best_multipolygon_idx = mp_idx
-
-    #     return best_closest_point, best_inward_point, best_multipolygon_idx
+        return nearby, inside
 
     def closest_landing(self, target_point, inward_distance=10.0):
         """
@@ -672,41 +642,41 @@ def connect_multiple_points_to_network(existing_points: List[Point],
 
     return lines, indices
 
-def line_intersection_lengths(lines, multipolygon):
-    """
-    For each line, compute the length of the segment that intersects the MultiPolygon.
+# def line_intersection_lengths(lines, multipolygon):
+#     """
+#     For each line, compute the length of the segment that intersects the MultiPolygon.
 
-    Args:
-        lines (list of LineString): List of Shapely LineString geometries.
-        multipolygon (MultiPolygon): Shapely MultiPolygon geometry.
+#     Args:
+#         lines (list of LineString): List of Shapely LineString geometries.
+#         multipolygon (MultiPolygon): Shapely MultiPolygon geometry.
 
-    Returns:
-        list of float: Lengths of intersections for each line (0 if no intersection).
-    """
-    # Prepare geometry for faster repeated intersection checks
-    prepared_multipolygon = prep(multipolygon)
+#     Returns:
+#         list of float: Lengths of intersections for each line (0 if no intersection).
+#     """
+#     # Prepare geometry for faster repeated intersection checks
+#     prepared_multipolygon = prep(multipolygon)
 
-    lengths = []
-    for line in lines:
-        # Fast rejection
-        if not prepared_multipolygon.intersects(line):
-            lengths.append(0.0)
-            continue
+#     lengths = []
+#     for line in lines:
+#         # Fast rejection
+#         if not prepared_multipolygon.intersects(line):
+#             lengths.append(0.0)
+#             continue
 
-        # Compute actual intersection geometry
-        intersection = multipolygon.intersection(line)
+#         # Compute actual intersection geometry
+#         intersection = multipolygon.intersection(line)
 
-        # Sum length if result is LineString or MultiLineString
-        if intersection.is_empty:
-            lengths.append(0.0)
-        elif intersection.geom_type == 'LineString':
-            lengths.append(intersection.length)
-        elif intersection.geom_type == 'MultiLineString':
-            lengths.append(sum(segment.length for segment in intersection.geoms))
-        else:
-            lengths.append(0.0)  # Intersection not a line segment
+#         # Sum length if result is LineString or MultiLineString
+#         if intersection.is_empty:
+#             lengths.append(0.0)
+#         elif intersection.geom_type == 'LineString':
+#             lengths.append(intersection.length)
+#         elif intersection.geom_type == 'MultiLineString':
+#             lengths.append(sum(segment.length for segment in intersection.geoms))
+#         else:
+#             lengths.append(0.0)  # Intersection not a line segment
 
-    return lengths
+#     return lengths
 
 def calculate_intersection_lengths_vectorized(lines: List[LineString], multipolygon: MultiPolygon) -> np.ndarray:
     """
@@ -857,105 +827,105 @@ def _create_heuristic_matrix(node_coordinates: np.ndarray, num_nodes: int) -> np
 
     return euclidean_distances
 
-def create_adjacency_list_vectorized(lengths: np.ndarray,
-                                     node_pairs: np.ndarray,
-                                     node_coordinates: Union[np.ndarray, List[Point]] = None,
-                                     num_nodes: int = None,
-                                     symmetric: bool = True,
-                                     return_heuristic: bool = False) -> Union[Dict[int, List[Tuple[int, float]]], Tuple[Dict[int, List[Tuple[int, float]]], np.ndarray]]:
-    """
-    Vectorized version for better performance with large datasets.
-    Creates an adjacency list representation of the graph.
+# def create_adjacency_list_vectorized(lengths: np.ndarray,
+#                                      node_pairs: np.ndarray,
+#                                      node_coordinates: Union[np.ndarray, List[Point]] = None,
+#                                      num_nodes: int = None,
+#                                      symmetric: bool = True,
+#                                      return_heuristic: bool = False) -> Union[Dict[int, List[Tuple[int, float]]], Tuple[Dict[int, List[Tuple[int, float]]], np.ndarray]]:
+#     """
+#     Vectorized version for better performance with large datasets.
+#     Creates an adjacency list representation of the graph.
 
-    Args:
-        lengths: NumPy array of line lengths
-        node_pairs: NumPy array of shape (n_connections, 2) containing node pairs
-        node_coordinates: Either:
-                         - NumPy array of shape (num_nodes, 2) containing (x, y) coordinates
-                         - List of Shapely Point objects
-                         Required if return_heuristic=True
-        num_nodes: Total number of nodes. If None, inferred from max node index + 1
-        symmetric: If True, creates symmetric adjacency list (undirected graph)
-        return_heuristic: If True, also returns heuristic matrix with Euclidean distances
+#     Args:
+#         lengths: NumPy array of line lengths
+#         node_pairs: NumPy array of shape (n_connections, 2) containing node pairs
+#         node_coordinates: Either:
+#                          - NumPy array of shape (num_nodes, 2) containing (x, y) coordinates
+#                          - List of Shapely Point objects
+#                          Required if return_heuristic=True
+#         num_nodes: Total number of nodes. If None, inferred from max node index + 1
+#         symmetric: If True, creates symmetric adjacency list (undirected graph)
+#         return_heuristic: If True, also returns heuristic matrix with Euclidean distances
 
-    Returns:
-        If return_heuristic=False: Dict[int, List[Tuple[int, float]]] (adjacency list)
-            - Keys are node indices
-            - Values are lists of (neighbor_node, edge_weight) tuples
-        If return_heuristic=True: Tuple[Dict[int, List[Tuple[int, float]]], numpy.ndarray]
-            - (adjacency list, heuristic matrix)
-    """
-    if len(lengths) != len(node_pairs):
-        raise ValueError("lengths and node_pairs must have the same length")
+#     Returns:
+#         If return_heuristic=False: Dict[int, List[Tuple[int, float]]] (adjacency list)
+#             - Keys are node indices
+#             - Values are lists of (neighbor_node, edge_weight) tuples
+#         If return_heuristic=True: Tuple[Dict[int, List[Tuple[int, float]]], numpy.ndarray]
+#             - (adjacency list, heuristic matrix)
+#     """
+#     if len(lengths) != len(node_pairs):
+#         raise ValueError("lengths and node_pairs must have the same length")
 
-    if return_heuristic and node_coordinates is None:
-        raise ValueError("node_coordinates must be provided when return_heuristic=True")
+#     if return_heuristic and node_coordinates is None:
+#         raise ValueError("node_coordinates must be provided when return_heuristic=True")
 
-    # Convert to numpy arrays if not already
-    lengths = np.asarray(lengths, dtype=np.float64)
-    node_pairs = np.asarray(node_pairs, dtype=np.int32)
+#     # Convert to numpy arrays if not already
+#     lengths = np.asarray(lengths, dtype=np.float64)
+#     node_pairs = np.asarray(node_pairs, dtype=np.int32)
 
-    if return_heuristic:
-        # Convert Shapely Points to NumPy array if needed
-        if isinstance(node_coordinates, list) and len(node_coordinates) > 0 and isinstance(node_coordinates[0], Point):
-            node_coordinates = np.array([[point.x, point.y] for point in node_coordinates])
-        else:
-            node_coordinates = np.asarray(node_coordinates, dtype=np.float64)
+#     if return_heuristic:
+#         # Convert Shapely Points to NumPy array if needed
+#         if isinstance(node_coordinates, list) and len(node_coordinates) > 0 and isinstance(node_coordinates[0], Point):
+#             node_coordinates = np.array([[point.x, point.y] for point in node_coordinates])
+#         else:
+#             node_coordinates = np.asarray(node_coordinates, dtype=np.float64)
 
-        if node_coordinates.shape[1] != 2:
-            raise ValueError("node_coordinates must have shape (num_nodes, 2) or be a list of Shapely Points")
+#         if node_coordinates.shape[1] != 2:
+#             raise ValueError("node_coordinates must have shape (num_nodes, 2) or be a list of Shapely Points")
 
-    if lengths.size == 0:
-        if num_nodes is None:
-            raise ValueError("num_nodes must be specified when no connections are provided")
+#     if lengths.size == 0:
+#         if num_nodes is None:
+#             raise ValueError("num_nodes must be specified when no connections are provided")
 
-        # Create empty adjacency list for all nodes
-        adj_list = {i: [] for i in range(num_nodes)}
+#         # Create empty adjacency list for all nodes
+#         adj_list = {i: [] for i in range(num_nodes)}
 
-        if return_heuristic:
-            heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
-            return adj_list, heuristic_matrix
-        return adj_list
+#         if return_heuristic:
+#             heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
+#             return adj_list, heuristic_matrix
+#         return adj_list
 
-    # Determine number of nodes if not specified
-    if num_nodes is None:
-        num_nodes = np.max(node_pairs) + 1
+#     # Determine number of nodes if not specified
+#     if num_nodes is None:
+#         num_nodes = np.max(node_pairs) + 1
 
-    # Validate node indices
-    if np.max(node_pairs) >= num_nodes:
-        raise ValueError(f"Node index {np.max(node_pairs)} exceeds num_nodes-1 ({num_nodes-1})")
+#     # Validate node indices
+#     if np.max(node_pairs) >= num_nodes:
+#         raise ValueError(f"Node index {np.max(node_pairs)} exceeds num_nodes-1 ({num_nodes-1})")
 
-    if return_heuristic and len(node_coordinates) != num_nodes:
-        raise ValueError(f"node_coordinates length ({len(node_coordinates)}) must match num_nodes ({num_nodes})")
+#     if return_heuristic and len(node_coordinates) != num_nodes:
+#         raise ValueError(f"node_coordinates length ({len(node_coordinates)}) must match num_nodes ({num_nodes})")
 
-    # Initialize adjacency list - create empty list for each node
-    adj_list = {i: [] for i in range(num_nodes)}
+#     # Initialize adjacency list - create empty list for each node
+#     adj_list = {i: [] for i in range(num_nodes)}
 
-    # Extract i, j indices
-    i_indices = node_pairs[:, 0]
-    j_indices = node_pairs[:, 1]
+#     # Extract i, j indices
+#     i_indices = node_pairs[:, 0]
+#     j_indices = node_pairs[:, 1]
 
-    # Build adjacency list using vectorized operations
-    for i, j, length in zip(i_indices, j_indices, lengths):
-        adj_list[i].append((j, length))
+#     # Build adjacency list using vectorized operations
+#     for i, j, length in zip(i_indices, j_indices, lengths):
+#         adj_list[i].append((j, length))
 
-        if symmetric:
-            adj_list[j].append((i, length))
+#         if symmetric:
+#             adj_list[j].append((i, length))
 
-    if return_heuristic:
-        heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
-        return adj_list, heuristic_matrix
+#     if return_heuristic:
+#         heuristic_matrix = _create_heuristic_matrix(node_coordinates, num_nodes)
+#         return adj_list, heuristic_matrix
 
-    return adj_list
+#     return adj_list
 
-def closest_node(target_point, point_list):
-    # Convert to numpy arrays once
-    coords = np.array([(p.x, p.y) for p in point_list])
-    target_coords = np.array([target_point.x, target_point.y])
+# def closest_node(target_point, point_list):
+#     # Convert to numpy arrays once
+#     coords = np.array([(p.x, p.y) for p in point_list])
+#     target_coords = np.array([target_point.x, target_point.y])
 
-    # Vectorized distance calculation
-    distances = np.sum((coords - target_coords)**2, axis=1)
-    return np.argmin(distances)
+#     # Vectorized distance calculation
+#     distances = np.sum((coords - target_coords)**2, axis=1)
+#     return np.argmin(distances)
 
 def get_radius(n_points):
     data = [
@@ -1015,38 +985,38 @@ def get_radius(n_points):
         prev_point = point
     return 0.5
 
-def adjacency_list_to_matrix(adj_list: Dict[int, List[Tuple[int, float]]], num_nodes: int = None) -> np.ndarray:
-    """
-    Convert adjacency list back to adjacency matrix.
+# def adjacency_list_to_matrix(adj_list: Dict[int, List[Tuple[int, float]]], num_nodes: int = None) -> np.ndarray:
+#     """
+#     Convert adjacency list back to adjacency matrix.
 
-    Args:
-        adj_list: Adjacency list representation
-        num_nodes: Number of nodes. If None, inferred from max key + 1
+#     Args:
+#         adj_list: Adjacency list representation
+#         num_nodes: Number of nodes. If None, inferred from max key + 1
 
-    Returns:
-        numpy.ndarray: Adjacency matrix with inf for no connections
-    """
-    if num_nodes is None:
-        # Get maximum node index from both keys and values
-        max_key = max(adj_list.keys()) if adj_list else 0
-        max_val = 0
-        for neighbors in adj_list.values():
-            if neighbors:
-                max_val = max(max_val, max(neighbor[0] for neighbor in neighbors))
-        num_nodes = max(max_key, max_val) + 1
+#     Returns:
+#         numpy.ndarray: Adjacency matrix with inf for no connections
+#     """
+#     if num_nodes is None:
+#         # Get maximum node index from both keys and values
+#         max_key = max(adj_list.keys()) if adj_list else 0
+#         max_val = 0
+#         for neighbors in adj_list.values():
+#             if neighbors:
+#                 max_val = max(max_val, max(neighbor[0] for neighbor in neighbors))
+#         num_nodes = max(max_key, max_val) + 1
 
-    # Initialize matrix with infinity
-    matrix = np.full((num_nodes, num_nodes), np.inf, dtype=np.float64)
+#     # Initialize matrix with infinity
+#     matrix = np.full((num_nodes, num_nodes), np.inf, dtype=np.float64)
 
-    # Set diagonal to 0
-    np.fill_diagonal(matrix, 0)
+#     # Set diagonal to 0
+#     np.fill_diagonal(matrix, 0)
 
-    # Fill in connections
-    for i, neighbors in adj_list.items():
-        for j, weight in neighbors:
-            matrix[i, j] = weight
+#     # Fill in connections
+#     for i, neighbors in adj_list.items():
+#         for j, weight in neighbors:
+#             matrix[i, j] = weight
 
-    return matrix
+#     return matrix
 
 def min_distance_brute_force(points):
     """Calculate minimum distance between any two points"""

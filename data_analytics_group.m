@@ -4,13 +4,6 @@ clc
 format compact
 format shortG
 
-% path = "/full_runs/mission2/run_25-07-20-185830/stats.csv";
-% m = importdata(fullfile(base_dir, path));
-% distance = m(:, 2);
-% time = m(:, 3);
-% safe = m(:, 4);
-% unsafe = m(:, 5);
-% outside = m(:, 6);
 % Define the parent directory containing the folders
 base_dir = pwd;
 path = "/full_runs/mission3"; % Replace with your path
@@ -101,11 +94,11 @@ for i = 2:length(x)  % Start from 2 since first point is the reference
 end
 % Add vertical difference indicators (arrows/lines) and percentage annotations
 y_range = max([max(mean_distance), max(mean_safe), max(mean_unsafe)]) - min([min(mean_distance), min(mean_safe), min(mean_unsafe)]);
-text_offset = y_range * 0.05;  % Offset text by 5% of the y-range
+text_offset = y_range * 0.1;  % Offset text by 5% of the y-range
 
-for i = 2:length(x)  % Start from 2 since first point is the reference
+for i = 1:length(x)  % Start from 2 since first point is the reference
     % Mean Distance differences
-    if mean_distance(i) ~= mean_distance(1)
+    if mean_distance(1) ~= 0
         plot([x(i) x(i)], [mean_distance(1) mean_distance(i)], ':', 'Color', colors(1,:), 'HandleVisibility', 'off');
         pct_change = ((mean_distance(i) - mean_distance(1)) / mean_distance(1)) * 100;
         text(x(i), mean_distance(i) + text_offset, sprintf('%.1f%%', pct_change), ...
@@ -114,7 +107,7 @@ for i = 2:length(x)  % Start from 2 since first point is the reference
     end
     
     % Mean Safe differences  
-    if mean_safe(i) ~= mean_safe(1)
+    if mean_safe(1) ~= 0
         plot([x(i) x(i)], [mean_safe(1) mean_safe(i)], ':', 'Color', colors(2,:), 'HandleVisibility', 'off');
         pct_change = ((mean_safe(i) - mean_safe(1)) / mean_safe(1)) * 100;
         text(x(i), mean_safe(i) + text_offset, sprintf('%.1f%%', pct_change), ...
@@ -123,7 +116,7 @@ for i = 2:length(x)  % Start from 2 since first point is the reference
     end
     
     % Mean Unsafe differences
-    if mean_unsafe(i) ~= mean_unsafe(1)
+    if mean_unsafe(1) ~= 0
         plot([x(i) x(i)], [mean_unsafe(1) mean_unsafe(i)], ':', 'Color', colors(3,:), 'HandleVisibility', 'off');
         pct_change = ((mean_unsafe(i) - mean_unsafe(1)) / mean_unsafe(1)) * 100;
         text(x(i), mean_unsafe(i) + text_offset, sprintf('%.1f%%', pct_change), ...
@@ -134,7 +127,49 @@ end
 hold off;
 xlabel('\lambda_{safe}');
 ylabel('Mean Distance (m)');
-title('Comparison of Safety for Different   \lambdas');
+% title('Comparison of Safety for Different   \lambdas');
 legend('show');
-xlim([0 0.9]);
+xlim([-0.05 0.9]);
 grid on;
+
+% Calculate percentage of safe distance from total distance
+safe_percentage = (mean_safe ./ mean_distance) * 100;
+
+% Create figure
+figure;
+
+% Plot the safe distance percentage
+h1 = plot(x, safe_percentage, '-o', 'LineWidth', 2, 'MarkerSize', 8, ...
+          'DisplayName', 'Safe Distance Percentage');
+hold on;
+
+% Add grid
+grid on;
+grid minor;
+
+% Add labels and formatting
+xlabel('\lambda_{safe}');
+ylabel('Safe Distance Percentage (%)');
+% title('Percentage of Trajectory with Safe Distance vs \lambda_{safe}');
+
+% Set axis limits
+xlim([-0.05, 0.9]);
+ylim([0, 100]);
+
+% Add percentage value annotations above each point
+for i = 1:length(x)
+    text(x(i), safe_percentage(i) + 10, sprintf('%.1f%%', safe_percentage(i)), ...
+         'HorizontalAlignment', 'center', 'FontSize', 10, 'FontWeight', 'bold');
+end
+
+% Optional: Add reference lines for key percentages
+yline(50, '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 1, 'Alpha', 0.7);
+yline(75, '--', 'Color', [0.7 0.7 0.7], 'LineWidth', 1, 'Alpha', 0.7);
+
+% Enhance appearance
+set(gca, 'FontSize', 11);
+set(gca, 'GridAlpha', 0.3, 'MinorGridAlpha', 0.1);
+
+hold off;
+lambda = x
+safe_percentage
