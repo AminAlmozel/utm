@@ -30,7 +30,7 @@ def generate_traffic_schedule(env, timesteps):
     deliveries = []
     # Deliveries
     for index, restaurant in env.restaurants.iterrows():
-        lam = restaurant["freq"] * 2.7
+        lam = restaurant["freq"] * 3
         traffic = generate_vehicle_traffic(lam, timesteps)
         time_separation = int(60 / 0.1) # 60 seconds in timesteps
         traffic = separate_drone_traffic(traffic, time_separation)
@@ -101,7 +101,8 @@ def generate_traffic_schedule(env, timesteps):
     # return firefighting + security + recreational + inspection + research
     # return firefighting + deliveries + security + recreational + inspection + research
 
-    return deliveries + security + recreational + inspection + research
+    # return deliveries + security + recreational + inspection + research
+    return deliveries
 
 def generate_vehicle_traffic(lam, timesteps):
     """

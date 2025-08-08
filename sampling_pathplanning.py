@@ -15,7 +15,7 @@ from itertools import combinations
 import glob
 from math import radians, cos, sin, asin, atan2, sqrt, pi, ceil, exp, log
 
-import uam.astar_uam as astar
+# import uam.astar_uam as astar
 from dijkstra import *
 # import exploration
 # import terrain
@@ -56,6 +56,7 @@ class sampling_pp(io):
         self.nodes = []
         self.iteration = 0
         self.areas = []
+        self.el = 0
         self.initalize()
 
     def initalize(self):
@@ -80,8 +81,9 @@ class sampling_pp(io):
         # Safe landing spots
         sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
         sa = make_mp(sa.geometry.union_all())
-        # self.add_area(id=-1, geometry=sa, type=1, cost=-0.3, iteration=0,
-        #               length=1000000, m_adj=None)
+        self.el = sa
+        self.add_area(id=-1, geometry=sa, type=1, cost=-0.5, iteration=0,
+                      length=1000000, m_adj=None)
 
         # Communication/GPS constraints
         comm = io.import_communication()
@@ -299,7 +301,9 @@ class sampling_pp(io):
         """
         # Pre-filter multipolygons by rough distance check
         print(target_point)
+
         multipolygons = [self.areas[1].geometry]  # Assuming the second area is the safe landing spots
+        multipolygons = [self.el]
         candidates = []
 
         # First check if target point is inside any multipolygon

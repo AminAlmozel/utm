@@ -110,6 +110,14 @@ class drone():
         self.full_traj = apply_rotation_to_trajectory(self.full_traj, inverse_matrix)
         return self.full_traj
 
+    def engine_failure(self):
+        """Drone enters in semi controlled free fall"""
+        controllability = 0.4 # Proportional to the controllability of the drone
+        A_min = -9.8  # Minimum acceleration in m/s^2
+        A_max = 0.5  # Maximum acceleration in m/s^2
+        self.umin = [-self.A_max, -self.A_max, A_min]  # Acceleration in m/s^2
+        self.umax = [self.A_max, self.A_max, A_max]  # Acceleration in m/s^2
+
     def set_initial_condition(self, xi):
         self.initial_conditions = []
         self.initial_conditions.append(xi)
@@ -216,12 +224,6 @@ class drone():
                 for j in range(3):  # Control effort constraints
                     self.m.addLConstr(u[i, j] <= v_vars[i, j])
                     self.m.addLConstr(-u[i, j] <= v_vars[i, j])
-
-            # Bounded Acceleration along Z-Axis (Decoupled)
-            for i in range(0, self.N-1):
-                # self.m.addLConstr(umin[2] <= u[i, 2] <= umax[2], f"Min_MAX_z_Acc_{p}_{i}")
-                self.m.addLConstr(u[i, 2] >= self.umin[2])
-                self.m.addLConstr(u[i, 2] <= self.umax[2])
 
             # Acceleration magnitude limitation using polygon approximation, no A_min
             for i in range(0, self.N - 1):

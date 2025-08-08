@@ -399,7 +399,8 @@ if ~isempty(response_data_all)
 end
 
 % Plot 3: Box plot of response times for common drones only
-subplot(2,1,2);
+% subplot(2,1,2);
+figure
 response_data_common = [];
 group_labels_common = [];
 
@@ -414,7 +415,7 @@ if ~isempty(response_data_common)
     boxplot(response_data_common, group_labels_common);
     xlabel('\lambda_{safe}');
     ylabel('Response Time (s)');
-    title('Response Time Distribution - Common Drones Only');
+    % title('Response Time Distribution - Common Drones Only');
     grid on;
 else
     text(0.5, 0.5, 'No common drone response data available', 'HorizontalAlignment', 'center', ...
