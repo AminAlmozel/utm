@@ -82,7 +82,7 @@ class sampling_pp(io):
         sa = io.load_geojson_files("env/landing/*.geojson", concat=True)
         sa = make_mp(sa.geometry.union_all())
         self.el = sa
-        self.add_area(id=-1, geometry=sa, type=1, cost=-0.5, iteration=0,
+        self.add_area(id=-1, geometry=sa, type=1, cost=-0.9, iteration=0,
                       length=1000000, m_adj=None)
 
         # Communication/GPS constraints

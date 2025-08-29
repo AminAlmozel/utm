@@ -15,10 +15,10 @@ def path_to_traj(path, ls):
     return [[ls[j][0], ls[j][1]] for j in path]
 
 def transform_meter_global(geom):
-    return gp.GeoDataFrame(geometry=geom, crs="EPSG:20437").to_crs(epsg=4326).geometry
+    return gp.GeoDataFrame(geometry=geom, crs="EPSG:32637").to_crs(epsg=4326).geometry
 
 def transform_global_meter(geom):
-    return gp.GeoDataFrame(geometry=geom, crs="EPSG:4326").to_crs(epsg=20437).geometry
+    return gp.GeoDataFrame(geometry=geom, crs="EPSG:4326").to_crs(epsg=32637).geometry
 
 def waypoints_to_traj(waypoints):
     return [[w["x"], w["y"]] for w in waypoints if not isinstance(w, float)]

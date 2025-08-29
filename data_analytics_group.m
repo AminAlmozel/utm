@@ -64,16 +64,18 @@ figure;
 % Plot the main lines
 h1 = plot(x, mean_distance, '-o', 'LineWidth', 2, 'DisplayName', 'Mean Total Distance');
 hold on;
-h2 = plot(x, mean_safe, '-s', 'LineWidth', 2, 'DisplayName', 'Mean Safe Distance');
-h3 = plot(x, mean_unsafe, '-^', 'LineWidth', 2, 'DisplayName', 'Mean Unsafe Distance');
+darkerGreen = 0.8 * [0.4660 0.6740 0.1880];
+h2 = plot(x, mean_safe, '-s', 'LineWidth', 2, 'DisplayName', 'Mean Safe Distance', 'Color', darkerGreen);
+% h3 = plot(x, mean_unsafe, '-^', 'LineWidth', 2, 'DisplayName', 'Mean Unsafe Distance');
 
 % Get colors for consistency
-colors = [h1.Color; h2.Color; h3.Color];
+% colors = [h1.Color; h2.Color; h3.Color];
+colors = [h1.Color; h2.Color];
 
 % Add horizontal dashed reference lines using first data points
 yline(mean_distance(1), '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'HandleVisibility', 'off');
 yline(mean_safe(1), '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'HandleVisibility', 'off');
-yline(mean_unsafe(1), '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'HandleVisibility', 'off');
+% yline(mean_unsafe(1), '--', 'Color', [0.5 0.5 0.5], 'LineWidth', 1, 'HandleVisibility', 'off');
 
 % Add vertical difference indicators (arrows/lines)
 for i = 2:length(x)  % Start from 2 since first point is the reference
@@ -89,7 +91,7 @@ for i = 2:length(x)  % Start from 2 since first point is the reference
     
     % Mean Unsafe differences
     if mean_unsafe(i) ~= mean_unsafe(1)
-        plot([x(i) x(i)], [mean_unsafe(1) mean_unsafe(i)], ':', 'Color', colors(3,:), 'HandleVisibility', 'off');
+        % plot([x(i) x(i)], [mean_unsafe(1) mean_unsafe(i)], ':', 'Color', colors(3,:), 'HandleVisibility', 'off');
     end
 end
 % Add vertical difference indicators (arrows/lines) and percentage annotations
@@ -115,14 +117,14 @@ for i = 1:length(x)  % Start from 2 since first point is the reference
              'BackgroundColor', 'white', 'EdgeColor', 'none');
     end
     
-    % Mean Unsafe differences
-    if mean_unsafe(1) ~= 0
-        plot([x(i) x(i)], [mean_unsafe(1) mean_unsafe(i)], ':', 'Color', colors(3,:), 'HandleVisibility', 'off');
-        pct_change = ((mean_unsafe(i) - mean_unsafe(1)) / mean_unsafe(1)) * 100;
-        text(x(i), mean_unsafe(i) + text_offset, sprintf('%.1f%%', pct_change), ...
-             'HorizontalAlignment', 'center', 'FontSize', 8, 'Color', colors(3,:), ...
-             'BackgroundColor', 'white', 'EdgeColor', 'none');
-    end
+    % % Mean Unsafe differences
+    % if mean_unsafe(1) ~= 0
+    %     plot([x(i) x(i)], [mean_unsafe(1) mean_unsafe(i)], ':', 'Color', colors(3,:), 'HandleVisibility', 'off');
+    %     pct_change = ((mean_unsafe(i) - mean_unsafe(1)) / mean_unsafe(1)) * 100;
+    %     text(x(i), mean_unsafe(i) + text_offset, sprintf('%.1f%%', pct_change), ...
+    %          'HorizontalAlignment', 'center', 'FontSize', 8, 'Color', colors(3,:), ...
+    %          'BackgroundColor', 'white', 'EdgeColor', 'none');
+    % end
 end
 hold off;
 xlabel('\lambda_{safe}');

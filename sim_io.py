@@ -320,7 +320,7 @@ class myio:
             traffic = pkl.load(traffic_file)
         return traffic
 
-    def load_geojson_files(pattern: str, concat: bool = False, crs_epsg: int = 20437):
+    def load_geojson_files(pattern: str, concat: bool = False, crs_epsg: int = 32637):
         """
         Load and transform GeoJSON files matching a pattern.
 
@@ -502,7 +502,7 @@ class myio:
                 continue
             ls = traj_to_linestring(t)
             trajs.append(ls)
-        df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:20437")
+        df = gp.GeoDataFrame(geometry=trajs, crs="EPSG:32637")
         df.to_crs(crs=4326, inplace=True)
         trajs = df.geometry
         myio.write_geom(trajs, run + "trajs", "blue")
@@ -528,7 +528,7 @@ class myio:
             trajs.append({'geometry': ls, 'start_datetime': s, 'end_datetime': e, 'iteration': drone.iteration, 'length': len(t), 'type': drone.mission_type})
 
         df = pd.DataFrame(trajs)
-        gdf = gp.GeoDataFrame(df, crs="EPSG:20437")
+        gdf = gp.GeoDataFrame(df, crs="EPSG:32637")
         gdf.to_crs(crs=4326, inplace=True)
 
         name = "trajs_time"
@@ -568,7 +568,7 @@ class myio:
 
     def log_dictionary(dictionary, run, last):
         df = pd.DataFrame(dictionary)
-        gdf = gp.GeoDataFrame(df, crs="EPSG:20437").to_crs(epsg=4326)
+        gdf = gp.GeoDataFrame(df, crs="EPSG:32637").to_crs(epsg=4326)
 
         name = "avoid_time"
         gdf.to_file('plot/' + run + name + '.geojson', driver='GeoJSON')
@@ -685,7 +685,7 @@ class myio:
 
         if trajs:
             # Create GeoDataFrame efficiently
-            gdf = gp.GeoDataFrame(trajs, crs="EPSG:20437")
+            gdf = gp.GeoDataFrame(trajs, crs="EPSG:32637")
             gdf.to_crs(crs=4326, inplace=True)
 
             # Write files

@@ -101,8 +101,8 @@ def generate_traffic_schedule(env, timesteps):
     # return firefighting + security + recreational + inspection + research
     # return firefighting + deliveries + security + recreational + inspection + research
 
-    # return deliveries + security + recreational + inspection + research
-    return deliveries
+    return deliveries + security + recreational + inspection + research
+    # return deliveries
 
 def generate_vehicle_traffic(lam, timesteps):
     """

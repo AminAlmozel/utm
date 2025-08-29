@@ -102,7 +102,7 @@ class simulator(drone.drone):
         self.delta_t = 0.1 # Time step
         self.total_iterations = 50000
 
-        self.emergency_landing = 1000
+        self.emergency_landing = 45000
 
         # Parameters
         self.n_vehicles = 10 # Starting number of vehicles
@@ -453,7 +453,7 @@ class simulator(drone.drone):
         # Update trajectories and the current state
         self.update_vehicle_state()
         # Apply random events
-        self.random_events()
+        # self.random_events()
         # Check the mission progress
         self.update_mission()
         # Update the trajectories

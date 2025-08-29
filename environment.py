@@ -185,10 +185,10 @@ class env():
 
     def transform_coords(self):
         # Converting to meters projection
-        self.houses.to_crs(epsg=20437, inplace=True)
-        self.apts.to_crs(epsg=20437, inplace=True)
-        self.restaurants.to_crs(epsg=20437, inplace=True)
-        self.fire_station.to_crs(epsg=20437, inplace=True)
+        self.houses.to_crs(epsg=32637, inplace=True)
+        self.apts.to_crs(epsg=32637, inplace=True)
+        self.restaurants.to_crs(epsg=32637, inplace=True)
+        self.fire_station.to_crs(epsg=32637, inplace=True)
 
     def nearby_obstacles(self, pos, range):
         dist = self.houses.distance(pos)
