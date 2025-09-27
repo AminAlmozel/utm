@@ -6,8 +6,9 @@ traj.pickle
 /plot/animation3
 /plot/animation4
 /plot/simulation
-/plot/simulations
-!/plot/simulations/last/
+plot/simulations/*
+!plot/simulations/last/
+!plot/simulations/last/**
 /plot/trajs
 plot/good runs/
 /full_runs
