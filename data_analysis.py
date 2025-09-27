@@ -41,7 +41,7 @@ class DroneData:
         self.mission_status = mission_status
 
 def main():
-    mission_folder = "full_runs/emergency_landing2/*/"
+    mission_folder = "full_runs/profile4/*/"
     filename = mission_folder + "/*.pkl"
     list_of_files = glob.glob(filename)
     print(list_of_files)

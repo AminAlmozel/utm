@@ -136,7 +136,7 @@ class sampling_pp(io):
         traj = [nodes[p] for p in path]
         # ls = LineString(traj)
         # io.write_geom(transform_meter_global([ls]), "traj", "blue")
-        z = 30
+        z = 50
         result = [point_to_waypoint(p, z) for p in traj]
         return result
 

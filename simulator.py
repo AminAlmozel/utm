@@ -102,7 +102,7 @@ class simulator(drone.drone):
         self.delta_t = 0.1 # Time step
         self.total_iterations = 50000
 
-        self.emergency_landing = 45000
+        self.emergency_landing = 18000
 
         # Parameters
         self.n_vehicles = 10 # Starting number of vehicles

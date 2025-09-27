@@ -65,10 +65,11 @@ y = B(:, 4:6);
 figure
 hold on
 bar(y(:, 3) + y(:, 2) + y(:, 1))
-bar(y(:, 2) + y(:, 1))
+% bar(y(:, 2) + y(:, 1))
 bar(y(:, 1))
 
 
 xlabel('Drone number')
 ylabel('Distance traveled')
-legend('Outside', 'Unsafe trajectory distance', 'Safe trajectory distance')
+% legend('Outside', 'Unsafe trajectory distance', 'Safe trajectory distance')
+legend('Outside', 'Safe trajectory distance')
