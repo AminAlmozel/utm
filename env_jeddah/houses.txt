@@ -1,0 +1,56 @@
+/*
+Query to find all houses and apartments within the current bounding box
+*/
+[out:json][timeout:25];
+// gather results
+(
+  // Houses
+  node[building=house]({{bbox}});
+  way[building=house]({{bbox}});
+  relation[building=house]({{bbox}});
+  
+  // Detached houses
+  node[building=detached]({{bbox}});
+  way[building=detached]({{bbox}});
+  relation[building=detached]({{bbox}});
+  
+  // Semi-detached houses
+  node[building=semidetached_house]({{bbox}});
+  way[building=semidetached_house]({{bbox}});
+  relation[building=semidetached_house]({{bbox}});
+  
+  // Terraced houses
+  node[building=terrace]({{bbox}});
+  way[building=terrace]({{bbox}});
+  relation[building=terrace]({{bbox}});
+  
+  // Apartments/Flats
+  node[building=apartments]({{bbox}});
+  way[building=apartments]({{bbox}});
+  relation[building=apartments]({{bbox}});
+  
+  // Residential buildings (general)
+  node[building=residential]({{bbox}});
+  way[building=residential]({{bbox}});
+  relation[building=residential]({{bbox}});
+  
+  // Dormitories
+  node[building=dormitory]({{bbox}});
+  way[building=dormitory]({{bbox}});
+  relation[building=dormitory]({{bbox}});
+  
+  // Bungalows
+  node[building=bungalow]({{bbox}});
+  way[building=bungalow]({{bbox}});
+  relation[building=bungalow]({{bbox}});
+  
+  // Static homes/Mobile homes
+  node[building=static_caravan]({{bbox}});
+  way[building=static_caravan]({{bbox}});
+  relation[building=static_caravan]({{bbox}});
+);
+
+// print results
+out body;
+>;
+out skel qt;

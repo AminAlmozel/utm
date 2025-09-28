@@ -1,0 +1,41 @@
+/*
+Query to find all restaurants and cafes within the current bounding box
+*/
+[out:json][timeout:25];
+// gather results
+(
+  // Cafes
+  node[amenity=cafe]({{bbox}});
+  way[amenity=cafe]({{bbox}});
+  relation[amenity=cafe]({{bbox}});
+  
+  // Restaurants
+  node[amenity=restaurant]({{bbox}});
+  way[amenity=restaurant]({{bbox}});
+  relation[amenity=restaurant]({{bbox}});
+  
+  // Fast food
+  node[amenity=fast_food]({{bbox}});
+  way[amenity=fast_food]({{bbox}});
+  relation[amenity=fast_food]({{bbox}});
+  
+  // Food courts
+  node[amenity=food_court]({{bbox}});
+  way[amenity=food_court]({{bbox}});
+  relation[amenity=food_court]({{bbox}});
+  
+  // Bars (often serve food)
+  node[amenity=bar]({{bbox}});
+  way[amenity=bar]({{bbox}});
+  relation[amenity=bar]({{bbox}});
+  
+  // Pubs (often serve food)
+  node[amenity=pub]({{bbox}});
+  way[amenity=pub]({{bbox}});
+  relation[amenity=pub]({{bbox}});
+);
+
+// print results
+out body;
+>;
+out skel qt;

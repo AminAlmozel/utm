@@ -1,0 +1,555 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2025-07-11T20:26:01Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/65588311",
+        "addr:city": "Thuwal",
+        "amenity": "restaurant",
+        "building": "yes",
+        "diet:halal": "yes",
+        "name": "Central Diner"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              39.1205411,
+              22.3070262
+            ],
+            [
+              39.120504,
+              22.3069261
+            ],
+            [
+              39.1204396,
+              22.3069468
+            ],
+            [
+              39.120353,
+              22.3067172
+            ],
+            [
+              39.1202757,
+              22.306742
+            ],
+            [
+              39.1201735,
+              22.3064696
+            ],
+            [
+              39.1205937,
+              22.3063347
+            ],
+            [
+              39.1206959,
+              22.3066072
+            ],
+            [
+              39.1206297,
+              22.3066284
+            ],
+            [
+              39.1207162,
+              22.3068576
+            ],
+            [
+              39.1206473,
+              22.3068798
+            ],
+            [
+              39.1206847,
+              22.3069806
+            ],
+            [
+              39.1205411,
+              22.3070262
+            ]
+          ]
+        ]
+      },
+      "id": "way/65588311"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/480162593",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Discovery Square",
+        "address": "Discovery Square",
+        "amenity": "restaurant",
+        "capacity": "20",
+        "cuisine": "indian",
+        "delivery": "yes",
+        "diet:halal": "yes",
+        "name": "Tawabil",
+        "opening_hours": "11:30-22:00",
+        "phone": "+96612802 4031",
+        "smoking": "no",
+        "takeaway": "yes",
+        "website": "https://www.tawabil-sa.com"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1011166,
+          22.3114184
+        ]
+      },
+      "id": "node/480162593"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/480162594",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Discovery Square",
+        "address": "Discovery Square",
+        "amenity": "restaurant",
+        "brand:wikipedia": "en:Quiznos",
+        "cuisine": "chinese",
+        "delivery": "yes",
+        "diet:halal": "yes",
+        "drive_through": "no",
+        "name": "Great Wall Bistro",
+        "opening_hours": "Mo-Sa 11:30-14:30; Mo-Sa 17:00-22:00",
+        "phone": "+966128085408",
+        "smoking": "no",
+        "website": "https://hungrycampus.com/showmenu.php?id=24"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1004165,
+          22.3095512
+        ]
+      },
+      "id": "node/480162594"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/480162595",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Discovery Square",
+        "address": "Discovery Square",
+        "amenity": "fast_food",
+        "brand": "دجاج كنتاكي",
+        "brand:ar": "دجاج كنتاكي",
+        "brand:en": "KFC",
+        "brand:wikidata": "Q524757",
+        "cuisine": "chicken",
+        "delivery": "yes",
+        "diet:halal": "yes",
+        "drive_through": "no",
+        "name": "دجاج كنتاكي",
+        "name:ar": "دجاج كنتاكي",
+        "name:en": "KFC",
+        "opening_hours": "11:00-23:00",
+        "phone": "+966128024035",
+        "takeaway": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1014153,
+          22.3110509
+        ]
+      },
+      "id": "node/480162595"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/480162596",
+        "addr:city": "Thuwal",
+        "address": "Campus Commons",
+        "amenity": "restaurant",
+        "diet:halal": "yes",
+        "name": "Campus Diner"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1039237,
+          22.3087977
+        ]
+      },
+      "id": "node/480162596"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/485965708",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Discovery Square",
+        "address": "Discovery Square",
+        "amenity": "fast_food",
+        "brand": "Burger King",
+        "brand:wikidata": "Q177054",
+        "brand:wikipedia": "en:Burger King",
+        "cuisine": "burger",
+        "delivery": "yes",
+        "diet:halal": "yes",
+        "drive_through": "no",
+        "name": "Burger King",
+        "opening_hours": "11:00-24:00",
+        "phone": "+966128024032",
+        "takeaway": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1011914,
+          22.3113344
+        ]
+      },
+      "id": "node/485965708"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/506179690",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Discovery Square",
+        "address": "Discovery Square",
+        "amenity": "restaurant",
+        "cuisine": "regional;middle_eastern",
+        "delivery": "yes",
+        "diet:halal": "yes",
+        "drive_through": "no",
+        "internet_access": "wlan",
+        "name": "Cuisine Halwani",
+        "opening_hours": "Mo-Su 11:00-22:00",
+        "phone": "+966128024036",
+        "website": "https://hungrycampus.com/showmenu.php?id=23",
+        "wlan:eduroam": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1019708,
+          22.3112895
+        ]
+      },
+      "id": "node/506179690"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/510013084",
+        "addr:city": "Thuwal",
+        "addr:street": "Unity Boulevard",
+        "amenity": "fast_food",
+        "brand": "Subway",
+        "brand:wikidata": "Q244457",
+        "brand:wikipedia": "en:Subway (restaurant)",
+        "cuisine": "sandwich",
+        "email": "info@bafakih-dakkak.com",
+        "internet_access": "yes",
+        "layer": "2",
+        "name": "Subway",
+        "opening_hours": "07:30-23:00; Fr 13:00-23:00",
+        "phone": "+966126527575;+9664373477",
+        "takeaway": "yes",
+        "url": "http://www.subway-ksa.com"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1026794,
+          22.3113603
+        ]
+      },
+      "id": "node/510013084"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1258480112",
+        "addr:city": "Thuwal",
+        "amenity": "restaurant",
+        "diet:halal": "yes",
+        "internet_access": "wlan",
+        "name": "Harbour Sports Center Restaurant",
+        "opening_hours": "8:30-22:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.0990157,
+          22.3150104
+        ]
+      },
+      "id": "node/1258480112"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1400865980",
+        "addr:city": "Thuwal",
+        "address": "Al-Marsa Yacht Club",
+        "amenity": "restaurant",
+        "diet:halal": "yes",
+        "internet_access": "wlan",
+        "name": "Al-Marsa Restaurant"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.0977722,
+          22.3052886
+        ]
+      },
+      "id": "node/1400865980"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/1400866081",
+        "addr:city": "Thuwal",
+        "address": "Safaa Golf Club",
+        "amenity": "restaurant",
+        "diet:halal": "yes",
+        "internet_access": "wlan",
+        "name": "10th Hole Restaurant",
+        "opening_hours": "Mo-Sa 10:00-22:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1169075,
+          22.3242106
+        ]
+      },
+      "id": "node/1400866081"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2831897844",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Harbor Walk",
+        "amenity": "restaurant",
+        "cuisine": "barbecue",
+        "diet:halal": "yes",
+        "name": "Smoked Ash",
+        "opening_hours": "Mo-Sa 12:00-15:00; Mo-Sa 17:00-22:00",
+        "phone": "+966128024091;+966552369369",
+        "website": "https://communitylife.kaust.edu.sa/docs/default-source/services-docs/menus/smoked-ash-menu.pdff"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.099649,
+          22.3094077
+        ]
+      },
+      "id": "node/2831897844"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/2831897845",
+        "addr:city": "Thuwal",
+        "amenity": "restaurant",
+        "diet:halal": "yes",
+        "name": "Pure",
+        "opening_hours": "17:00-23:00",
+        "phone": "+966128086617;+966501334283"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.0913449,
+          22.3165637
+        ]
+      },
+      "id": "node/2831897845"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3169992802",
+        "addr:city": "Thuwal",
+        "amenity": "restaurant",
+        "diet:halal": "yes",
+        "internet_access": "no",
+        "name": "Racquet club",
+        "opening_hours": "10:00-22:00; Mo Closed",
+        "operator": "Tamimi",
+        "smoking": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1050581,
+          22.326207
+        ]
+      },
+      "id": "node/3169992802"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3377396902",
+        "addr:city": "Thuwal",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Discovery Square",
+        "amenity": "fast_food",
+        "cuisine": "turkish",
+        "delivery": "Hungry Campus",
+        "diet:halal": "yes",
+        "disused:amenity": "fast_food",
+        "drive_through": "no",
+        "name": "Ya Hala",
+        "opening_hours": "Sa-Th 07:00-22:30; Fr 11:00-22:30",
+        "takeaway": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1012649,
+          22.3112413
+        ]
+      },
+      "id": "node/3377396902"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3392161588",
+        "addr:city": "Thuwal",
+        "addr:housenumber": "H-4310C",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Harbor Walk",
+        "amenity": "restaurant",
+        "cuisine": "italian",
+        "diet:halal": "yes",
+        "name": "Verra Pizza",
+        "opening_hours": "Mo-Su 11:00-21:00",
+        "operator": "italian",
+        "phone": "+966128024010",
+        "website": "https://hungrycampus.com/showmenu.php?id=20"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.0997579,
+          22.3093949
+        ]
+      },
+      "id": "node/3392161588"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4709537689",
+        "amenity": "restaurant",
+        "email": "tgabcatering@gmail.com",
+        "name": "The Great American Bagel and Bakery",
+        "name:en": "The Great American Bagel Bakery",
+        "phone": "+966566105519",
+        "shop": "bakery"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1037513,
+          22.3096608
+        ]
+      },
+      "id": "node/4709537689"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9844799175",
+        "addr:city": "Thuwal",
+        "addr:housenumber": "H-4302B",
+        "addr:postcode": "23955-6900",
+        "addr:street": "Harbor Walk",
+        "amenity": "fast_food",
+        "brand": "Domino's",
+        "brand:wikidata": "Q839466",
+        "cuisine": "pizza",
+        "name": "Domino's",
+        "opening_hours": "Mo-Th 11:00-22:00; Fr 12:30-22:30; Sa-Su 11:00-22:00",
+        "phone": "+966128086535",
+        "takeaway": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1006936,
+          22.3091781
+        ]
+      },
+      "id": "node/9844799175"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12994727584",
+        "amenity": "restaurant",
+        "cuisine": "chinese",
+        "name": "Beytoti",
+        "website": "https://hungrycampus.com/showmenu.php?id=36"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1013237,
+          22.3112054
+        ]
+      },
+      "id": "node/12994727584"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12994727585",
+        "amenity": "restaurant",
+        "cuisine": "chinese",
+        "name": "Maki House",
+        "website": "https://hungrycampus.com/showmenu.php?id=36"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1013585,
+          22.3111632
+        ]
+      },
+      "id": "node/12994727585"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12994727586",
+        "amenity": "restaurant",
+        "cuisine": "mexican",
+        "name": "Ed's Tacos"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1005059,
+          22.3091656
+        ]
+      },
+      "id": "node/12994727586"
+    }
+  ]
+}

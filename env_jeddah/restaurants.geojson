@@ -1,0 +1,747 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2025-09-27T16:01:01Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/160122464",
+        "amenity": "fast_food",
+        "cuisine": "chicken",
+        "name": "Al-Tzaj"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              39.131022,
+              21.7893507
+            ],
+            [
+              39.1311195,
+              21.7892167
+            ],
+            [
+              39.1313405,
+              21.7893553
+            ],
+            [
+              39.1312736,
+              21.7894473
+            ],
+            [
+              39.1313001,
+              21.789464
+            ],
+            [
+              39.1312833,
+              21.789487
+            ],
+            [
+              39.1312519,
+              21.7894673
+            ],
+            [
+              39.1312381,
+              21.7894862
+            ],
+            [
+              39.131022,
+              21.7893507
+            ]
+          ]
+        ]
+      },
+      "id": "way/160122464"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/499634475",
+        "amenity": "cafe",
+        "building": "yes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              39.1483748,
+              21.75833
+            ],
+            [
+              39.1483694,
+              21.7582901
+            ],
+            [
+              39.1483801,
+              21.7582752
+            ],
+            [
+              39.1483922,
+              21.7582615
+            ],
+            [
+              39.1490158,
+              21.7582241
+            ],
+            [
+              39.149016,
+              21.7582408
+            ],
+            [
+              39.1490909,
+              21.7582341
+            ],
+            [
+              39.1490925,
+              21.7582918
+            ],
+            [
+              39.1490222,
+              21.7582945
+            ],
+            [
+              39.1483748,
+              21.75833
+            ]
+          ]
+        ]
+      },
+      "id": "way/499634475"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/786494771",
+        "amenity": "fast_food",
+        "brand": "ماكدونالدز",
+        "brand:ar": "ماكدونالدز",
+        "brand:en": "McDonald's",
+        "brand:wikidata": "Q38076",
+        "brand:wikipedia": "en:McDonald's",
+        "building": "yes",
+        "cuisine": "burger",
+        "drive_through": "yes",
+        "name": "ماكدونالدز",
+        "name:ar": "ماكدونالدز",
+        "name:en": "McDonald's",
+        "takeaway": "yes"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              39.1326278,
+              21.7937552
+            ],
+            [
+              39.1327714,
+              21.7935774
+            ],
+            [
+              39.1329641,
+              21.7937119
+            ],
+            [
+              39.1328193,
+              21.7938907
+            ],
+            [
+              39.1326278,
+              21.7937552
+            ]
+          ]
+        ]
+      },
+      "id": "way/786494771"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3289916282",
+        "amenity": "fast_food",
+        "cuisine": "chicken",
+        "internet_access": "no",
+        "internet_access:fee": "no",
+        "name": "Al Baik",
+        "smoking": "no"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1256679,
+          21.7936327
+        ]
+      },
+      "id": "node/3289916282"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3470739293",
+        "amenity": "restaurant",
+        "capacity": "30",
+        "cuisine": "sushi",
+        "family_seating": "yes",
+        "jpoi_id": "100515",
+        "name": "Sushi Yoshi"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.133984,
+          21.7700069
+        ]
+      },
+      "id": "node/3470739293"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4108764199",
+        "amenity": "fast_food",
+        "cuisine": "chicken;fast_food",
+        "name": "Al Baik"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1205769,
+          21.7570704
+        ]
+      },
+      "id": "node/4108764199"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4110627289",
+        "amenity": "fast_food",
+        "cuisine": "burger",
+        "name": "Herfy",
+        "opening_hours": "Mo-Su 11:00-02:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1483127,
+          21.7497954
+        ]
+      },
+      "id": "node/4110627289"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4110627290",
+        "amenity": "fast_food",
+        "cuisine": "burger",
+        "name": "Herfy"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1139926,
+          21.7635574
+        ]
+      },
+      "id": "node/4110627290"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4608515698",
+        "amenity": "fast_food",
+        "cuisine": "italian_pizza;pizza",
+        "name": "Pizza Hut",
+        "name:ar": "Pizza Hut"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1316437,
+          21.7927049
+        ]
+      },
+      "id": "node/4608515698"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4608515795",
+        "air_conditioning": "yes",
+        "amenity": "cafe",
+        "cuisine": "donut",
+        "name": "Dunkin' Donuts",
+        "name:ar": "Dunkin' Donuts",
+        "opening_hours": "Mo-Su 06:30-24:00",
+        "payment:cash": "yes",
+        "payment:debit_cards": "yes",
+        "website": "http://www.dunkindonuts.sa/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1314378,
+          21.7925537
+        ]
+      },
+      "id": "node/4608515795"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5476714321",
+        "addr:street": "Al Masurah st. شارع الماسورة",
+        "amenity": "restaurant",
+        "cuisine": "kebab;turkish;pancake;pizza",
+        "internet_access": "wlan",
+        "name": "كباب، التركية، فطيرة، بيتزا",
+        "opening_hours": "Mo-Su 13:00-02:00",
+        "phone": "00966508829899"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1924424,
+          21.7397765
+        ]
+      },
+      "id": "node/5476714321"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/5476715222",
+        "addr:street": "Al Masurah st. شارع الماسورة",
+        "amenity": "restaurant",
+        "cuisine": "turkish;pizza;kebab;arab",
+        "internet_access": "wlan",
+        "name": "بيتزا اسطنبول التركية",
+        "name:ar": "بيتزا اسطنبول التركية",
+        "name:en": "Istanbul turkish pizza & kebab",
+        "name:tr": "istanbul turkish pizza&kebab",
+        "opening_hours": "Mo-Su 13:00-02:00",
+        "phone": "00966508829899"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1925038,
+          21.7396503
+        ]
+      },
+      "id": "node/5476715222"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6255922517",
+        "addr:city": "جدة",
+        "addr:street": "عابر القارات",
+        "amenity": "restaurant",
+        "name": "Aseer Time"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1155722,
+          21.7630296
+        ]
+      },
+      "id": "node/6255922517"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6552390366",
+        "addr:city": "jeddah",
+        "addr:housenumber": "obhur al janoubiyah",
+        "addr:postcode": "23732",
+        "addr:street": "al corniche street",
+        "amenity": "restaurant",
+        "cuisine": "hotel;restaurants",
+        "email": "info@r-omawi.com",
+        "name": "Alriwaq Alomawi",
+        "opening_hours": "24/7",
+        "phone": "+966551009300"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.122745,
+          21.7356151
+        ]
+      },
+      "id": "node/6552390366"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8149922157",
+        "addr:city": "Jeddah",
+        "addr:postcode": "23734",
+        "addr:street": "طريق الكورنيش الشمالي",
+        "air_conditioning": "yes",
+        "amenity": "cafe",
+        "cuisine": "sandwich;coffee_shop;coffee;cafe;european;american;breakfast;lunch;international",
+        "internet_access": "yes",
+        "internet_access:fee": "no",
+        "internet_access:ssid": "Subject_",
+        "name": "subject_ coffee house",
+        "opening_hours": "Mo-Sa 08:00-01:00",
+        "outdoor_seating": "yes",
+        "phone": "+966570002129",
+        "website": "https://www.subject.house/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1350869,
+          21.7539671
+        ]
+      },
+      "id": "node/8149922157"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8853796097",
+        "air_conditioning": "yes",
+        "amenity": "fast_food",
+        "brand": "Dunkin' Donuts",
+        "brand:wikidata": "Q847743",
+        "brand:wikipedia": "en:Dunkin' Donuts",
+        "cuisine": "donut;coffee_shop",
+        "name": "Dunkin' Donuts",
+        "opening_hours": "Mo-Su 06:00-24:00",
+        "payment:cash": "yes",
+        "payment:debit_cards": "yes",
+        "phone": "+9668001288999",
+        "takeaway": "yes",
+        "website": "http://www.dunkindonuts.sa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1955724,
+          21.7552316
+        ]
+      },
+      "id": "node/8853796097"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8861165690",
+        "air_conditioning": "yes",
+        "amenity": "fast_food",
+        "brand": "Dunkin' Donuts",
+        "brand:wikidata": "Q847743",
+        "brand:wikipedia": "en:Dunkin' Donuts",
+        "cuisine": "donut;coffee_shop",
+        "name": "Dunkin' Donuts",
+        "opening_hours": "24/7",
+        "payment:cash": "yes",
+        "payment:debit_cards": "yes",
+        "takeaway": "yes",
+        "website": "http://www.dunkindonuts.sa/English/Pages/default.aspx"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1350841,
+          21.753999
+        ]
+      },
+      "id": "node/8861165690"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/8861189631",
+        "air_conditioning": "yes",
+        "amenity": "fast_food",
+        "brand": "Dunkin' Donuts",
+        "brand:wikidata": "Q847743",
+        "brand:wikipedia": "en:Dunkin' Donuts",
+        "cuisine": "donut;coffee_shop",
+        "name": "Dunkin' Donuts",
+        "opening_hours": "Mo-Su 06:00-24:00",
+        "payment:cash": "yes",
+        "payment:debit_cards": "yes",
+        "phone": "+9668001288999",
+        "takeaway": "yes",
+        "website": "http://dunkindonuts.sa/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1484029,
+          21.7501929
+        ]
+      },
+      "id": "node/8861189631"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/9893168726",
+        "addr:city": "jeddah",
+        "addr:housenumber": "4352",
+        "addr:postcode": "23761",
+        "addr:street": "Al Qasim Ibn Ummaiyah",
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "internet_access": "yes",
+        "internet_access:fee": "no",
+        "name": "cafeeiros",
+        "opening_hours": "Mo-Su 08:00-1:00",
+        "outdoor_seating": "no",
+        "phone": "+966554702773",
+        "website": "https://cafeeirosksa.com/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2002492,
+          21.762442
+        ]
+      },
+      "id": "node/9893168726"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11005590328",
+        "amenity": "cafe",
+        "cuisine": "coffee_shop",
+        "name:en": "Universed",
+        "phone": "+966547778045",
+        "website": "https://universedcafe.com/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1018495,
+          21.7677513
+        ]
+      },
+      "id": "node/11005590328"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11195044161",
+        "addr:city": "jeddah",
+        "addr:place": "أبحر الجنوبية",
+        "amenity": "cafe",
+        "cuisine": "coffee_shop;roastery",
+        "internet_access": "yes",
+        "internet_access:fee": "no",
+        "name": "Scarlet Cafe and roastery",
+        "opening_hours": "24/7",
+        "outdoor_seating": "yes",
+        "phone": "0555873883"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1387598,
+          21.7443373
+        ]
+      },
+      "id": "node/11195044161"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11207399111",
+        "addr:city": "جده",
+        "addr:housenumber": "123",
+        "addr:postcode": "11222",
+        "addr:street": "شارع عامر بن ياسر الكناني الفرعي",
+        "amenity": "cafe",
+        "cuisine": "coffee_shop;dessert;pancake",
+        "internet_access": "no",
+        "name": "ريكسا كافيه",
+        "opening_hours": "24/7",
+        "phone": "0126556555",
+        "website": "https://rexsacafe.com/"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2068434,
+          21.7569335
+        ]
+      },
+      "id": "node/11207399111"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11355515869",
+        "amenity": "fast_food",
+        "brand": "دجاج كنتاكي",
+        "brand:ar": "دجاج كنتاكي",
+        "brand:en": "KFC",
+        "brand:wikidata": "Q524757",
+        "cuisine": "chicken",
+        "name": "دجاج كنتاكي",
+        "name:ar": "دجاج كنتاكي",
+        "name:en": "KFC",
+        "takeaway": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1481157,
+          21.7454726
+        ]
+      },
+      "id": "node/11355515869"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11355515969",
+        "amenity": "fast_food",
+        "brand": "ماكدونالدز",
+        "brand:ar": "ماكدونالدز",
+        "brand:en": "McDonald's",
+        "brand:wikidata": "Q38076",
+        "cuisine": "burger",
+        "name": "ماكدونالدز",
+        "name:ar": "ماكدونالدز",
+        "name:en": "McDonald's",
+        "takeaway": "yes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1480749,
+          21.74598
+        ]
+      },
+      "id": "node/11355515969"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11663795669",
+        "addr:street": "طريق الحرمين",
+        "amenity": "restaurant",
+        "cuisine": "arab",
+        "name:en": "Al-Romansiah",
+        "opening_hours": "Sa-We 10:30-00:30; Th 10:30-01:00; Fr 12:15-01:00"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1903491,
+          21.7679927
+        ]
+      },
+      "id": "node/11663795669"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/11760822143",
+        "addr:street": "طريق المدينة",
+        "amenity": "restaurant",
+        "name": "ماكدونالدز"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1478854,
+          21.7474546
+        ]
+      },
+      "id": "node/11760822143"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12060761484",
+        "amenity": "cafe",
+        "name": "ستار بكس"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1973199,
+          21.755875
+        ]
+      },
+      "id": "node/12060761484"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12060842600",
+        "amenity": "fast_food",
+        "name": "سلطان دي لايت برجر"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1960904,
+          21.7545407
+        ]
+      },
+      "id": "node/12060842600"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12799882478",
+        "amenity": "fast_food",
+        "cuisine": "chinese",
+        "email": "info@canton-express.com",
+        "name": "كانتون",
+        "name:en": "Canton",
+        "opening_hours": "Mo-Su 12:00-02:00",
+        "phone": "+966 9200 00129",
+        "website": "https://canton-express.com"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1975961,
+          21.755347
+        ]
+      },
+      "id": "node/12799882478"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/12799882485",
+        "amenity": "fast_food",
+        "cuisine": "chinese",
+        "email": "info@canton-express.com",
+        "name": "كانتون",
+        "name:en": "Canton",
+        "opening_hours": "Mo-Su 12:00-02:00",
+        "phone": "+966 9200 00129",
+        "website": "https://canton-express.com"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.1014952,
+          21.7660213
+        ]
+      },
+      "id": "node/12799882485"
+    }
+  ]
+}

@@ -194,6 +194,16 @@ class env():
         dist = self.houses.distance(pos)
         return self.houses[dist<=range]
 
+    def nearby_all_obstacles(self, pos, range):
+        dist1 = self.houses.distance(pos)
+        dist2 = self.apts.distance(pos)
+        dist3 = self.restaurants.distance(pos)
+        nearby_houses = self.houses[dist1<=range]
+        nearby_apts = self.apts[dist2<=range]
+        nearby_restaurants = self.restaurants[dist3<=range]
+        all_nearby = pd.concat([nearby_houses, nearby_apts, nearby_restaurants], ignore_index=True)
+        return all_nearby
+
     def random_mission(self, tod):
         if self.repeat:
             missions = io.read_pickle(self.sim_latest, "mission_log")
